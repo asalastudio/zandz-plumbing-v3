@@ -156,7 +156,7 @@ export default async function TrackingPage({
                     >
                       {step.label}
                     </p>
-                    <p className="mt-1 text-base leading-relaxed text-[#333333] md:text-lg">
+                    <p className="mt-1 text-lg leading-relaxed text-[#333333] md:text-lg">
                       {step.description}
                     </p>
                   </div>
@@ -200,7 +200,7 @@ export default async function TrackingPage({
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">
               Notes from Z and Z
             </p>
-            <p className="mt-3 text-base leading-relaxed text-[#333333] md:text-lg whitespace-pre-line">
+            <p className="mt-3 text-lg leading-relaxed text-[#333333] md:text-lg whitespace-pre-line">
               {job.customer_notes}
             </p>
           </section>
@@ -238,7 +238,7 @@ function DetailCard({
         <Icon className="h-5 w-5 text-[#F96302]" strokeWidth={1.75} aria-hidden={true} />
         <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">{label}</span>
       </div>
-      <div className="text-base leading-relaxed text-[#333333] md:text-lg">{children}</div>
+      <div className="text-lg leading-relaxed text-[#333333] md:text-lg">{children}</div>
     </div>
   );
 }

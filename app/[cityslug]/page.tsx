@@ -151,7 +151,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           {area.city} Plumber.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
           {area.intro}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">

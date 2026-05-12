@@ -201,7 +201,7 @@ export default function DrainCleaningOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Drain Cleaning in Oakland. Snake, Camera, Hydrojet.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
           Kitchen lines, bath drains, floor drains, and main sewer lines. Z and Z runs the right tool for the clog, and
           when the clog turns out to be a deeper sewer lateral issue, we are licensed to handle that too.
         </p>

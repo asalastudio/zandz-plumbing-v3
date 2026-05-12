@@ -203,7 +203,7 @@ export default function AboutPage() {
               <h3 className="mt-4 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                 {item.title}
               </h3>
-              <p className="mt-3 text-base leading-relaxed text-[#333333]">{item.detail}</p>
+              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{item.detail}</p>
             </li>
           ))}
         </ol>

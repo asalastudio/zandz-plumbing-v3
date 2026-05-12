@@ -281,7 +281,7 @@ export default function HomePage() {
                     <h3 className="font-display text-3xl font-black uppercase leading-tight text-black md:text-4xl">
                       {service.title}
                     </h3>
-                    <p className="mt-3 text-base leading-relaxed text-[#333333]">
+                    <p className="mt-3 text-lg leading-relaxed text-[#333333]">
                       {service.summary}
                     </p>
                     <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#F96302] group-hover:underline">
@@ -361,7 +361,7 @@ export default function HomePage() {
                     <p className="mt-1 font-display text-3xl font-black uppercase leading-none text-black">
                       San Leandro HQ
                     </p>
-                    <p className="mt-3 text-sm leading-relaxed text-[#333333]">
+                    <p className="mt-3 text-base leading-relaxed text-[#333333]">
                       Fast access to I-880, Oakland, Alameda, Berkeley, and the Contra Costa side of the service map.
                     </p>
                   </div>

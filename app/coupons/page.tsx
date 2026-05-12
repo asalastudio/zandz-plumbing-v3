@@ -84,7 +84,7 @@ export default async function CouponsPage() {
             <p className="mt-4 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
               No active coupons right now.
             </p>
-            <p className="mt-3 max-w-xl mx-auto text-base leading-relaxed text-[#333333] md:text-lg">
+            <p className="mt-3 max-w-xl mx-auto text-lg leading-relaxed text-[#333333] md:text-lg">
               Call us anyway. We quote every job before paid work starts and we are always honest
               about pricing.
             </p>

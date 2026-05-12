@@ -79,7 +79,7 @@ export default function ReviewsPage() {
             <h1 className="font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
               4.6 Stars. 257+ Reviews.
             </h1>
-            <p className="mt-6 max-w-2xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+            <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
               Z and Z Plumbing earns its reviews on the job site. Two licenses, one crew, same-day East Bay response.
               Here is what customers across Oakland, San Leandro, Berkeley, and the East Bay had to say.
             </p>
@@ -126,7 +126,7 @@ export default function ReviewsPage() {
                   </span>
                 </div>
               </header>
-              <p className="text-sm leading-relaxed text-[#333333]">{p.summary}</p>
+              <p className="text-base leading-relaxed text-[#333333]">{p.summary}</p>
               <footer className="mt-6 border-t border-[#E5E5E5] pt-4 flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">
                   {p.count === "Verified" ? "Verified contractor" : `${p.count} reviews`}

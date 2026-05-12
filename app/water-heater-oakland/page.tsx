@@ -229,7 +229,7 @@ export default function WaterHeaterOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Water Heater Repair and Install in Oakland. Often Same Day.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
           Tank or tankless. Gas or electric. Z and Z Plumbing diagnoses on site, sources from Bay Area suppliers, and
           installs to current California and Oakland code with the permit pulled. CSLB licensed across plumbing and
           general engineering.
@@ -365,7 +365,7 @@ export default function WaterHeaterOaklandPage() {
                 <h3 className="mt-4 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                   {s.title}
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-[#333333]">{s.detail}</p>
+                <p className="mt-3 text-base leading-relaxed text-[#333333]">{s.detail}</p>
               </li>
             );
           })}

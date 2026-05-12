@@ -230,7 +230,7 @@ export default function EmergencyPlumberOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           24/7 Emergency Plumber in Oakland. We Answer the Phone.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
           Burst pipes, sewer backups, water heater failure, gas leaks, main water line breaks. Z and Z Plumbing
           dispatches from San Leandro 24 hours a day and runs both licenses on every truck. A plumber picks up the
           phone every hour of every day.
@@ -317,7 +317,7 @@ export default function EmergencyPlumberOaklandPage() {
               <h3 className="mt-4 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                 {s.title}
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-[#333333]">{s.detail}</p>
+              <p className="mt-3 text-base leading-relaxed text-[#333333]">{s.detail}</p>
             </li>
           ))}
         </ol>
@@ -339,7 +339,7 @@ export default function EmergencyPlumberOaklandPage() {
             <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight text-black">
               Main water line break
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-[#333333]">
+            <p className="mt-3 text-base leading-relaxed text-[#333333]">
               The line from your meter to your house often breaks at the curb. C-36 plumbers cannot legally excavate in
               the street. A General Engineering can.
             </p>
@@ -349,7 +349,7 @@ export default function EmergencyPlumberOaklandPage() {
             <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight text-black">
               Sewer lateral failure
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-[#333333]">
+            <p className="mt-3 text-base leading-relaxed text-[#333333]">
               When the failure is in the street section of the lateral, only an A General Engineering crew can repair
               it. Z and Z carries both licenses on one truck.
             </p>
@@ -359,7 +359,7 @@ export default function EmergencyPlumberOaklandPage() {
             <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight text-black">
               Street-side gas line
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-[#333333]">
+            <p className="mt-3 text-base leading-relaxed text-[#333333]">
               Service-line gas leaks in the public right-of-way require A General Engineering licensing. PG&E shuts off
               the gas; we handle the repair.
             </p>
@@ -415,7 +415,7 @@ export default function EmergencyPlumberOaklandPage() {
               className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5"
             >
               <p className="font-display text-lg font-black uppercase tracking-tight text-black">{n.name}</p>
-              <p className="mt-2 text-sm leading-relaxed text-[#333333]">{n.note}</p>
+              <p className="mt-2 text-base leading-relaxed text-[#333333]">{n.note}</p>
             </li>
           ))}
         </ul>

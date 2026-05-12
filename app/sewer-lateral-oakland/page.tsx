@@ -252,7 +252,7 @@ export default function SewerLateralOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Sewer Lateral Repair in Oakland. EBMUD Compliant. Both Licenses. One Crew.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
           Most Oakland plumbers can only work up to your property line. Z and Z holds A General Engineering plus C-36,
           which means we legally handle the entire lateral, including the portion in the street that connects to
           Oakland&apos;s main.
@@ -452,7 +452,7 @@ export default function SewerLateralOaklandPage() {
                   {step.title}
                 </h3>
                 <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F96302]">{step.days}</p>
-                <p className="mt-3 text-sm leading-relaxed text-[#333333]">{step.detail}</p>
+                <p className="mt-3 text-base leading-relaxed text-[#333333]">{step.detail}</p>
               </li>
             );
           })}

@@ -62,7 +62,7 @@ export default function BlogIndexPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           New Articles Landing Soon.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-lg leading-relaxed text-white/75 md:text-xl">
+        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
           We are rebuilding our blog content library. The full archive of plumbing guides, neighborhood tips, and
           maintenance advice is in production and ships in the coming weeks. In the meantime, our service pages cover
           the work we run most often in the East Bay.
@@ -104,7 +104,7 @@ export default function BlogIndexPage() {
                   <p className="font-display text-xl font-black uppercase leading-tight tracking-tight text-black md:text-2xl">
                     {d.label}
                   </p>
-                  <p className="mt-2 text-sm leading-relaxed text-[#333333]">{d.detail}</p>
+                  <p className="mt-2 text-base leading-relaxed text-[#333333]">{d.detail}</p>
                   <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#F96302]">
                     Open
                     <ChevronRight className="h-4 w-4" aria-hidden="true" />

@@ -103,7 +103,7 @@ export default async function VideosPage() {
             <p className="mt-4 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
               Videos coming soon.
             </p>
-            <p className="mt-3 max-w-xl mx-auto text-base leading-relaxed text-[#333333] md:text-lg">
+            <p className="mt-3 max-w-xl mx-auto text-lg leading-relaxed text-[#333333] md:text-lg">
               We are recording short, useful videos covering the work we do every day. Subscribe by
               giving us a call. In the meantime, our service pages have what you need.
             </p>
