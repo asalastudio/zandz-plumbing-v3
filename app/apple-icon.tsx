@@ -17,14 +17,20 @@ export default function AppleIcon() {
           backgroundColor: "#F96302",
         }}
       >
+        {/* Faucet silhouette in white at iOS home-screen scale */}
         <svg
-          viewBox="0 0 24 24"
-          width="120"
-          height="120"
-          fill="#FFFFFF"
+          viewBox="0 0 80 80"
+          width="140"
+          height="140"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" />
+          <g fill="#FFFFFF">
+            <rect x="31" y="14" width="6" height="6" />
+            <rect x="22" y="20" width="24" height="6" />
+            <rect x="31" y="26" width="6" height="12" />
+            <rect x="18" y="38" width="30" height="14" />
+            <rect x="48" y="42" width="14" height="6" />
+          </g>
         </svg>
       </div>
     ),
