@@ -51,7 +51,7 @@ export function ServiceCard({ service, className, dark = false }: ServiceCardPro
         </div>
         <h3
           className={cn(
-            "font-display text-2xl md:text-3xl font-black uppercase tracking-tight mb-2",
+            "font-display text-3xl md:text-4xl font-black uppercase tracking-tight mb-3",
             dark ? "text-white" : "text-black"
           )}
         >
@@ -59,13 +59,13 @@ export function ServiceCard({ service, className, dark = false }: ServiceCardPro
         </h3>
         <p
           className={cn(
-            "text-base leading-relaxed mb-4",
-            dark ? "text-white/70" : "text-[#333333]"
+            "text-lg leading-relaxed mb-5",
+            dark ? "text-white/75" : "text-[#333333]"
           )}
         >
           {service.summary}
         </p>
-        <span className="text-sm font-medium text-[#F96302] group-hover:underline">
+        <span className="text-base font-semibold text-[#F96302] group-hover:underline">
           Learn more &rarr;
         </span>
       </article>

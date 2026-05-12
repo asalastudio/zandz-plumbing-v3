@@ -8,7 +8,7 @@ export const services: Service[] = [
     icon: "GitMerge",
     summary: "Clogs, root intrusion, line cleaning, camera inspections, and more.",
     description:
-      "Z and Z holds a General Engineering license — the license that lets us work in the street, past the property line, and on the lateral itself. Most plumbers can't touch it. We can.",
+      "Z and Z holds a General Engineering license. That license lets us work in the street, past the property line, and on the lateral itself. Most plumbers can't touch it. We can.",
     featured: true,
   },
   {
@@ -48,7 +48,7 @@ export const services: Service[] = [
     icon: "Wrench",
     summary: "Galvanized to copper or PEX. Full house or targeted sections.",
     description:
-      "Pre-1970s East Bay homes run on aging galvanized pipe. We repipe in copper or PEX — full house or problem sections — with minimal wall damage.",
+      "Pre-1970s East Bay homes run on aging galvanized pipe. We repipe in copper or PEX, full house or problem sections, with minimal wall damage.",
     featured: false,
   },
   {
@@ -98,7 +98,7 @@ export const services: Service[] = [
     icon: "ShowerHead",
     summary: "Repair or replace any faucet, showerhead, or fixture.",
     description:
-      "Dripping faucets and failing fixtures waste water and money. We repair or replace any faucet, showerhead, or fixture — kitchen, bath, or outdoor.",
+      "Dripping faucets and failing fixtures waste water and money. We repair or replace any faucet, showerhead, or fixture for kitchen, bath, or outdoor use.",
     featured: false,
   },
   {
@@ -108,7 +108,7 @@ export const services: Service[] = [
     icon: "Toilet",
     summary: "Running toilets, clogs, wax rings, and full replacements.",
     description:
-      "Running toilets can waste 200 gallons a day. We fix the problem — whether it's the flapper, fill valve, wax ring, or the whole unit.",
+      "Running toilets can waste 200 gallons a day. We fix the problem, whether it's the flapper, fill valve, wax ring, or the whole unit.",
     featured: false,
   },
   {

@@ -27,7 +27,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-black">
       {/* Main nav row */}
-      <div className="mx-auto max-w-7xl px-6 md:px-8 lg:px-12">
+      <div className="mx-auto max-w-[1800px] px-6 md:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16 md:h-18">
           <Logo variant="light" />
 
@@ -72,7 +72,7 @@ export function Header() {
 
       {/* Trust strip */}
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-6 md:px-8 lg:px-12">
+        <div className="mx-auto max-w-[1800px] px-6 md:px-8 lg:px-12">
           <div className="flex items-center gap-0 overflow-x-auto py-2 hide-scrollbar">
             {trustItems.map((item, i) => (
               <span key={item} className="flex items-center flex-shrink-0">
@@ -91,7 +91,7 @@ export function Header() {
       {/* Mobile nav drawer */}
       {mobileOpen && (
         <div className="md:hidden bg-black border-t border-white/10">
-          <nav className="mx-auto max-w-7xl px-6 py-4 flex flex-col gap-1" aria-label="Mobile navigation">
+          <nav className="mx-auto max-w-[1800px] px-6 py-4 flex flex-col gap-1" aria-label="Mobile navigation">
             {navLinks.map((link) => (
               <Link
                 key={link.href}

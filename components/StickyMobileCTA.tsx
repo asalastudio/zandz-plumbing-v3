@@ -17,7 +17,7 @@ export function StickyMobileCTA() {
       </a>
       <a
         href="/contact/#schedule"
-        className="bg-[#F96302] text-white flex items-center justify-center font-semibold text-sm"
+        className="bg-black text-white flex items-center justify-center font-semibold text-sm"
       >
         Schedule
       </a>

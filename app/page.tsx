@@ -156,29 +156,38 @@ export default function HomePage() {
       {/* ========== HERO ========== */}
       <section className="flex min-h-[calc(100svh-98px)] flex-col bg-[#F5F5F5] md:min-h-[calc(100svh-104px)]">
         <div className="relative flex flex-1 overflow-hidden">
-          <picture className="absolute inset-0">
+          <picture className="absolute inset-0 overflow-hidden">
             <source media="(max-width: 767px)" srcSet="/images/zandz-hero-pipe-system-mobile.jpg" />
             <img
               src="/images/zandz-hero-pipe-system.jpg"
               alt=""
               aria-hidden="true"
               fetchPriority="high"
-              className="h-full w-full object-cover object-left md:object-center"
+              className="h-full w-full object-cover object-left md:object-center animate-ken-burns will-change-transform"
             />
           </picture>
-          <div className="absolute inset-0 z-[1] bg-gradient-to-r from-[#F5F5F5] via-[#F5F5F5]/90 to-[#F5F5F5]/20 md:hidden" />
-          <Container className="relative z-10 flex flex-1 items-center py-12 md:py-14">
-            <div className="max-w-[300px] sm:max-w-xl">
-              <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-4">
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-[#F5F5F5]/80 via-[#F5F5F5]/40 to-transparent md:hidden" aria-hidden="true" />
+          <div className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 items-center px-6 py-12 md:px-8 md:py-14 lg:px-12">
+            <div className="max-w-[300px] sm:max-w-xl lg:max-w-2xl">
+              <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-4 animate-fade-up">
                 Same-Day East Bay Plumbing.
               </p>
-              <h1 className="font-display text-6xl md:text-7xl lg:text-8xl font-black uppercase leading-none tracking-tight text-black mb-6">
+              <h1
+                className="font-display text-6xl md:text-7xl lg:text-[6.5rem] font-black uppercase leading-none tracking-tight text-black mb-6 animate-fade-up"
+                style={{ animationDelay: "0.12s" }}
+              >
                 The Pros Other Plumbers Call.
               </h1>
-              <p className="font-sans text-base text-[#333333] leading-relaxed mb-8 max-w-[280px] sm:max-w-lg sm:text-lg">
+              <p
+                className="font-sans text-base text-[#333333] leading-relaxed mb-8 max-w-[280px] sm:max-w-lg sm:text-lg animate-fade-up"
+                style={{ animationDelay: "0.28s" }}
+              >
                 Licensed for the whole job. From house lines to street-side work, we handle it all on time and built to last.
               </p>
-              <div className="flex max-w-[300px] flex-col gap-4 sm:max-w-none sm:flex-row">
+              <div
+                className="hidden gap-4 md:flex md:flex-row animate-fade-up"
+                style={{ animationDelay: "0.44s" }}
+              >
                 <Button
                   variant="primary"
                   size="xl"
@@ -189,48 +198,47 @@ export default function HomePage() {
                 >
                   Call {siteSettings.phone}
                 </Button>
-                <Button variant="ghost" size="xl" href="/contact/" className="bg-white/80 backdrop-blur-sm sm:bg-transparent sm:backdrop-blur-none">
+                <Button variant="ghost" size="xl" href="/contact/">
                   Schedule Online
                 </Button>
               </div>
             </div>
-          </Container>
+          </div>
 
         </div>
 
         <div className="border-y border-white/10 bg-black">
-          <Container>
-            <div className="grid grid-cols-2 md:grid-cols-4">
-              {heroStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="border-b border-r border-white/10 px-3 py-3 text-center last:border-r-0 md:flex md:items-center md:justify-center md:gap-3 md:border-b-0 md:px-4"
-                >
-                  <div className="flex items-center justify-center gap-1.5">
-                    <p
-                      className={[
-                        "font-display font-black uppercase leading-none text-white",
-                        stat.star ? "text-3xl md:text-3xl" : "text-4xl md:text-4xl",
-                      ].join(" ")}
-                    >
-                      {stat.value}
-                    </p>
-                    {stat.star && (
-                      <Star className="h-4 w-4 text-[#F96302] md:h-5 md:w-5" fill="#F96302" aria-hidden="true" />
-                    )}
-                  </div>
-                  <div className="md:text-left">
-                    <p className="mt-1.5 text-xs font-semibold leading-snug text-white/75 md:mt-0 md:text-sm">
-                      {stat.label}
-                    </p>
-                    <p className="text-xs leading-snug text-white/50">
-                      {stat.detail}
-                    </p>
-                  </div>
+          <div className="mx-auto grid max-w-[1800px] grid-cols-2 md:grid-cols-4">
+            {heroStats.map((stat, i) => (
+              <div
+                key={stat.label}
+                className="border-b border-r border-white/10 px-6 py-6 text-center last:border-r-0 md:flex md:items-center md:justify-center md:gap-5 md:border-b-0 md:px-10 md:py-8 lg:gap-6 lg:px-12 xl:px-16 animate-fade-in"
+                style={{ animationDelay: `${0.6 + i * 0.1}s` }}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <p
+                    className={[
+                      "font-display font-black uppercase leading-none text-white whitespace-nowrap",
+                      stat.star ? "text-4xl md:text-5xl" : "text-5xl md:text-6xl",
+                    ].join(" ")}
+                  >
+                    {stat.value}
+                  </p>
+                  {stat.star && (
+                    <Star className="h-5 w-5 text-[#F96302] md:h-7 md:w-7" fill="#F96302" aria-hidden="true" />
+                  )}
                 </div>
-              ))}
-            </div>
-          </Container>
+                <div className="md:text-left">
+                  <p className="mt-2 text-sm font-semibold leading-snug text-white/75 md:mt-0 md:text-base md:whitespace-nowrap">
+                    {stat.label}
+                  </p>
+                  <p className="text-sm leading-snug text-white/50 md:whitespace-nowrap">
+                    {stat.detail}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </section>
@@ -238,7 +246,7 @@ export default function HomePage() {
       {/* ========== SERVICES (black section) ========== */}
       <section className="bg-black pt-12 pb-20 md:pt-16 md:pb-28">
         <Container>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 scroll-reveal">
             <div>
               <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
                 Built for More than Houses.
@@ -256,7 +264,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 scroll-reveal">
             {primaryServiceCards.map((service) => (
                 <Link key={service.title} href={`/services/${service.slug}/`} className="group block">
                   <article className="h-full rounded-2xl border border-white/10 bg-white p-5 text-black transition-all duration-200 hover:-translate-y-1 hover:border-[#F96302] hover:shadow-2xl md:p-6">
@@ -285,7 +293,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3 scroll-reveal">
             {secondaryServiceCards.map((service) => {
               const Icon = service.icon;
 
@@ -315,7 +323,7 @@ export default function HomePage() {
       <section className="overflow-hidden bg-[#F5F5F5] py-20 md:py-28">
         <Container>
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
-            <div className="flex flex-col justify-between">
+            <div className="flex flex-col justify-between scroll-reveal">
               <div>
                 <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
                   East Bay Coverage.
@@ -369,7 +377,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="relative min-h-[620px] overflow-hidden rounded-2xl border border-[#D8D8D8] bg-white shadow-2xl">
+            <div className="relative min-h-[620px] overflow-hidden rounded-2xl border border-[#D8D8D8] bg-white shadow-2xl scroll-reveal-fade">
               <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between border-b border-[#E5E5E5] bg-white/90 px-5 py-4 backdrop-blur">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center bg-[#F96302] text-white">
@@ -432,6 +440,7 @@ export default function HomePage() {
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeDasharray="1 12"
+                  className="march-ants"
                 />
                 <path
                   d="M514 384C568 330 614 276 706 194"
@@ -440,6 +449,7 @@ export default function HomePage() {
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeDasharray="1 12"
+                  className="march-ants"
                 />
                 <path
                   d="M514 384C549 445 566 501 574 573"
@@ -448,6 +458,7 @@ export default function HomePage() {
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeDasharray="1 12"
+                  className="march-ants"
                 />
                 <path
                   d="M84 92H844M75 182H861M84 272H844M75 362H861M84 452H844M75 542H861M176 34V600M296 34V600M416 34V600M536 34V600M656 34V600M776 34V600"
@@ -549,7 +560,7 @@ export default function HomePage() {
         <Container>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Left: heading + aggregate */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 scroll-reveal">
               <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-4">
                 Trusted by Contractors.
               </p>
@@ -567,7 +578,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: platform review cards */}
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 scroll-reveal">
               {reviewPlatforms.map((platform) => (
                 <div
                   key={platform.name}
@@ -586,7 +597,7 @@ export default function HomePage() {
                   <blockquote className="text-sm text-white/70 leading-relaxed mb-4 italic">
                     &ldquo;{platform.quote}&rdquo;
                   </blockquote>
-                  <p className="text-xs font-semibold text-white/50">&mdash; {platform.reviewer}</p>
+                  <p className="text-xs font-semibold text-white/50">{platform.reviewer}</p>
                 </div>
               ))}
             </div>
@@ -597,7 +608,7 @@ export default function HomePage() {
       {/* ========== FINAL CTA BAND ========== */}
       <section className="bg-[#F96302] py-16 md:py-20">
         <Container>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 scroll-reveal">
             <div>
               <h2 className="font-display text-5xl md:text-6xl font-black uppercase leading-tight text-white">
                 Need Help Now?

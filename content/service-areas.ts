@@ -17,7 +17,7 @@ export const serviceAreas: ServiceArea[] = [
     state: "CA",
     zips: ["94601", "94602", "94603", "94605", "94606", "94607", "94608", "94609", "94610", "94611", "94612", "94619"],
     intro:
-      "Oakland is our largest service market. We run calls across all Oakland neighborhoods daily — residential, commercial, and street-side lateral work.",
+      "Oakland is our largest service market. We run calls across all Oakland neighborhoods daily. Residential, commercial, and street-side lateral work.",
     neighborhoods: ["Fruitvale", "Temescal", "Rockridge", "Montclair", "Grand Lake", "West Oakland", "East Oakland"],
     isHQ: false,
   },
@@ -27,7 +27,7 @@ export const serviceAreas: ServiceArea[] = [
     state: "CA",
     zips: ["94702", "94703", "94704", "94705", "94708", "94709", "94710"],
     intro:
-      "Berkeley's older housing stock — bungalows from the 1920s and 1940s — often needs the kind of repipe and sewer lateral work we specialize in.",
+      "Berkeley's older housing stock, bungalows from the 1920s and 1940s, often needs the kind of repipe and sewer lateral work we specialize in.",
     neighborhoods: ["Elmwood", "Claremont", "North Berkeley", "West Berkeley", "Southside"],
     isHQ: false,
   },
@@ -37,7 +37,7 @@ export const serviceAreas: ServiceArea[] = [
     state: "CA",
     zips: ["94501", "94502"],
     intro:
-      "Alameda Island homes date back to the early 1900s. We serve the whole island — drain cleaning, sewer lateral, water heater, and repipe.",
+      "Alameda Island homes date back to the early 1900s. We serve the whole island for drain cleaning, sewer lateral, water heater, and repipe.",
     neighborhoods: ["Gold Coast", "West End", "Fernside", "Bay Farm Island"],
     isHQ: false,
   },
@@ -47,7 +47,7 @@ export const serviceAreas: ServiceArea[] = [
     state: "CA",
     zips: ["94541", "94542", "94544", "94545"],
     intro:
-      "We serve Hayward residential and light commercial. Fast response from our San Leandro base — typically 30 to 60 minutes.",
+      "We serve Hayward residential and light commercial. Fast response from our San Leandro base, typically 30 to 60 minutes.",
     neighborhoods: ["Downtown Hayward", "Fairway Park", "Mission Hills", "Southgate"],
     isHQ: false,
   },
@@ -87,7 +87,7 @@ export const serviceAreas: ServiceArea[] = [
     state: "CA",
     zips: ["94564"],
     intro:
-      "We service Pinole for residential plumbing — drain cleaning, water heaters, repipe, and sewer work.",
+      "We service Pinole for residential plumbing. Drain cleaning, water heaters, repipe, and sewer work.",
     neighborhoods: ["Old Town Pinole", "Giant Road", "Hercules border"],
     isHQ: false,
   },

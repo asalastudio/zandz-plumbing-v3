@@ -32,7 +32,7 @@ const aboutLinks = [
   { label: "Our Team", href: "/about/" },
   { label: "Projects", href: "/reviews/" },
   { label: "Reviews", href: "/reviews/" },
-  { label: "Careers", href: "/contact/" },
+  { label: "Careers", href: "/careers/" },
 ];
 
 export function Footer() {
@@ -164,7 +164,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <p className="text-xs text-white/40">
-            {siteSettings.cslb} &mdash; C-36 Plumbing and A General Engineering. Serving the East Bay since 2003.
+            {siteSettings.cslb}. C-36 Plumbing and A General Engineering. Serving the East Bay since 2003.
           </p>
           <div className="flex flex-wrap gap-4 text-xs text-white/40">
             <Link href="/privacy-policy/" className="hover:text-white transition-colors">
