@@ -130,7 +130,7 @@ export default function AboutPage() {
           <h1 className="font-display text-5xl md:text-7xl lg:text-[6.5rem] font-black uppercase leading-none tracking-tight text-white">
             The Pros Other Plumbers Call.
           </h1>
-          <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+          <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
             Family-run out of San Leandro since 2003. Two California contractor licenses. One crew. The East Bay&apos;s
             go-to for the plumbing work other crews send over.
           </p>
@@ -173,7 +173,7 @@ export default function AboutPage() {
                   <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                     {r.title}
                   </h3>
-                  <p className="mt-3 text-lg leading-relaxed text-[#333333]">{r.detail}</p>
+                  <p className="mt-3 text-xl leading-relaxed text-[#333333]">{r.detail}</p>
                 </div>
               </article>
             );
@@ -203,7 +203,7 @@ export default function AboutPage() {
               <h3 className="mt-4 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                 {item.title}
               </h3>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{item.detail}</p>
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">{item.detail}</p>
             </li>
           ))}
         </ol>
@@ -233,7 +233,7 @@ export default function AboutPage() {
                 </p>
               </div>
             </div>
-            <p className="mt-6 text-lg leading-relaxed text-[#333333]">{owner.bio}</p>
+            <p className="mt-6 text-xl leading-relaxed text-[#333333]">{owner.bio}</p>
             {owner.licenseInfo && (
               <p className="mt-5 border-t border-[#E5E5E5] pt-5 text-sm font-bold uppercase tracking-[0.12em] text-[#666666]">
                 {owner.licenseInfo}
@@ -251,7 +251,7 @@ export default function AboutPage() {
             <p className="mt-2 font-display text-3xl font-black uppercase leading-tight tracking-tight text-black md:text-4xl">
               Trained. Licensed. Trucks Stocked.
             </p>
-            <p className="mt-4 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-4 text-xl leading-relaxed text-[#333333]">
               Our field crew runs out of the San Leandro yard with route-ready trucks stocked for emergency, repipe,
               sewer lateral, and water-heater work. Same number, same crew, same standards on every job. No call
               centers. No subcontractors handling the hard parts.
@@ -271,7 +271,7 @@ export default function AboutPage() {
             <h2 className="font-display text-3xl font-black uppercase leading-tight tracking-tight text-black md:text-4xl">
               We Hire Licensed Plumbers.
             </h2>
-            <p className="mt-4 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-4 text-xl leading-relaxed text-[#333333]">
               Z and Z is a small East Bay crew that runs real plumbing work, not call-center dispatch. If you hold a
               C-36 (or are close to your hours), live in the East Bay, and want a steady seat on a licensed crew, we
               want to talk.

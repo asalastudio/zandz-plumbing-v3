@@ -118,7 +118,7 @@ export default function CareersPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Join an East Bay Crew That Runs Real Work.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Z and Z is a small, named, licensed plumbing crew based in San Leandro. We are open to hearing from licensed
           plumbers, apprentices working toward their hours, and field helpers who want a steady seat on a real crew.
         </p>
@@ -165,7 +165,7 @@ export default function CareersPage() {
                 <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                   {r.title}
                 </h3>
-                <p className="mt-4 text-lg leading-relaxed text-[#333333]">{r.detail}</p>
+                <p className="mt-4 text-xl leading-relaxed text-[#333333]">{r.detail}</p>
                 <ul className="mt-6 flex flex-col gap-3 border-t border-[#E5E5E5] pt-5">
                   {r.requirements.map((req) => (
                     <li key={req} className="flex items-start gap-3 text-base text-[#333333]">
@@ -202,7 +202,7 @@ export default function CareersPage() {
                   <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                     {b.title}
                   </h3>
-                  <p className="mt-3 text-lg leading-relaxed text-[#333333]">{b.detail}</p>
+                  <p className="mt-3 text-xl leading-relaxed text-[#333333]">{b.detail}</p>
                 </div>
               </article>
             );
@@ -231,7 +231,7 @@ export default function CareersPage() {
               <p className="mt-2 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 {CAREERS_EMAIL}
               </p>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">
                 Attach a resume. Mention any active license, years of experience, and which role fits.
               </p>
             </div>
@@ -249,7 +249,7 @@ export default function CareersPage() {
               <p className="mt-2 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 {siteSettings.phone}
               </p>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">
                 Call during business hours and ask to talk about working at Z and Z. Brief conversation, no pressure.
               </p>
             </div>
@@ -260,7 +260,7 @@ export default function CareersPage() {
           <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#F96302]">
             What to include in your message
           </p>
-          <ul className="mt-4 flex flex-col gap-3 text-lg leading-relaxed text-[#333333]">
+          <ul className="mt-4 flex flex-col gap-3 text-xl leading-relaxed text-[#333333]">
             <li className="flex items-start gap-3">
               <span className="mt-3 h-1.5 w-1.5 flex-shrink-0 bg-[#F96302]" aria-hidden="true" />
               Which role you are applying for
@@ -289,7 +289,7 @@ export default function CareersPage() {
       <Section bg="light-gray" size="md">
         <SectionHeading eyebrow="About the Company" title="Licensed. Local. Family-Run Since 2003." />
         <TrustStrip />
-        <p className="mt-8 max-w-3xl text-lg leading-relaxed text-[#333333]">
+        <p className="mt-8 max-w-3xl text-xl leading-relaxed text-[#333333]">
           Z and Z Plumbing is owner-operated by Seifullah Zaki Zareef under California State License Board number
           896116. We are not a franchise. We are not part of a call-center network. We are a small East Bay crew that
           has run real licensed plumbing work in the same neighborhoods for 23 years. Read more on the{" "}

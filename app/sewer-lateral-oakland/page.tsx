@@ -252,7 +252,7 @@ export default function SewerLateralOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Sewer Lateral Repair in Oakland. EBMUD Compliant. Both Licenses. One Crew.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Most Oakland plumbers can only work up to your property line. Z and Z holds A General Engineering plus C-36,
           which means we legally handle the entire lateral, including the portion in the street that connects to
           Oakland&apos;s main.
@@ -278,7 +278,7 @@ export default function SewerLateralOaklandPage() {
 
       {/* Opening paragraph */}
       <Section bg="white" size="lg" narrow>
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-xl">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-xl">
           If you are searching for sewer lateral repair in Oakland, you are usually doing it for one of three reasons:
           a real-estate inspector flagged your lateral during a sale, you are getting recurring backups that augering
           will not fix, or the city sent you a Private Sewer Lateral compliance notice. In every case, you need a
@@ -299,7 +299,7 @@ export default function SewerLateralOaklandPage() {
           eyebrow="The Ordinance"
           title="What Oakland's Sewer Lateral Compliance Ordinance Requires."
         />
-        <div className="prose-section font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <div className="prose-section font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           <p className="mb-5">
             Oakland&apos;s Private Sewer Lateral ordinance is enforced by the East Bay Municipal Utility District
             (EBMUD) under the Wastewater Capacity Charge Program. A compliance certificate is required at three trigger
@@ -328,7 +328,7 @@ export default function SewerLateralOaklandPage() {
             <p className="font-display text-xl font-black uppercase tracking-tight text-black md:text-2xl">
               The catch most homeowners discover too late.
             </p>
-            <p className="mt-3 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-3 text-xl leading-relaxed text-[#333333]">
               The lateral runs from your house, across your yard, and continues under the sidewalk and into the street
               to where it joins Oakland&apos;s city main. Failures often happen in that street-side section because of
               tree roots, ground settling near the curb, and the older clay pipe Oakland used for decades. Repairing the
@@ -346,7 +346,7 @@ export default function SewerLateralOaklandPage() {
           eyebrow="The License Stack"
           title="Why Two Licenses on One Crew Matters."
         />
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           The CSLB issues a separate classification for each type of work a contractor is qualified to do. The two
           relevant ones here:
         </p>
@@ -361,7 +361,7 @@ export default function SewerLateralOaklandPage() {
             <p className="mt-3 font-sans text-base font-bold uppercase tracking-[0.08em] text-[#666666]">
               Plumbing
             </p>
-            <p className="mt-2 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-2 text-xl leading-relaxed text-[#333333]">
               Covers plumbing inside your property line. Sinks, fixtures, water heaters, drain lines on your side of the
               curb. Every California plumber has this.
             </p>
@@ -376,14 +376,14 @@ export default function SewerLateralOaklandPage() {
             <p className="mt-3 font-sans text-base font-bold uppercase tracking-[0.08em] text-[#F96302]">
               General Engineering
             </p>
-            <p className="mt-2 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-2 text-xl leading-relaxed text-[#333333]">
               Covers civil engineering work in the public right-of-way. Trenching in the street. Excavating to the city
               main. Work on the public-utility-owned portion of your service connection.{" "}
               <strong>Most plumbers do NOT hold this license.</strong>
             </p>
           </article>
         </div>
-        <p className="mt-8 font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <p className="mt-8 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           Z and Z Plumbing has held both since 2012. {siteSettings.cslb}. You can verify directly at{" "}
           <a
             href="https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
@@ -395,7 +395,7 @@ export default function SewerLateralOaklandPage() {
           </a>
           .
         </p>
-        <p className="mt-4 font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <p className="mt-4 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           What this means for your sewer lateral job: one crew, one truck, one permit pull at Oakland Public Works, one
           set of inspections, one quote, one invoice. Not a primary plumber plus a subcontractor chain that adds a week
           to your timeline and 10 to 15 percent to your bill.
@@ -421,7 +421,7 @@ export default function SewerLateralOaklandPage() {
               <h3 className="mt-3 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 {mode.title}
               </h3>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{mode.detail}</p>
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">{mode.detail}</p>
             </li>
           ))}
         </ol>
@@ -452,7 +452,7 @@ export default function SewerLateralOaklandPage() {
                   {step.title}
                 </h3>
                 <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F96302]">{step.days}</p>
-                <p className="mt-3 text-base leading-relaxed text-[#333333]">{step.detail}</p>
+                <p className="mt-3 text-lg leading-relaxed text-[#333333]">{step.detail}</p>
               </li>
             );
           })}

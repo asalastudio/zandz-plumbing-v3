@@ -64,7 +64,7 @@ export default function ServicesHubPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           We Handle the Whole Job.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           From house lines to street-side work, Z and Z holds the licenses to take the job from diagnosis to completion.
           Twelve service categories. One crew. Same-day response across 10 East Bay cities.
         </p>

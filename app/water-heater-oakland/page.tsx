@@ -229,7 +229,7 @@ export default function WaterHeaterOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Water Heater Repair and Install in Oakland. Often Same Day.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Tank or tankless. Gas or electric. Z and Z Plumbing diagnoses on site, sources from Bay Area suppliers, and
           installs to current California and Oakland code with the permit pulled. CSLB licensed across plumbing and
           general engineering.
@@ -255,7 +255,7 @@ export default function WaterHeaterOaklandPage() {
 
       {/* Opening paragraph */}
       <Section bg="white" size="lg" narrow>
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-xl">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-xl">
           A failed water heater is the kind of plumbing problem you notice fast. No hot water for the morning shower,
           a puddle around the tank, a pilot that will not stay lit. Z and Z Plumbing has been replacing Oakland water
           heaters since 2003 and carries common tank sizes on the truck. Most standard tank replacements wrap up the
@@ -286,7 +286,7 @@ export default function WaterHeaterOaklandPage() {
               <h3 className="mt-3 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 {m.title}
               </h3>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{m.detail}</p>
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">{m.detail}</p>
             </article>
           ))}
         </div>
@@ -335,7 +335,7 @@ export default function WaterHeaterOaklandPage() {
                   <dd className="mt-1 text-sm font-bold text-black">{t.upfront}</dd>
                 </div>
               </dl>
-              <p className="text-lg leading-relaxed text-[#333333]">{t.notes}</p>
+              <p className="text-xl leading-relaxed text-[#333333]">{t.notes}</p>
             </article>
           ))}
         </div>
@@ -365,7 +365,7 @@ export default function WaterHeaterOaklandPage() {
                 <h3 className="mt-4 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                   {s.title}
                 </h3>
-                <p className="mt-3 text-base leading-relaxed text-[#333333]">{s.detail}</p>
+                <p className="mt-3 text-lg leading-relaxed text-[#333333]">{s.detail}</p>
               </li>
             );
           })}
@@ -383,7 +383,7 @@ export default function WaterHeaterOaklandPage() {
               <p className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 Oakland code requires a permit.
               </p>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">
                 California Plumbing and Mechanical Code requires a permit for water heater replacement and installation.
                 That covers venting, gas connection, expansion tank, T&P discharge routing, seismic strapping, and
                 combustion air. Z and Z pulls the permit, installs to code, and coordinates the inspection. Permit

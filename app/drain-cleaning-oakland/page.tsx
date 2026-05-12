@@ -201,7 +201,7 @@ export default function DrainCleaningOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Drain Cleaning in Oakland. Snake, Camera, Hydrojet.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Kitchen lines, bath drains, floor drains, and main sewer lines. Z and Z runs the right tool for the clog, and
           when the clog turns out to be a deeper sewer lateral issue, we are licensed to handle that too.
         </p>
@@ -226,7 +226,7 @@ export default function DrainCleaningOaklandPage() {
 
       {/* Opening paragraph */}
       <Section bg="white" size="lg" narrow>
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-xl">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-xl">
           Most drain clogs in Oakland are routine. A kitchen sink slows down, a tub backs up, a floor drain fills during
           laundry. The right tool clears them fast. The problem is the OTHER kind of clog: the one that keeps coming
           back, the one where two fixtures back up at once, the one in a pre-1970s clay sewer lateral. That clog needs
@@ -259,7 +259,7 @@ export default function DrainCleaningOaklandPage() {
               <h3 className="mt-3 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 {c.title}
               </h3>
-              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{c.detail}</p>
+              <p className="mt-3 text-xl leading-relaxed text-[#333333]">{c.detail}</p>
             </li>
           ))}
         </ol>
@@ -291,7 +291,7 @@ export default function DrainCleaningOaklandPage() {
                 <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
                   When: {m.when}
                 </p>
-                <p className="text-lg leading-relaxed text-[#333333]">{m.detail}</p>
+                <p className="text-xl leading-relaxed text-[#333333]">{m.detail}</p>
               </article>
             );
           })}
@@ -312,7 +312,7 @@ export default function DrainCleaningOaklandPage() {
               <p className="mt-2 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                 If the same clog keeps coming back, the line is not the line.
               </p>
-              <p className="mt-4 text-lg leading-relaxed text-[#333333]">
+              <p className="mt-4 text-xl leading-relaxed text-[#333333]">
                 Recurring main-line backups, multi-fixture backups, and main-line clogs that clear for a month and then
                 return. These usually point to a failing sewer lateral. Augering keeps buying time. A camera tells you
                 what is actually happening. If the lateral is the answer, Z and Z is licensed to repair it under the A
@@ -361,7 +361,7 @@ export default function DrainCleaningOaklandPage() {
           eyebrow="License Stack"
           title="One Crew Through the Full Diagnostic Path."
         />
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           A standard C-36 plumbing license covers drain cleaning, snaking, hydrojetting, and camera inspection up to
           your property line. It does not cover repair or replacement of the lateral in the street. If a drain call in
           Oakland turns out to be a lateral issue, a C-36-only contractor has to stop and hand off the street portion to

@@ -76,7 +76,7 @@ export default async function VideosPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Plumbing, Explained.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Short videos and photo guides from Z and Z. Real jobs, real fixes, no fluff.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -103,7 +103,7 @@ export default async function VideosPage() {
             <p className="mt-4 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
               Videos coming soon.
             </p>
-            <p className="mt-3 max-w-xl mx-auto text-lg leading-relaxed text-[#333333] md:text-lg">
+            <p className="mt-3 max-w-xl mx-auto text-xl leading-relaxed text-[#333333] md:text-lg">
               We are recording short, useful videos covering the work we do every day. Subscribe by
               giving us a call. In the meantime, our service pages have what you need.
             </p>
@@ -216,7 +216,7 @@ function VideoCard({ resource, videoId }: { resource: LearningResource; videoId:
           {resource.title}
         </h3>
         {resource.description && (
-          <p className="mt-3 text-lg leading-relaxed text-[#333333]">{resource.description}</p>
+          <p className="mt-3 text-xl leading-relaxed text-[#333333]">{resource.description}</p>
         )}
       </div>
     </article>
@@ -241,7 +241,7 @@ function ImageCard({ resource }: { resource: LearningResource }) {
           {resource.title}
         </h3>
         {resource.description && (
-          <p className="mt-3 text-lg leading-relaxed text-[#333333]">{resource.description}</p>
+          <p className="mt-3 text-xl leading-relaxed text-[#333333]">{resource.description}</p>
         )}
       </div>
     </article>

@@ -135,7 +135,7 @@ export default function FinancingPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Big Job? Spread the Cost.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Water heaters, repipes, sewer laterals, and gas lines can run into real money. We partner with third-party
           lenders so East Bay homeowners can move on the work without writing one big check.
         </p>
@@ -177,7 +177,7 @@ export default function FinancingPage() {
                   <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                     {job.title}
                   </h3>
-                  <p className="mt-3 text-lg leading-relaxed text-[#333333]">{job.detail}</p>
+                  <p className="mt-3 text-xl leading-relaxed text-[#333333]">{job.detail}</p>
                 </div>
               </article>
             );
@@ -203,7 +203,7 @@ export default function FinancingPage() {
               <h3 className="mt-3 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                 {s.title}
               </h3>
-              <p className="mt-3 text-base leading-relaxed text-[#333333]">{s.detail}</p>
+              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{s.detail}</p>
             </li>
           ))}
         </ol>

@@ -91,7 +91,7 @@ export function SectionHeading({
         {title}
       </h2>
       {description && (
-        <p className={cn("mt-5 font-sans text-xl md:text-2xl leading-relaxed max-w-3xl", descColor)}>
+        <p className={cn("mt-6 font-sans text-2xl md:text-3xl leading-relaxed max-w-3xl", descColor)}>
           {description}
         </p>
       )}

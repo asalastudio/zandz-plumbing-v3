@@ -57,7 +57,7 @@ export default function ServiceAreasHubPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Ten East Bay Cities. One San Leandro Base.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Z and Z Plumbing dispatches out of San Leandro and runs calls across Alameda and western Contra Costa counties.
           Oakland is our biggest market. Same-day response is typical inside our service map.
         </p>
@@ -87,7 +87,7 @@ export default function ServiceAreasHubPage() {
             <h2 className="font-display text-4xl md:text-5xl font-black uppercase leading-tight tracking-tight text-black">
               Built for the East Bay.
             </h2>
-            <p className="mt-5 font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+            <p className="mt-5 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
               Our San Leandro headquarters at {siteSettings.address.street} sits right off I-880, with fast access to
               Oakland, Alameda, Berkeley, and the Contra Costa side of the Bay. We staff for same-day calls and 24/7
               emergency response.
@@ -190,7 +190,7 @@ export default function ServiceAreasHubPage() {
                     </span>
                   )}
                 </header>
-                <p className="flex-1 text-base leading-relaxed text-[#333333]">{area.intro}</p>
+                <p className="flex-1 text-lg leading-relaxed text-[#333333]">{area.intro}</p>
                 {area.neighborhoods.length > 0 && (
                   <p className="mt-4 text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">
                     {area.neighborhoods.slice(0, 3).join(" · ")}

@@ -151,7 +151,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           {area.city} Plumber.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           {area.intro}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -180,7 +180,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
             <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-black md:text-5xl">
               Built for {area.city} Housing Stock.
             </h2>
-            <p className="mt-5 font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+            <p className="mt-5 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
               We run calls in {area.city} from our San Leandro dispatch base. Two California licenses on the truck, one
               crew on every job, and the East Bay knowledge to spot the issue fast.
             </p>

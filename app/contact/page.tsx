@@ -80,7 +80,7 @@ export default function ContactPage() {
         <h1 className="font-display text-5xl md:text-7xl lg:text-[6.5rem] font-black uppercase leading-none tracking-tight text-white">
           Call. We Answer.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           A plumber picks up the phone. Not a call center, not a voicemail menu. We respond within 30 minutes during
           business hours, and 24 hours a day for emergencies across the East Bay.
         </p>

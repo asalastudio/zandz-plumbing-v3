@@ -230,7 +230,7 @@ export default function EmergencyPlumberOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           24/7 Emergency Plumber in Oakland. We Answer the Phone.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Burst pipes, sewer backups, water heater failure, gas leaks, main water line breaks. Z and Z Plumbing
           dispatches from San Leandro 24 hours a day and runs both licenses on every truck. A plumber picks up the
           phone every hour of every day.
@@ -256,7 +256,7 @@ export default function EmergencyPlumberOaklandPage() {
 
       {/* Opening paragraph */}
       <Section bg="white" size="lg" narrow>
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-xl">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-xl">
           Plumbing emergencies do not wait for business hours. A burst pipe at 2 AM, a sewer backup on Sunday morning,
           a water heater rupture on Thanksgiving. Z and Z Plumbing runs the same number for all of them. When you call{" "}
           <a href={`tel:${siteSettings.phoneTel}`} className="font-bold text-[#F96302] underline">
@@ -290,7 +290,7 @@ export default function EmergencyPlumberOaklandPage() {
                   <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                     {e.title}
                   </h3>
-                  <p className="mt-3 text-lg leading-relaxed text-[#333333]">{e.detail}</p>
+                  <p className="mt-3 text-xl leading-relaxed text-[#333333]">{e.detail}</p>
                 </div>
               </article>
             );
@@ -317,7 +317,7 @@ export default function EmergencyPlumberOaklandPage() {
               <h3 className="mt-4 font-display text-xl font-black uppercase leading-tight tracking-tight text-black">
                 {s.title}
               </h3>
-              <p className="mt-3 text-base leading-relaxed text-[#333333]">{s.detail}</p>
+              <p className="mt-3 text-lg leading-relaxed text-[#333333]">{s.detail}</p>
             </li>
           ))}
         </ol>
@@ -329,7 +329,7 @@ export default function EmergencyPlumberOaklandPage() {
           eyebrow="Why Two Licenses Matter at Night"
           title="The Calls Most Oakland Plumbers Hand Off."
         />
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           A standard C-36 plumbing license covers everything inside your property line. It does not cover the public
           right-of-way: the parkway strip, sidewalk, or street. That matters in three emergency scenarios.
         </p>
@@ -339,7 +339,7 @@ export default function EmergencyPlumberOaklandPage() {
             <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight text-black">
               Main water line break
             </h3>
-            <p className="mt-3 text-base leading-relaxed text-[#333333]">
+            <p className="mt-3 text-lg leading-relaxed text-[#333333]">
               The line from your meter to your house often breaks at the curb. C-36 plumbers cannot legally excavate in
               the street. A General Engineering can.
             </p>
@@ -349,7 +349,7 @@ export default function EmergencyPlumberOaklandPage() {
             <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight text-black">
               Sewer lateral failure
             </h3>
-            <p className="mt-3 text-base leading-relaxed text-[#333333]">
+            <p className="mt-3 text-lg leading-relaxed text-[#333333]">
               When the failure is in the street section of the lateral, only an A General Engineering crew can repair
               it. Z and Z carries both licenses on one truck.
             </p>
@@ -359,13 +359,13 @@ export default function EmergencyPlumberOaklandPage() {
             <h3 className="mt-4 font-display text-xl font-black uppercase tracking-tight text-black">
               Street-side gas line
             </h3>
-            <p className="mt-3 text-base leading-relaxed text-[#333333]">
+            <p className="mt-3 text-lg leading-relaxed text-[#333333]">
               Service-line gas leaks in the public right-of-way require A General Engineering licensing. PG&E shuts off
               the gas; we handle the repair.
             </p>
           </article>
         </div>
-        <p className="mt-8 font-sans text-lg leading-relaxed text-[#333333] md:text-lg">
+        <p className="mt-8 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           For an emergency, that means one phone call, one crew, one ETA. Not a primary plumber stabilizing on site
           while waiting for a subcontracted excavator to show up the next morning.
         </p>
@@ -415,7 +415,7 @@ export default function EmergencyPlumberOaklandPage() {
               className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5"
             >
               <p className="font-display text-lg font-black uppercase tracking-tight text-black">{n.name}</p>
-              <p className="mt-2 text-base leading-relaxed text-[#333333]">{n.note}</p>
+              <p className="mt-2 text-lg leading-relaxed text-[#333333]">{n.note}</p>
             </li>
           ))}
         </ul>
@@ -462,7 +462,7 @@ export default function EmergencyPlumberOaklandPage() {
             <p className="font-display text-xl font-black uppercase tracking-tight text-black">
               Standard hours: 7 AM to 5 PM, Monday to Friday
             </p>
-            <p className="mt-2 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-2 text-xl leading-relaxed text-[#333333]">
               Standard service rate. Same fast dispatch. Most non-emergency calls book inside the day.
             </p>
           </article>
@@ -470,7 +470,7 @@ export default function EmergencyPlumberOaklandPage() {
             <p className="font-display text-xl font-black uppercase tracking-tight text-black">
               After-hours: evenings, nights, weekends, holidays
             </p>
-            <p className="mt-2 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-2 text-xl leading-relaxed text-[#333333]">
               After-hours surcharge applies on top of the standard repair quote. We tell you the rate when you call so
               there are no surprises. The diagnostic and stabilize visit are free of charge. You only pay for repair
               work you approve.
@@ -480,7 +480,7 @@ export default function EmergencyPlumberOaklandPage() {
             <p className="font-display text-xl font-black uppercase tracking-tight text-black">
               No paid work without your written approval.
             </p>
-            <p className="mt-2 text-lg leading-relaxed text-[#333333]">
+            <p className="mt-2 text-xl leading-relaxed text-[#333333]">
               We diagnose, stabilize, and quote first. You approve the price before anything billable starts. If you
               want to stop after stabilization and wait for daylight, that is your call.
             </p>

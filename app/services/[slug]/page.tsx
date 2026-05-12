@@ -131,7 +131,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           {service.title}.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           {service.summary}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -158,7 +158,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         <h2 className="font-display text-4xl md:text-5xl font-black uppercase leading-tight tracking-tight text-black mb-6">
           {service.title} the Right Way.
         </h2>
-        <p className="font-sans text-lg leading-relaxed text-[#333333] md:text-xl">
+        <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-xl">
           {service.description}
         </p>
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">

@@ -57,7 +57,7 @@ export default async function CouponsPage() {
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           Current Coupons.
         </h1>
-        <p className="mt-6 max-w-2xl font-sans text-xl leading-relaxed text-white/80 md:text-2xl">
+        <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           Three live deals. Mention them when you book and we will apply the discount on your invoice.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -84,7 +84,7 @@ export default async function CouponsPage() {
             <p className="mt-4 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
               No active coupons right now.
             </p>
-            <p className="mt-3 max-w-xl mx-auto text-lg leading-relaxed text-[#333333] md:text-lg">
+            <p className="mt-3 max-w-xl mx-auto text-xl leading-relaxed text-[#333333] md:text-lg">
               Call us anyway. We quote every job before paid work starts and we are always honest
               about pricing.
             </p>
@@ -174,7 +174,7 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
           {coupon.headline}
         </h2>
         {coupon.subheadline && (
-          <p className="mt-3 text-lg leading-relaxed text-[#333333] md:text-xl">
+          <p className="mt-3 text-xl leading-relaxed text-[#333333] md:text-xl">
             {coupon.subheadline}
           </p>
         )}
