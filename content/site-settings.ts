@@ -23,6 +23,7 @@ export const siteSettings: SiteSettings = {
   hours: "24/7 Emergency Service",
   social: {
     facebook: "https://www.facebook.com/zandzplumbing",
+    instagram: "https://www.instagram.com/zandzplumbing",
     yelp: "https://www.yelp.com/biz/z-and-z-plumbing-san-leandro",
     google: "https://www.google.com/search?q=Z+and+Z+Plumbing",
   },
