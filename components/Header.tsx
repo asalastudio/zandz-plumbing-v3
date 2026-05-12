@@ -25,7 +25,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-black">
+    <header data-marketing="true" className="sticky top-0 z-50 bg-black">
       {/* Main nav row */}
       <div className="mx-auto max-w-[1800px] px-6 md:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16 md:h-18">

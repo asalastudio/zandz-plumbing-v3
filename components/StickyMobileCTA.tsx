@@ -4,6 +4,7 @@ import { siteSettings } from "@/content/site-settings";
 export function StickyMobileCTA() {
   return (
     <div
+      data-marketing="true"
       className="fixed bottom-0 inset-x-0 z-50 md:hidden grid grid-cols-2 border-t border-[#E5E5E5]"
       style={{ height: "64px" }}
     >

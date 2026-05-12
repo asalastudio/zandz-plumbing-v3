@@ -37,7 +37,7 @@ const aboutLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-black text-white py-16">
+    <footer data-marketing="true" className="bg-black text-white py-16">
       <Container>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand column */}
