@@ -7,6 +7,7 @@ import {
   Briefcase,
   Users,
   Star,
+  HardHat,
   LogOut,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
@@ -22,6 +23,7 @@ const nav = [
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/crew", label: "Crew", icon: HardHat },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
 ];
 
@@ -85,7 +87,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Mobile bottom nav */}
       <nav
         aria-label="Admin"
-        className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-white/10 bg-black lg:hidden"
+        className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-6 border-t border-white/10 bg-black lg:hidden"
       >
         {nav.map((item) => {
           const Icon = item.icon;

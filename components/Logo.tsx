@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 interface LogoProps {
+  /** kept for compat; supplied SVG already has its own color treatment */
   variant?: "light" | "dark";
   className?: string;
   linkWrapper?: boolean;
@@ -12,6 +13,11 @@ interface FaucetMarkProps {
   className?: string;
 }
 
+/**
+ * Standalone faucet mark in orange. Used by favicons + the Z and Z OS admin
+ * chrome where the full wordmark would be too wide. Square aspect, scales
+ * cleanly to any size.
+ */
 export function FaucetMark({ size = 44, className }: FaucetMarkProps) {
   return (
     <svg
@@ -22,7 +28,6 @@ export function FaucetMark({ size = 44, className }: FaucetMarkProps) {
       aria-hidden="true"
       className={cn("flex-shrink-0", className)}
     >
-      {/* Orange-bordered square frame, transparent interior so it sits on any background */}
       <rect
         x="4"
         y="4"
@@ -33,44 +38,38 @@ export function FaucetMark({ size = 44, className }: FaucetMarkProps) {
         stroke="#F96302"
         strokeWidth="5"
       />
-      {/* Faucet silhouette in orange */}
       <g fill="#F96302">
-        {/* Top vertical nub on the cross handle */}
         <rect x="31" y="14" width="6" height="6" />
-        {/* Horizontal handle bar */}
         <rect x="22" y="20" width="24" height="6" />
-        {/* Stem from handle down to body */}
         <rect x="31" y="26" width="6" height="12" />
-        {/* Main body */}
         <rect x="18" y="38" width="30" height="14" />
-        {/* Spout extending right */}
         <rect x="48" y="42" width="14" height="6" />
       </g>
     </svg>
   );
 }
 
-export function Logo({ variant = "dark", className, linkWrapper = true }: LogoProps) {
-  const wordmarkColor = variant === "light" ? "text-white" : "text-black";
-
+/**
+ * Full brand logo (faucet + wordmark). Renders the supplied SVG from
+ * /public/logo.svg at the appropriate size. The SVG already has the brand
+ * color treatment built in, so the light/dark variant prop is preserved for
+ * API compatibility but has no visual effect on the SVG itself.
+ */
+export function Logo({ className, linkWrapper = true }: LogoProps) {
   const mark = (
-    <div className={cn("flex items-center gap-3", className)}>
-      <FaucetMark size={44} />
-      <span
-        className={cn(
-          "font-display font-black uppercase text-xl leading-none tracking-tight",
-          wordmarkColor
-        )}
-      >
-        Z AND Z PLUMBING
-      </span>
-    </div>
+    <img
+      src="/logo.svg"
+      alt="Z and Z Plumbing"
+      width={220}
+      height={56}
+      className={cn("h-12 w-auto md:h-14", className)}
+    />
   );
 
   if (!linkWrapper) return mark;
 
   return (
-    <Link href="/" aria-label="Z and Z Plumbing, Home" className="inline-flex">
+    <Link href="/" aria-label="Z and Z Plumbing, Home" className="inline-flex items-center">
       {mark}
     </Link>
   );
