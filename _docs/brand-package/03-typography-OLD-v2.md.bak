@@ -1,0 +1,139 @@
+# 03 · Typography
+
+**Status:** Locked 2026-05-11
+**Lineage:** Industrial display + clean body. Roto-Rooter and Home Depot use condensed sans-serif headlines paired with a versatile body sans. We follow that pattern.
+
+## Type stack
+
+### Display (headlines, hero copy, CTAs)
+
+**Family:** Barlow Condensed
+**Weights:** 700 (Bold), 800 (ExtraBold), 900 (Black)
+**Fallback:** Roboto Condensed, Helvetica Neue Condensed, Arial Narrow, sans-serif
+
+Barlow Condensed reads as confident and industrial without being aggressive. Free, open-source, available on Google Fonts. Wide weight range. Good kerning at large sizes.
+
+Why this and not Roboto Condensed: Barlow has slightly more character and reads more like a contractor brand. Roboto reads as default-tech.
+Why not a serif: serifs imply heritage. We are explicitly NOT heritage.
+Why not a slab serif (like the Home Depot wordmark): slab serifs are dated and pair awkwardly with modern UI.
+
+### Body (paragraphs, lists, form copy)
+
+**Family:** Inter
+**Weights:** 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
+**Fallback:** -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif
+
+Inter is the most readable web body font. Slightly wider tracking than Helvetica. Strong at small sizes. Pairs cleanly with Barlow Condensed because both share a humanist sans skeleton.
+
+### Monospace (rare, for license number formatting and code-like emphasis)
+
+**Family:** JetBrains Mono
+**Weights:** 400 (Regular), 500 (Medium)
+
+Use only for the CSLB number, phone number formatting in technical specs, and any place where you want the eye to read each character distinctly. Do not use for body content.
+
+## Type scale
+
+Mobile-first scale. All sizes specified in rem (1rem = 16px default browser size).
+
+| Token | Size | Line height | Weight | Letter spacing | Usage |
+|---|---|---|---|---|---|
+| `display-xl` | 3.5rem (56px) | 1.05 | 800 (Barlow ExtraBold) | -0.02em | Homepage hero H1 only |
+| `display-lg` | 2.75rem (44px) | 1.1 | 800 (Barlow ExtraBold) | -0.015em | City page H1, service page H1 |
+| `display-md` | 2.25rem (36px) | 1.15 | 700 (Barlow Bold) | -0.01em | Section H2 in hero areas |
+| `display-sm` | 1.75rem (28px) | 1.2 | 700 (Barlow Bold) | -0.005em | Section H2 in body areas |
+| `heading-lg` | 1.5rem (24px) | 1.3 | 700 (Barlow Bold) | 0 | H3 |
+| `heading-md` | 1.25rem (20px) | 1.35 | 700 (Inter Bold) | 0 | H4, card titles |
+| `heading-sm` | 1.125rem (18px) | 1.4 | 600 (Inter SemiBold) | 0 | H5, badge labels |
+| `body-lg` | 1.125rem (18px) | 1.55 | 400 (Inter Regular) | 0 | Hero subhead, lead paragraphs |
+| `body-md` | 1rem (16px) | 1.55 | 400 (Inter Regular) | 0 | Default body paragraph |
+| `body-sm` | 0.9375rem (15px) | 1.5 | 400 (Inter Regular) | 0 | Captions, secondary text |
+| `body-xs` | 0.8125rem (13px) | 1.45 | 500 (Inter Medium) | 0.02em | Trust strip badges, fine print |
+| `eyebrow` | 0.75rem (12px) | 1.4 | 600 (Inter SemiBold) | 0.12em uppercase | Section eyebrow labels above H2s |
+| `cta-lg` | 1.125rem (18px) | 1.2 | 700 (Inter Bold) | 0.02em uppercase | Primary CTA button text |
+| `cta-md` | 1rem (16px) | 1.2 | 600 (Inter SemiBold) | 0.02em uppercase | Secondary button text |
+
+Desktop scales 1.1x above 1024px viewport (so `display-xl` becomes 4rem / 64px on desktop hero).
+
+## Pairing rules
+
+- Headlines use **Barlow Condensed**. Body uses **Inter**. Do not mix.
+- Eyebrow labels (small uppercase tracked text above H2s) use **Inter SemiBold** with 0.12em tracking.
+- Buttons use **Inter Bold** with 0.02em tracking and uppercase. The slight tracking and uppercase makes the button feel like an action, not a text link.
+- Phone numbers in copy can use either Inter or JetBrains Mono. Both work. Inter looks cleaner in body, Mono looks more authoritative in trust strips.
+
+## Voice through type
+
+The combination of condensed bold display + regular humanist body reads as:
+- Loud where it matters (H1s, CTAs)
+- Calm in the body (readable paragraphs)
+- Professional, not corporate (Inter avoids the over-stylized feel of, say, Avenir or Proxima)
+
+Avoid:
+- All-caps body content (looks shouty, hurts readability)
+- Italic Barlow at any size (italic condensed sans reads as cheap)
+- Mixing more than two type families on a page
+
+## Web font loading
+
+Use `next/font` for both:
+
+```typescript
+import { Barlow_Condensed, Inter } from 'next/font/google';
+
+const barlow = Barlow_Condensed({
+  subsets: ['latin'],
+  weight: ['700', '800', '900'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-body',
+  display: 'swap',
+});
+```
+
+CSS variables map to Tailwind:
+
+```typescript
+fontFamily: {
+  display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+  body: ['var(--font-body)', 'system-ui', 'sans-serif'],
+  mono: ['"JetBrains Mono"', 'monospace'],
+},
+```
+
+## Examples
+
+### Hero pattern
+
+```
+EYEBROW LABEL                            (eyebrow, hero-orange, uppercase)
+The Pros Other Plumbers Call             (display-xl, black, bold)
+in Oakland and the East Bay.             (display-xl, warm-gray, regular)
+                                         
+Same-day plumbing service.               (body-lg, warm-gray)
+Two licenses. One crew.
+
+[CALL (510) 708-4237]                    (cta-lg, white on hero-orange button)
+[Schedule Online →]                      (cta-md, black on white-bordered button)
+```
+
+### Service section pattern
+
+```
+WHAT WE DO IN OAKLAND                    (eyebrow, hero-orange)
+Five services, deep expertise.           (display-md, black)
+
+[Service cards using heading-md titles + body-sm descriptions]
+```
+
+### Trust strip pattern
+
+```
+CSLB #896116  |  C-36 + A General Engineering  |  Since 2003  |  24/7 Emergency
+                  (body-xs, warm-gray, uppercase, 0.02em tracking)
+```

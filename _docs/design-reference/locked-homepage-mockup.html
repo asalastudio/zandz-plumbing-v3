@@ -1,0 +1,701 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z and Z Plumbing | East Bay's Double-Licensed Plumber</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body style="font-family: 'Inter', sans-serif;" class="text-lg text-[#000000] antialiased bg-white selection:bg-[#F96302] selection:text-white">
+    <!-- Navigation -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#F5F5F5]">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 bg-[#F96302] rounded-none flex items-center justify-center text-white shrink-0 group-hover:bg-[#E05902] transition-colors">
+            <i data-lucide="droplets" class="w-6 h-6"></i>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-semibold tracking-tight leading-none text-xl">
+              Z and Z Plumbing
+            </span>
+            <span class="text-sm text-[#5C5C5C] font-medium mt-1">
+              CSLB #896116
+            </span>
+          </div>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#services" class="text-base font-medium text-[#5C5C5C] hover:text-[#000000] transition-colors flex items-center gap-1">
+            Services
+            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+          </a>
+          <a href="#areas" class="text-base font-medium text-[#5C5C5C] hover:text-[#000000] transition-colors flex items-center gap-1">
+            Areas
+            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+          </a>
+          <a href="#about" class="text-base font-medium text-[#5C5C5C] hover:text-[#000000] transition-colors">
+            About
+          </a>
+          <a href="#contact" class="text-base font-medium text-[#5C5C5C] hover:text-[#000000] transition-colors">
+            Contact
+          </a>
+        </nav>
+
+        <!-- CTA -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="tel:5107084237" class="flex items-center gap-2 text-base font-semibold hover:text-[#F96302] transition-colors">
+            <i data-lucide="phone" class="w-4 h-4 text-[#F96302]"></i>
+            (510) 708-4237
+          </a>
+          <a href="#quote" class="bg-[#000000] hover:bg-[#F96302] text-white px-5 py-2.5 rounded-none font-semibold text-base transition-all hover:shadow-lg hover:-translate-y-0.5">
+            Get a Quote
+          </a>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="md:hidden p-2 text-[#000000]">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative bg-[#F5F5F5] pt-24 pb-32 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+        <!-- Left: Content -->
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm text-sm font-semibold text-[#000000] mb-8">
+            <span class="w-2 h-2 rounded-full bg-[#F96302]"></span>
+            24/7 Emergency Service Available
+          </div>
+
+          <h1 class="text-6xl sm:text-7xl lg:text-8xl font-semibold tracking-tight text-[#000000] leading-[1.05] mb-6">
+            The Pros Other
+            <br>
+            Plumbers Call.
+          </h1>
+
+          <p class="text-xl text-[#5C5C5C] mb-10 max-w-lg leading-relaxed">
+            East Bay's double-licensed plumbing and engineering contractor. San
+            Leandro HQ, serving 11 cities with contractor-grade execution.
+          </p>
+
+          <!-- Zip Search Component -->
+          <div class="bg-white p-2 rounded-xl border border-[#E5E5E5] focus-within:border-[#F96302] flex flex-col sm:flex-row gap-2 max-w-md relative transition-all shadow-sm focus-within:shadow-md">
+            <div class="flex items-center px-4 py-2 sm:py-0 w-full relative">
+              <i data-lucide="map-pin" class="w-5 h-5 text-[#5C5C5C] absolute left-4"></i>
+              <input type="text" placeholder="Enter your ZIP code" class="w-full pl-8 pr-4 py-2 text-lg bg-transparent outline-none placeholder:text-[#5C5C5C]/60 text-[#000000]">
+            </div>
+            <button class="bg-[#F96302] hover:bg-[#E05902] text-white px-6 py-3 rounded-none font-semibold text-base whitespace-nowrap transition-all flex items-center justify-center gap-2 hover:shadow-lg hover:-translate-y-0.5">
+              Check Coverage
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <p class="mt-6 text-base text-[#5C5C5C] flex items-center gap-2">
+            or call directly:
+            <a href="tel:5107084237" class="font-semibold text-[#000000] hover:text-[#F96302] transition-colors">
+              (510) 708-4237
+            </a>
+          </p>
+        </div>
+
+        <!-- Right: Abstract Graphic / Imagery Placeholder -->
+        <div class="hidden lg:block relative h-full min-h-[500px]">
+          <!-- Linear style abstract representation of piping/structure -->
+          <div class="absolute inset-0 bg-white rounded-2xl overflow-hidden flex items-center justify-center p-8 shadow-xl border border-gray-100">
+            <div class="w-full h-full border border-[#F5F5F5] relative bg-[radial-gradient(#E5E5E5_1px,transparent_1px)] [background-size:16px_16px]">
+              <!-- Decorative geometric elements -->
+              <div class="absolute top-1/4 left-1/4 w-32 h-32 border-4 border-[#F96302] rounded-2xl opacity-20"></div>
+              <div class="absolute bottom-1/3 right-1/4 w-64 h-64 border border-[#000000] opacity-10"></div>
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-xl shadow-lg text-center border border-gray-100">
+                <div class="w-16 h-16 bg-[#F96302] text-white rounded-xl flex items-center justify-center mx-auto mb-4 shadow-md">
+                  <i data-lucide="wrench" class="w-8 h-8"></i>
+                </div>
+                <span class="font-semibold tracking-tight text-xl block">
+                  Heavy-Duty
+                  <br>
+                  Solutions
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <section class="border-b border-[#E5E5E5] bg-white">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-[#E5E5E5] border-x border-[#E5E5E5]">
+          <div class="p-8 flex flex-col items-center justify-center text-center group hover:bg-[#F5F5F5] transition-colors cursor-pointer">
+            <span class="text-4xl lg:text-5xl font-semibold tracking-tight text-[#000000] mb-2 group-hover:text-[#F96302] transition-colors">
+              23
+            </span>
+            <span class="text-base text-[#5C5C5C] font-medium">
+              Years in Business
+              <br>
+              (Since 2003)
+            </span>
+          </div>
+          <div class="p-8 flex flex-col items-center justify-center text-center group hover:bg-[#F5F5F5] transition-colors cursor-pointer">
+            <span class="text-4xl lg:text-5xl font-semibold tracking-tight text-[#000000] mb-2 group-hover:text-[#F96302] transition-colors flex items-center gap-1">
+              238
+              <i data-lucide="star" class="w-6 h-6 fill-current text-[#F96302]"></i>
+            </span>
+            <span class="text-base text-[#5C5C5C] font-medium">
+              5-Star Reviews
+              <br>
+              Yelp &amp; Google
+            </span>
+          </div>
+          <div class="p-8 flex flex-col items-center justify-center text-center group hover:bg-[#F5F5F5] transition-colors cursor-pointer">
+            <span class="text-4xl lg:text-5xl font-semibold tracking-tight text-[#000000] mb-2 group-hover:text-[#F96302] transition-colors">
+              2
+            </span>
+            <span class="text-base text-[#5C5C5C] font-medium">
+              Licenses Held
+              <br>
+              (C-36 + A-Gen)
+            </span>
+          </div>
+          <div class="p-8 flex flex-col items-center justify-center text-center group hover:bg-[#F5F5F5] transition-colors cursor-pointer">
+            <span class="text-4xl lg:text-5xl font-semibold tracking-tight text-[#000000] mb-2 group-hover:text-[#F96302] transition-colors">
+              24/7
+            </span>
+            <span class="text-base text-[#5C5C5C] font-medium">
+              Emergency Response
+              <br>
+              East Bay Area
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Hub -->
+    <section id="services" class="py-24 lg:py-32 bg-white">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+          <div class="max-w-2xl">
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight text-[#000000] mb-4">
+              Contractor-Grade Services.
+            </h2>
+            <p class="text-xl text-[#5C5C5C]">
+              We handle the complex jobs others sub out. From massive commercial
+              lines to residential emergencies.
+            </p>
+          </div>
+          <a href="#all-services" class="inline-flex items-center gap-2 text-base font-semibold text-[#000000] hover:text-[#F96302] transition-colors whitespace-nowrap">
+            View All Services
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Service Card 1 -->
+          <a href="#" class="block p-8 rounded-2xl border border-[#E5E5E5] bg-white hover:border-[#F96302] hover:shadow-xl transition-all group hover:-translate-y-1">
+            <div class="w-12 h-12 bg-[#F5F5F5] rounded-xl flex items-center justify-center text-[#000000] mb-6 group-hover:bg-[#F96302] group-hover:text-white transition-all group-hover:shadow-md group-hover:-translate-y-1">
+              <i data-lucide="git-branch" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-3">
+              Sewer Lateral
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6 line-clamp-2">
+              Complete replacement and repair using advanced techniques. We hold
+              the A-General license required for city connections.
+            </p>
+            <span class="text-sm font-semibold text-[#F96302] flex items-center gap-1">
+              Learn more
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+          </a>
+
+          <!-- Service Card 2 -->
+          <a href="#" class="block p-8 rounded-2xl border border-[#E5E5E5] bg-white hover:border-[#F96302] hover:shadow-xl transition-all group hover:-translate-y-1">
+            <div class="w-12 h-12 bg-[#F5F5F5] rounded-xl flex items-center justify-center text-[#000000] mb-6 group-hover:bg-[#F96302] group-hover:text-white transition-all group-hover:shadow-md group-hover:-translate-y-1">
+              <i data-lucide="pipette" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-3">
+              Whole Home Repipe
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6 line-clamp-2">
+              Upgrade aging galvanized or polybutylene pipes to modern copper or
+              PEX for better pressure and reliability.
+            </p>
+            <span class="text-sm font-semibold text-[#F96302] flex items-center gap-1">
+              Learn more
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+          </a>
+
+          <!-- Service Card 3 -->
+          <a href="#" class="block p-8 rounded-2xl border border-[#E5E5E5] bg-white hover:border-[#F96302] hover:shadow-xl transition-all group hover:-translate-y-1">
+            <div class="w-12 h-12 bg-[#F5F5F5] rounded-xl flex items-center justify-center text-[#000000] mb-6 group-hover:bg-[#F96302] group-hover:text-white transition-all group-hover:shadow-md group-hover:-translate-y-1">
+              <i data-lucide="waves" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-3">
+              Hydrojetting
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6 line-clamp-2">
+              High-pressure water scouring to clear stubborn blockages, grease,
+              and roots restoring pipes to near-new capacity.
+            </p>
+            <span class="text-sm font-semibold text-[#F96302] flex items-center gap-1">
+              Learn more
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+          </a>
+
+          <!-- Service Card 4 -->
+          <a href="#" class="block p-8 rounded-2xl border border-[#E5E5E5] bg-white hover:border-[#F96302] hover:shadow-xl transition-all group hover:-translate-y-1">
+            <div class="w-12 h-12 bg-[#F5F5F5] rounded-xl flex items-center justify-center text-[#000000] mb-6 group-hover:bg-[#F96302] group-hover:text-white transition-all group-hover:shadow-md group-hover:-translate-y-1">
+              <i data-lucide="move-horizontal" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-3">
+              Trenchless Sewer
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6 line-clamp-2">
+              Replace underground lines without destroying your driveway or
+              landscaping using pipe bursting or lining.
+            </p>
+            <span class="text-sm font-semibold text-[#F96302] flex items-center gap-1">
+              Learn more
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+          </a>
+
+          <!-- Service Card 5 -->
+          <a href="#" class="block p-8 rounded-2xl border border-[#E5E5E5] bg-white hover:border-[#F96302] hover:shadow-xl transition-all group hover:-translate-y-1">
+            <div class="w-12 h-12 bg-[#F5F5F5] rounded-xl flex items-center justify-center text-[#000000] mb-6 group-hover:bg-[#F96302] group-hover:text-white transition-all group-hover:shadow-md group-hover:-translate-y-1">
+              <i data-lucide="thermometer" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-3">
+              Water Heaters
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6 line-clamp-2">
+              Installation and repair of traditional tank and modern tankless
+              systems for continuous hot water.
+            </p>
+            <span class="text-sm font-semibold text-[#F96302] flex items-center gap-1">
+              Learn more
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+          </a>
+
+          <!-- Service Card 6 -->
+          <a href="#" class="block p-8 rounded-2xl border border-[#E5E5E5] bg-white hover:border-[#F96302] hover:shadow-xl transition-all group hover:-translate-y-1">
+            <div class="w-12 h-12 bg-[#F5F5F5] rounded-xl flex items-center justify-center text-[#000000] mb-6 group-hover:bg-[#F96302] group-hover:text-white transition-all group-hover:shadow-md group-hover:-translate-y-1">
+              <i data-lucide="arrow-down-to-line" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-3">
+              Drain Cleaning
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6 line-clamp-2">
+              Fast, effective snaking and clearing for sinks, tubs, toilets, and
+              main lines. We get things flowing again.
+            </p>
+            <span class="text-sm font-semibold text-[#F96302] flex items-center gap-1">
+              Learn more
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why Z and Z Section -->
+    <section class="py-24 lg:py-32 bg-[#000000] text-white">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 class="text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight mb-8 leading-tight text-white">
+            Two licenses.
+            <br>
+            One call.
+          </h2>
+          <div class="space-y-6 text-xl text-[#F5F5F5]/80">
+            <p>
+              Most plumbers hold a standard C-36 license. That covers the basics
+              inside the building footprint.
+            </p>
+            <p>
+              We hold both a
+              <strong class="text-white font-semibold">C-36 Plumbing</strong>
+              and an
+              <strong class="text-white font-semibold">
+                A General Engineering
+              </strong>
+              license.
+            </p>
+            <p>
+              This means we are legally and technically equipped to handle
+              massive excavations, public right-of-way tie-ins, and complex
+              sewer lateral work that other plumbers are forced to sub out.
+            </p>
+          </div>
+          <div class="mt-10 flex items-center gap-6">
+            <div class="flex flex-col">
+              <span class="text-sm text-[#F5F5F5]/60 font-medium uppercase tracking-wider mb-1">
+                License
+              </span>
+              <span class="text-2xl font-semibold tracking-tight">C-36</span>
+            </div>
+            <div class="w-px h-12 bg-white/20"></div>
+            <div class="flex flex-col">
+              <span class="text-sm text-[#F5F5F5]/60 font-medium uppercase tracking-wider mb-1">
+                License
+              </span>
+              <span class="text-2xl font-semibold tracking-tight">A-Gen</span>
+            </div>
+            <div class="w-px h-12 bg-white/20"></div>
+            <div class="flex flex-col">
+              <span class="text-sm text-[#F5F5F5]/60 font-medium uppercase tracking-wider mb-1">
+                CSLB #
+              </span>
+              <span class="text-2xl font-semibold tracking-tight">896116</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Structural abstract graphic dark mode -->
+        <div class="relative h-full min-h-[400px] border border-white/20 rounded-2xl bg-white/5 p-8 flex flex-col justify-between shadow-2xl">
+          <i data-lucide="shield-check" class="w-16 h-16 text-[#F96302]"></i>
+          <div>
+            <h3 class="text-3xl font-semibold tracking-tight mb-2">
+              Authority in execution.
+            </h3>
+            <p class="text-base text-[#F5F5F5]/60">
+              Operating since 2003. Led by Jay and Seif. Zero fluff, just
+              results.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Service Areas Map Placeholder -->
+    <section id="areas" class="py-24 lg:py-32 bg-white border-b border-[#E5E5E5]">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <h2 class="text-4xl md:text-6xl font-semibold tracking-tight text-[#000000] mb-6">
+            Serving the East Bay.
+          </h2>
+          <p class="text-xl text-[#5C5C5C]">
+            Headquartered in San Leandro. Operating across 11 key cities in
+            Alameda and Contra Costa counties.
+          </p>
+        </div>
+
+        <!-- Map UI Concept -->
+        <div class="relative w-full h-[500px] bg-[#F5F5F5] rounded-2xl border border-[#E5E5E5] overflow-hidden flex flex-col items-center justify-center shadow-lg">
+          <!-- Abstract Map Pattern -->
+          <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+          <!-- Map Content Overlay -->
+          <div class="relative z-10 bg-white/90 backdrop-blur p-8 rounded-2xl border border-gray-200 shadow-xl max-w-md w-full mx-4 text-center">
+            <i data-lucide="map" class="w-10 h-10 text-[#000000] mx-auto mb-4"></i>
+            <h3 class="text-2xl font-semibold tracking-tight text-[#000000] mb-2">
+              Interactive Coverage Map
+            </h3>
+            <p class="text-base text-[#5C5C5C] mb-6">
+              Enter your ZIP code to verify service availability in your
+              specific neighborhood.
+            </p>
+
+            <div class="flex flex-col gap-2 relative">
+              <input type="text" placeholder="e.g. 94577" class="w-full px-4 py-3 bg-[#F5F5F5] border border-gray-300 rounded outline-none focus:ring-2 focus:ring-[#F96302] focus:border-transparent text-lg text-center transition-all">
+              <button class="w-full bg-[#000000] hover:bg-[#F96302] text-white px-6 py-3 rounded-none font-semibold text-base transition-all hover:shadow-lg hover:-translate-y-0.5 mt-2">
+                Verify Area
+              </button>
+            </div>
+          </div>
+
+          <!-- Fake Map Pins -->
+          <div class="absolute top-1/4 left-1/3 flex flex-col items-center">
+            <i data-lucide="map-pin" class="w-6 h-6 text-[#F96302] fill-[#F96302]/20"></i>
+            <span class="text-xs font-bold mt-1 px-2 py-0.5 bg-white rounded-md shadow border border-gray-200">
+              Oakland
+            </span>
+          </div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-0">
+            <div class="relative flex items-center justify-center">
+              <span class="absolute inline-flex h-full w-full rounded-none bg-[#F96302] opacity-20 animate-ping"></span>
+              <i data-lucide="map-pin" class="w-8 h-8 text-[#F96302] fill-[#F96302]"></i>
+            </div>
+            <span class="text-sm font-bold mt-1 px-2 py-1 bg-white rounded-md shadow-md border border-gray-200 text-[#F96302]">
+              San Leandro HQ
+            </span>
+          </div>
+          <div class="absolute bottom-1/3 right-1/3 flex flex-col items-center">
+            <i data-lucide="map-pin" class="w-6 h-6 text-[#5C5C5C]"></i>
+            <span class="text-xs font-bold mt-1 px-2 py-0.5 bg-white rounded-md shadow border border-gray-200">
+              Hayward
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-12 flex flex-wrap justify-center gap-3">
+          <span class="px-4 py-2 bg-white text-[#000000] text-sm font-semibold rounded-full border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-sm transition-all cursor-pointer hover:-translate-y-0.5">
+            San Leandro
+          </span>
+          <span class="px-4 py-2 bg-white text-[#000000] text-sm font-semibold rounded-full border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-sm transition-all cursor-pointer hover:-translate-y-0.5">
+            Oakland
+          </span>
+          <span class="px-4 py-2 bg-white text-[#000000] text-sm font-semibold rounded-full border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-sm transition-all cursor-pointer hover:-translate-y-0.5">
+            Alameda
+          </span>
+          <span class="px-4 py-2 bg-white text-[#000000] text-sm font-semibold rounded-full border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-sm transition-all cursor-pointer hover:-translate-y-0.5">
+            Berkeley
+          </span>
+          <span class="px-4 py-2 bg-white text-[#000000] text-sm font-semibold rounded-full border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-sm transition-all cursor-pointer hover:-translate-y-0.5">
+            Richmond
+          </span>
+          <span class="text-[#5C5C5C] text-sm font-medium py-2">
+            + 6 more cities
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews Carousel Placeholder -->
+    <section class="py-24 lg:py-32 bg-[#F5F5F5]">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+          <div>
+            <h2 class="text-4xl md:text-6xl font-semibold tracking-tight text-[#000000] mb-4">
+              Trusted by the East Bay.
+            </h2>
+            <div class="flex items-center gap-2">
+              <div class="flex text-[#F96302]">
+                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+                <i data-lucide="star" class="w-5 h-5 fill-current"></i>
+              </div>
+              <span class="text-base text-[#5C5C5C] font-medium">
+                4.9/5 based on 238+ reviews
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Review Card -->
+          <div class="bg-white p-8 rounded-2xl border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex text-[#F96302] mb-4">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+            </div>
+            <p class="text-lg text-[#000000] mb-6 leading-relaxed">
+              "Jay and his crew replaced our galvanized pipes. Showed up on
+              time, worked fast, and cleaned up like they were never here.
+              Professional outfit."
+            </p>
+            <div class="flex items-center justify-between mt-auto">
+              <span class="text-base font-semibold text-[#000000]">
+                — Mark T.
+              </span>
+              <span class="text-sm text-[#5C5C5C]">Oakland, CA</span>
+            </div>
+          </div>
+
+          <!-- Review Card -->
+          <div class="bg-white p-8 rounded-2xl border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex text-[#F96302] mb-4">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+            </div>
+            <p class="text-lg text-[#000000] mb-6 leading-relaxed">
+              "Called at 2am for a main line backup. They were here by 3am. Had
+              the hydrojetter running and the problem solved before sunrise.
+              Lifesavers."
+            </p>
+            <div class="flex items-center justify-between mt-auto">
+              <span class="text-base font-semibold text-[#000000]">
+                — Sarah L.
+              </span>
+              <span class="text-sm text-[#5C5C5C]">Berkeley, CA</span>
+            </div>
+          </div>
+
+          <!-- Review Card -->
+          <div class="bg-white p-8 rounded-2xl border border-[#E5E5E5] hover:border-[#F96302] hover:shadow-xl transition-all hover:-translate-y-1 hidden lg:block">
+            <div class="flex text-[#F96302] mb-4">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+            </div>
+            <p class="text-lg text-[#000000] mb-6 leading-relaxed">
+              "Other plumbers told me I needed to tear up my driveway. Z and Z
+              used a trenchless method. Saved me thousands and a massive
+              headache."
+            </p>
+            <div class="flex items-center justify-between mt-auto">
+              <span class="text-base font-semibold text-[#000000]">
+                — David R.
+              </span>
+              <span class="text-sm text-[#5C5C5C]">San Leandro, CA</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-12 text-center">
+          <a href="#" class="inline-flex items-center gap-2 text-base font-semibold text-[#000000] hover:text-[#F96302] transition-colors">
+            See All Reviews
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="bg-[#F96302] py-24 lg:py-32">
+      <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+        <h2 class="text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-white mb-8">
+          Ready to call the pros?
+        </h2>
+        <p class="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
+          Get a quote online or call directly. We respond fast, give straight
+          answers, and get the job done right.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="#quote" class="w-full sm:w-auto bg-[#000000] text-white px-8 py-4 rounded-none font-semibold text-lg transition-all text-center hover:bg-gray-800 hover:shadow-xl hover:-translate-y-1">
+            Get a Free Quote
+          </a>
+          <span class="text-white/60 font-medium">or</span>
+          <a href="tel:5107084237" class="w-full sm:w-auto bg-transparent border-2 border-white hover:bg-white hover:text-[#F96302] text-white px-8 py-4 rounded-none font-semibold text-lg transition-all text-center flex items-center justify-center gap-2 hover:shadow-xl hover:-translate-y-1">
+            <i data-lucide="phone" class="w-5 h-5"></i>
+            (510) 708-4237
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#000000] py-16 text-white border-t border-white/10">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          <!-- Brand -->
+          <div class="lg:col-span-2">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-8 h-8 bg-[#F96302] rounded-none flex items-center justify-center text-white shrink-0 transition-all hover:shadow-lg hover:-translate-y-0.5">
+                <i data-lucide="droplets" class="w-5 h-5"></i>
+              </div>
+              <span class="font-semibold tracking-tight text-xl">
+                Z and Z Plumbing
+              </span>
+            </div>
+            <p class="text-base text-[#F5F5F5]/60 max-w-sm mb-6">
+              The Pros Other Plumbers Call. East Bay's premier double-licensed
+              plumbing and engineering contractor.
+            </p>
+            <div class="space-y-2 text-base text-[#F5F5F5]/80">
+              <p>3057 Teagarden Street</p>
+              <p>San Leandro, CA 94577</p>
+            </div>
+          </div>
+
+          <!-- Links -->
+          <div>
+            <h4 class="text-base font-semibold mb-6 uppercase tracking-wider text-[#F5F5F5]/60">
+              Services
+            </h4>
+            <ul class="space-y-4 text-base text-[#F5F5F5]/80">
+              <li>
+                <a href="#" class="hover:text-[#F96302] transition-colors">
+                  Sewer Lateral
+                </a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-[#F96302] transition-colors">
+                  Whole Home Repipe
+                </a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-[#F96302] transition-colors">
+                  Hydrojetting
+                </a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-[#F96302] transition-colors">
+                  Trenchless Repair
+                </a>
+              </li>
+              <li>
+                <a href="#" class="hover:text-[#F96302] transition-colors">
+                  Water Heaters
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Contact -->
+          <div>
+            <h4 class="text-base font-semibold mb-6 uppercase tracking-wider text-[#F5F5F5]/60">
+              Contact
+            </h4>
+            <ul class="space-y-4 text-base text-[#F5F5F5]/80">
+              <li>
+                <a href="tel:5107084237" class="text-[#F96302] font-semibold hover:text-white transition-colors">
+                  (510) 708-4237
+                </a>
+              </li>
+              <li>Available 24/7 for emergencies</li>
+              <li>Mon–Sat 8am–5pm office</li>
+            </ul>
+            <div class="mt-8 flex gap-4">
+              <a href="#" class="w-10 h-10 rounded-none bg-white/10 flex items-center justify-center hover:bg-[#F96302] transition-all hover:shadow-lg hover:-translate-y-0.5">
+                <i data-lucide="facebook" class="w-5 h-5"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-none bg-white/10 flex items-center justify-center hover:bg-[#F96302] transition-all hover:shadow-lg hover:-translate-y-0.5">
+                <i data-lucide="message-square" class="w-5 h-5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#F5F5F5]/60">
+          <div class="flex items-center gap-4">
+            <span>CSLB #896116</span>
+            <span class="w-1 h-1 bg-white/20 rounded-full"></span>
+            <span>C-36 Plumbing</span>
+            <span class="w-1 h-1 bg-white/20 rounded-full"></span>
+            <span>A General Engineering</span>
+          </div>
+          <p>© 2026 Z and Z Plumbing. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Sticky Mobile CTA -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E5E5] p-4 flex gap-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <a href="tel:5107084237" class="flex-1 bg-[#F5F5F5] text-[#000000] py-3 rounded-none font-semibold text-base flex items-center justify-center gap-2 border border-[#E5E5E5] hover:bg-gray-200 transition-all">
+        <i data-lucide="phone" class="w-4 h-4"></i>
+        Call
+      </a>
+      <a href="#quote" class="flex-[2] bg-[#F96302] text-white py-3 rounded-none font-semibold text-base flex items-center justify-center transition-all hover:bg-[#E05902] shadow-sm">
+        Get a Quote
+      </a>
+    </div>
+
+    <script>
+      // Initialize Lucide icons with custom stroke width
+      lucide.createIcons({
+          attrs: {
+              'stroke-width': 1.5
+          }
+      });
+    </script>
+  
+</body></html>

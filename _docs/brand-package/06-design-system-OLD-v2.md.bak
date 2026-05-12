@@ -1,0 +1,289 @@
+# 06 · Design System
+
+**Status:** Locked 2026-05-11
+**Implementation target:** `Z&Zplumbing-v2/components/` and `Z&Zplumbing-v2/tailwind.config.ts`
+
+## Buttons
+
+### Primary CTA (orange fill)
+
+The default action button across the site. Used for Call buttons, Book Now, primary form submit, and any single most-important action on a page.
+
+```
+Background: hero-orange (#F96302)
+Text: white
+Border: none
+Border radius: 0.375rem (6px)
+Padding (lg): 1rem 1.75rem
+Padding (md): 0.75rem 1.5rem
+Font: Inter Bold, uppercase, 0.02em letter-spacing
+Hover: brightness 0.95
+Active: brightness 0.9, scale 0.98
+```
+
+### Secondary CTA (black fill)
+
+For secondary actions like "Schedule Online" next to a primary Call CTA, or "Learn More" buttons.
+
+```
+Background: black
+Text: white
+Border: none
+Border radius: 0.375rem
+Hover: lighten to #1A1A1A
+```
+
+### Tertiary CTA (white with black border)
+
+For low-priority actions like "View All Services" or breadcrumb-style navigation.
+
+```
+Background: white
+Text: black
+Border: 1.5px solid black
+Border radius: 0.375rem
+Hover: background light-gray
+```
+
+### Sizing tiers
+
+| Size | Min height | Padding | Font size |
+|---|---|---|---|
+| sm | 32px | 0.5rem 1rem | 0.875rem (14px) |
+| md | 40px | 0.75rem 1.5rem | 1rem (16px) |
+| lg | 48px | 1rem 1.75rem | 1.125rem (18px) |
+| xl | 56px | 1.25rem 2.25rem | 1.25rem (20px) |
+
+Hero CTAs and sticky mobile CTAs use `lg` or `xl`. Form submit buttons use `md`. Inline body links that look like buttons use `sm`.
+
+## Sticky mobile CTA bar
+
+Fixed to the bottom of the viewport on mobile. Visible on every page except the booking widget overlay itself.
+
+```
+Position: fixed bottom-0 left-0 right-0
+Height: 64px
+Background: black
+Inner padding: 0.5rem 1rem
+Two buttons inside, side by side, flex:1 each:
+  Left: Primary CTA (hero-orange fill, "CALL (510) 708-4237", phone icon)
+  Right: Secondary CTA (white fill with black text, "Schedule", calendar icon)
+Z-index: 50
+Shadow above: 0 -4px 12px rgba(0,0,0,0.15)
+```
+
+Hidden on desktop (1024px+). Desktop has the same Call CTA inline in the sticky header.
+
+## Sticky header
+
+Fixed at the top of the viewport.
+
+```
+Height: 64px (mobile), 80px (desktop)
+Background: white
+Border-bottom: 1px solid light-gray
+Inner padding: 0 1rem (mobile), 0 2rem (desktop)
+Layout (mobile): logo left, phone icon button + mobile menu toggle right
+Layout (desktop): logo left, main nav center, phone number + "Schedule" button right
+Phone number on desktop: clickable tel: link, Barlow Condensed Bold, 1.25rem, in hero-orange
+```
+
+## Cards
+
+### Service card
+
+Used in service grids on the homepage and the services hub.
+
+```
+Background: white
+Border: 1px solid light-gray
+Border radius: 0.5rem (8px)
+Padding: 1.5rem
+Hover: border hero-orange, shadow 0 8px 24px rgba(0,0,0,0.08), translateY(-2px)
+Inner structure:
+  Top: icon (24x24, hero-orange) OR small image (16:9, optional)
+  Middle: H4 service name (Inter Bold)
+  Body: 2 to 4 sentences description (Inter Regular, warm-gray)
+  Footer: text link "Learn more →" (Inter SemiBold, hero-orange, no underline)
+```
+
+### Testimonial card
+
+Used in the homepage testimonials carousel and the reviews page.
+
+```
+Background: light-gray
+Border-radius: 0.5rem
+Padding: 1.5rem
+Inner structure:
+  Top: 5-star row (orange filled stars, gray empty)
+  Body: review text (Inter Regular, black, 1.0625rem)
+  Footer: author first name + city + date (body-sm, warm-gray)
+  Optional: small Google or Yelp icon
+```
+
+### Trust badge
+
+Small badges used in trust strips, footer, hero subhead.
+
+```
+Background: transparent
+Border: 1px solid light-gray
+Border radius: 999px (pill)
+Padding: 0.375rem 0.75rem
+Font: body-xs uppercase tracked
+Inner structure: optional small icon + label text
+Examples:
+  "CSLB #896116"
+  "C-36 + A GENERAL ENGINEERING"
+  "SINCE 2003"
+  "24/7 EMERGENCY"
+  "EBMUD COMPLIANT"
+```
+
+## Forms
+
+### Input fields
+
+```
+Background: light-gray
+Border: 1px solid transparent
+Border radius: 0.375rem
+Padding: 0.75rem 1rem
+Min-height: 48px (touch target)
+Font: Inter Regular, 1rem
+Placeholder: warm-gray with 60% opacity
+Focus: border hero-orange, background white, ring 2px hero-orange/20
+Error: border danger-red, background white, ring 2px danger-red/15
+Disabled: opacity 0.5, cursor not-allowed
+```
+
+### Labels
+
+```
+Font: Inter SemiBold, body-sm
+Color: black
+Margin-bottom: 0.25rem
+Required indicator: red asterisk after label text
+```
+
+### Helper text
+
+```
+Font: Inter Regular, body-xs
+Color: warm-gray
+Margin-top: 0.25rem
+```
+
+### Error text
+
+```
+Font: Inter Medium, body-xs
+Color: danger-red
+Margin-top: 0.25rem
+```
+
+### Select / dropdown
+
+Use shadcn `Select` primitive. Same input styling as text fields. Chevron icon in warm-gray on the right.
+
+### Date / time picker
+
+Use shadcn `Calendar` and `Popover` primitives. Selected date in hero-orange. Available time slots as button grid (sm size, white tertiary buttons).
+
+## Sections
+
+### Section padding
+
+```
+Vertical: 4rem top, 4rem bottom (mobile)
+Vertical: 6rem top, 6rem bottom (desktop)
+Horizontal: handled by the page container, not the section itself
+```
+
+### Section backgrounds
+
+Alternate white and light-gray to create rhythm. Hero sections may use solid black with white text (rare, use sparingly to anchor a page).
+
+### Container width
+
+Max-width 1280px centered. Padding 1rem (mobile), 2rem (tablet+).
+
+## Hero patterns
+
+### Homepage hero
+
+Full-width section. Black background OR a photo background with a black overlay at 60% opacity. Inside the container:
+- Eyebrow label (hero-orange, uppercase, tracked)
+- H1 (display-xl, white)
+- Sub-headline (body-lg, white at 85% opacity)
+- Zip-code search input + primary CTA button, inline
+- Trust strip below: 4 to 5 trust badges in white outline
+
+### Service / city page hero
+
+Light-gray or white background. Inside the container:
+- Eyebrow label (hero-orange)
+- H1 (display-lg, black)
+- Sub-headline (body-lg, warm-gray)
+- Primary CTA (Call) + Secondary CTA (Schedule), inline
+- Trust strip below
+
+## Footer
+
+```
+Background: black
+Text: white at 90% opacity for body, white for headers
+Padding: 4rem top, 2rem bottom
+Inner layout: 4-column grid on desktop, single column on mobile
+Column 1: Logo (white variant) + tagline + phone CTA
+Column 2: Services list
+Column 3: Service areas list
+Column 4: Company info (about, contact, blog, reviews, financing)
+Bottom band: copyright, CSLB number, social icons (hero-orange on hover)
+```
+
+## Animation and motion
+
+Minimal. The brand reads as confident, not flashy.
+
+- Button hover: 150ms transition on background/border
+- Card hover: 200ms transition on shadow + translateY
+- Page transitions: native Next.js, no custom transitions in v1
+- Scroll-triggered animations: avoid in v1. If a section needs entry animation, use a simple opacity-fade only.
+
+## Spacing scale
+
+Use Tailwind's default scale. Common values:
+- `space-2` (8px) for tight grouping
+- `space-4` (16px) for default element spacing
+- `space-6` (24px) for related-but-distinct elements
+- `space-12` (48px) for major content blocks
+- `space-16` (64px) for section breathing room
+
+## Iconography
+
+Use `lucide-react` for system icons (Phone, Calendar, ChevronRight, MapPin, Check, X, Star, Clock). Hero-orange for accent icons, warm-gray for system icons.
+
+Avoid custom illustrations in v1 except for the lateral diagram on the sewer-lateral-oakland page.
+
+## Responsive breakpoints
+
+Tailwind defaults:
+- `sm`: 640px (large mobile / small tablet)
+- `md`: 768px (tablet)
+- `lg`: 1024px (small desktop)
+- `xl`: 1280px (desktop)
+- `2xl`: 1536px (large desktop)
+
+Design for mobile first. Layouts add columns and increase scale at `md` and `lg`.
+
+## Accessibility floor
+
+- All interactive elements minimum 44x44px touch target
+- Focus rings visible on every focusable element (hero-orange ring, 2px, with offset)
+- Color is never the only indicator (icons + labels + state)
+- Form labels always present, not placeholder-only
+- Skip-to-main-content link on every page
+- Semantic HTML: nav, main, article, section, footer where appropriate
+- ARIA labels on icon-only buttons (sticky mobile Call button, etc.)
