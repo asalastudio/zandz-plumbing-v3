@@ -30,8 +30,9 @@ const aboutLinks = [
   { label: "About Us", href: "/about/" },
   { label: "Why Choose Us", href: "/about/" },
   { label: "Our Team", href: "/about/" },
-  { label: "Projects", href: "/reviews/" },
   { label: "Reviews", href: "/reviews/" },
+  { label: "Videos & Guides", href: "/videos/" },
+  { label: "Coupons", href: "/coupons/" },
   { label: "Careers", href: "/careers/" },
 ];
 

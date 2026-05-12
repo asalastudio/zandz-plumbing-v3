@@ -17,6 +17,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/reviews/`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/financing/`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/blog/`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${base}/videos/`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${base}/coupons/`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/sewer-lateral-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/emergency-plumber-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/water-heater-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },

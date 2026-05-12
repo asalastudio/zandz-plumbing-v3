@@ -293,3 +293,144 @@ export function formatDate(iso: string | null): string {
     year: "numeric",
   });
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Learning resources (videos + images shown on /videos/)
+// ──────────────────────────────────────────────────────────────────────────
+
+export type LearningMediaType = "video" | "image";
+
+export interface LearningResource {
+  id: number;
+  media_type: LearningMediaType;
+  title: string;
+  slug: string;
+  description: string | null;
+  category: string;
+  url: string;
+  thumbnail_url: string | null;
+  duration_sec: number | null;
+  sort_order: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const LEARNING_CATEGORIES: { value: string; label: string }[] = [
+  { value: "sewer-and-drain", label: "Sewer & Drain" },
+  { value: "water-heater", label: "Water Heater" },
+  { value: "emergency", label: "Emergency" },
+  { value: "maintenance", label: "Maintenance" },
+  { value: "diy", label: "DIY Fixes" },
+  { value: "behind-the-scenes", label: "Behind the Scenes" },
+  { value: "general", label: "General" },
+];
+
+export async function listLearningResources(opts: {
+  publishedOnly?: boolean;
+  category?: string;
+} = {}): Promise<LearningResource[]> {
+  const sb = supabase();
+  let q = sb
+    .from("learning_resources")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (opts.publishedOnly) q = q.eq("published", true);
+  if (opts.category) q = q.eq("category", opts.category);
+  const { data, error } = await q;
+  if (error) throw new Error(`listLearningResources: ${error.message}`);
+  return (data ?? []) as LearningResource[];
+}
+
+export async function getLearningResource(id: number): Promise<LearningResource | null> {
+  const sb = supabase();
+  const { data, error } = await sb
+    .from("learning_resources")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(`getLearningResource: ${error.message}`);
+  return data as LearningResource | null;
+}
+
+/**
+ * Best-effort extraction of the YouTube video ID from a URL the user pasted.
+ * Accepts watch?v=, youtu.be/, /embed/, /shorts/. Returns null for non-YT.
+ */
+export function extractYouTubeId(url: string): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) {
+      return u.pathname.slice(1).split("/")[0] || null;
+    }
+    if (u.hostname.includes("youtube.com")) {
+      if (u.pathname === "/watch") return u.searchParams.get("v");
+      const m = u.pathname.match(/\/(embed|shorts|v)\/([^/?#]+)/);
+      if (m) return m[2];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function youtubeEmbedUrl(videoId: string): string {
+  return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`;
+}
+
+export function youtubeThumbnailUrl(videoId: string): string {
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Coupons (max 3 published)
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface Coupon {
+  id: number;
+  headline: string;
+  subheadline: string | null;
+  terms: string | null;
+  code: string | null;
+  image_url: string | null;
+  valid_from: string | null;
+  valid_until: string | null;
+  display_order: number;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const MAX_PUBLISHED_COUPONS = 3;
+
+export async function listCoupons(opts: { publishedOnly?: boolean } = {}): Promise<Coupon[]> {
+  const sb = supabase();
+  let q = sb
+    .from("coupons")
+    .select("*")
+    .order("display_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (opts.publishedOnly) q = q.eq("published", true);
+  const { data, error } = await q;
+  if (error) throw new Error(`listCoupons: ${error.message}`);
+  return (data ?? []) as Coupon[];
+}
+
+export async function getCoupon(id: number): Promise<Coupon | null> {
+  const sb = supabase();
+  const { data, error } = await sb.from("coupons").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(`getCoupon: ${error.message}`);
+  return data as Coupon | null;
+}
+
+export async function countPublishedCoupons(): Promise<number> {
+  const sb = supabase();
+  const { count, error } = await sb
+    .from("coupons")
+    .select("id", { count: "exact", head: true })
+    .eq("published", true);
+  if (error) throw new Error(`countPublishedCoupons: ${error.message}`);
+  return count ?? 0;
+}
