@@ -60,7 +60,7 @@ export function Logo({ className, linkWrapper = true }: LogoProps) {
     <img
       src="/logo.svg"
       alt="Z and Z Plumbing"
-      width={220}
+      width={140}
       height={56}
       className={cn("h-12 w-auto md:h-14", className)}
     />
