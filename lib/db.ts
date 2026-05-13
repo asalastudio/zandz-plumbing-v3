@@ -291,11 +291,28 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   const twelveMoAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString();
   const twentyFourMoAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate()).toISOString();
 
-  // Pull every invoice in one shot (1090 rows is tiny). Aggregates done in JS.
-  const { data: allInv, error: invErr } = await sb
-    .from("invoice_history")
-    .select("total_cents, balance_cents, completed_on, job_type");
-  if (invErr) throw new Error(`getDashboardKpis invoices: ${invErr.message}`);
+  // Pull every invoice in one shot, paginating since Supabase caps each
+  // request at 1000 rows. Aggregates are done in JS.
+  const allInv: Array<{
+    total_cents: number | null;
+    balance_cents: number | null;
+    completed_on: string | null;
+    job_type: string | null;
+  }> = [];
+  {
+    const PAGE = 1000;
+    let from = 0;
+    while (true) {
+      const { data, error } = await sb
+        .from("invoice_history")
+        .select("total_cents, balance_cents, completed_on, job_type")
+        .range(from, from + PAGE - 1);
+      if (error) throw new Error(`getDashboardKpis invoices: ${error.message}`);
+      allInv.push(...(data ?? []));
+      if (!data || data.length < PAGE) break;
+      from += PAGE;
+    }
+  }
 
   let lifetimeRevenueCents = 0;
   let revenueThisMonthCents = 0;
@@ -305,11 +322,12 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   let unpaidInvoiceCount = 0;
   const jobTypesThisMonth = new Map<string, { count: number; revenueCents: number }>();
 
-  for (const i of allInv ?? []) {
+  for (const i of allInv) {
     const total = i.total_cents ?? 0;
     lifetimeRevenueCents += total;
-    if ((i.balance_cents ?? 0) > 0) {
-      unpaidBalanceCents += i.balance_cents;
+    const balance = i.balance_cents ?? 0;
+    if (balance > 0) {
+      unpaidBalanceCents += balance;
       unpaidInvoiceCount += 1;
     }
     if (i.completed_on) {

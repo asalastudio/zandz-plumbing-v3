@@ -13,7 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
-import { FaucetMark } from "@/components/Logo";
+import { Logo } from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: "Z and Z OS · Admin",
@@ -42,16 +42,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-black/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1800px] items-center justify-between px-6 py-4">
-          <Link href="/admin" className="flex items-center gap-3">
-            <FaucetMark size={36} />
-            <div className="flex flex-col leading-none">
-              <span className="font-display text-lg font-black uppercase tracking-tight">
-                Z and Z OS
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#F96302]">
-                Admin
-              </span>
-            </div>
+          <Link href="/admin" className="flex items-center gap-4">
+            <Logo linkWrapper={false} className="h-10 w-auto md:h-12" />
+            <span className="hidden border-l border-white/15 pl-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#F96302] sm:inline-block">
+              Admin
+            </span>
           </Link>
           <form action="/api/admin/logout" method="POST">
             <button
