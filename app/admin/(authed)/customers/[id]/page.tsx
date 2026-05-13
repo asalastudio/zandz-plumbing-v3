@@ -30,10 +30,13 @@ export const dynamic = "force-dynamic";
 
 export default async function CustomerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
   const { id: idStr } = await params;
+  const { saved, error: errorParam } = await searchParams;
   const id = parseInt(idStr, 10);
   if (!id || Number.isNaN(id)) notFound();
 
@@ -220,21 +223,66 @@ export default async function CustomerDetailPage({
         </Card>
       </section>
 
-      {/* Notes */}
-      {(customer.neighborhood || customer.notes) && (
-        <section className="mb-12 border border-white/10 bg-white/5 p-6 md:p-7">
-          {customer.neighborhood && (
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#F96302]">
-              {customer.neighborhood}
-            </p>
+      {/* Notes editor */}
+      <section className="mb-12 border border-white/10 bg-white/5 p-6 md:p-7">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-xl font-black uppercase tracking-tight text-white md:text-2xl">
+            Notes &amp; details
+          </h2>
+          {saved === "1" && (
+            <span className="inline-flex items-center bg-emerald-500/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-emerald-300">
+              ✓ Saved
+            </span>
           )}
-          {customer.notes && (
-            <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line">
-              {customer.notes}
-            </p>
+          {errorParam === "update" && (
+            <span className="inline-flex items-center bg-red-500/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-red-300">
+              ✗ Save failed
+            </span>
           )}
-        </section>
-      )}
+        </div>
+
+        <form action={`/api/admin/customers/${id}/update`} method="POST" className="space-y-4">
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+              Neighborhood / area tag
+            </label>
+            <input
+              name="neighborhood"
+              type="text"
+              defaultValue={customer.neighborhood ?? ""}
+              placeholder="e.g. Rockridge, Adams Point, Glenview"
+              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+              Notes
+            </label>
+            <p className="mb-2 text-xs text-white/40">
+              Tribal knowledge worth remembering. Examples: &ldquo;Dog in yard, use side
+              gate.&rdquo; · &ldquo;Old galvanized pipes upstairs.&rdquo; · &ldquo;Backflow
+              test due May.&rdquo; · &ldquo;Always pays late, require deposit.&rdquo;
+            </p>
+            <textarea
+              name="notes"
+              rows={6}
+              defaultValue={customer.notes ?? ""}
+              placeholder="Add anything Eddie/Pablo/Sergio should know before they roll out."
+              className="w-full border border-white/15 bg-black px-4 py-3 text-sm leading-relaxed text-white outline-none focus:border-[#F96302]"
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602]"
+            >
+              Save notes
+            </button>
+          </div>
+        </form>
+      </section>
 
       {/* Open / active jobs (in Z and Z OS, not yet historical) */}
       {jobs.length > 0 && (
