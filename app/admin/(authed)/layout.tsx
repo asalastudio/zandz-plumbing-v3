@@ -11,6 +11,7 @@ import {
   Video,
   Tag,
   LogOut,
+  BarChart3,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/customers", label: "Customers", icon: Users },

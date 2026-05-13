@@ -376,6 +376,240 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   };
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Analytics queries
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface AnalyticsData {
+  monthlyRevenue: Array<{ month: string; revenueCents: number; invoiceCount: number }>;
+  topCustomers: Array<{
+    id: number;
+    name: string;
+    city: string | null;
+    revenueCents: number;
+    jobCount: number;
+    lastCompletedOn: string | null;
+  }>;
+  jobTypeBreakdown: Array<{
+    type: string;
+    count: number;
+    revenueCents: number;
+    avgTicketCents: number;
+  }>;
+  revenueByCity: Array<{ city: string; revenueCents: number; jobCount: number; customerCount: number }>;
+  dormantCustomers: Array<{
+    id: number;
+    name: string;
+    city: string | null;
+    phone_e164: string | null;
+    lastCompletedOn: string | null;
+    revenueCents: number;
+  }>;
+  newCustomersByMonth: Array<{ month: string; count: number }>;
+  totals: {
+    invoiceCount: number;
+    customerCount: number;
+    customersWithJobs: number;
+    repeatCustomerRate: number;
+  };
+}
+
+export async function getAnalytics(): Promise<AnalyticsData> {
+  const sb = supabase();
+
+  // Pull all invoices (paginated)
+  const allInv: Array<{
+    customer_id: number | null;
+    total_cents: number | null;
+    completed_on: string | null;
+    job_type: string | null;
+  }> = [];
+  {
+    const PAGE = 1000;
+    let from = 0;
+    while (true) {
+      const { data, error } = await sb
+        .from("invoice_history")
+        .select("customer_id, total_cents, completed_on, job_type")
+        .range(from, from + PAGE - 1);
+      if (error) throw new Error(`getAnalytics invoices: ${error.message}`);
+      allInv.push(...(data ?? []));
+      if (!data || data.length < PAGE) break;
+      from += PAGE;
+    }
+  }
+
+  // Pull all customers (paginated)
+  const allCust: Array<{
+    id: number;
+    name: string;
+    city: string | null;
+    phone_e164: string | null;
+    created_at: string;
+  }> = [];
+  {
+    const PAGE = 1000;
+    let from = 0;
+    while (true) {
+      const { data, error } = await sb
+        .from("customers")
+        .select("id, name, city, phone_e164, created_at")
+        .range(from, from + PAGE - 1);
+      if (error) throw new Error(`getAnalytics customers: ${error.message}`);
+      allCust.push(...(data ?? []));
+      if (!data || data.length < PAGE) break;
+      from += PAGE;
+    }
+  }
+
+  const custById = new Map(allCust.map((c) => [c.id, c]));
+
+  // ── Monthly revenue rollup (last 24 months) ──
+  const monthlyMap = new Map<string, { revenueCents: number; invoiceCount: number }>();
+  for (const i of allInv) {
+    if (!i.completed_on) continue;
+    const month = i.completed_on.slice(0, 7); // YYYY-MM
+    const cur = monthlyMap.get(month) ?? { revenueCents: 0, invoiceCount: 0 };
+    cur.revenueCents += i.total_cents ?? 0;
+    cur.invoiceCount += 1;
+    monthlyMap.set(month, cur);
+  }
+  const monthlyRevenue = [...monthlyMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-24)
+    .map(([month, v]) => ({ month, ...v }));
+
+  // ── Per-customer rollup ──
+  const perCustomer = new Map<
+    number,
+    { revenueCents: number; jobCount: number; lastCompletedOn: string | null }
+  >();
+  const jobTypeMap = new Map<string, { count: number; revenueCents: number }>();
+  for (const i of allInv) {
+    if (i.customer_id != null) {
+      const cur = perCustomer.get(i.customer_id) ?? {
+        revenueCents: 0,
+        jobCount: 0,
+        lastCompletedOn: null,
+      };
+      cur.revenueCents += i.total_cents ?? 0;
+      cur.jobCount += 1;
+      if (i.completed_on && (!cur.lastCompletedOn || i.completed_on > cur.lastCompletedOn)) {
+        cur.lastCompletedOn = i.completed_on;
+      }
+      perCustomer.set(i.customer_id, cur);
+    }
+
+    const jt = i.job_type ?? "Unknown";
+    const jtCur = jobTypeMap.get(jt) ?? { count: 0, revenueCents: 0 };
+    jtCur.count += 1;
+    jtCur.revenueCents += i.total_cents ?? 0;
+    jobTypeMap.set(jt, jtCur);
+  }
+
+  // ── Top 20 customers ──
+  const topCustomers = [...perCustomer.entries()]
+    .sort((a, b) => b[1].revenueCents - a[1].revenueCents)
+    .slice(0, 20)
+    .map(([cid, v]) => {
+      const c = custById.get(cid);
+      return {
+        id: cid,
+        name: c?.name ?? "Unknown",
+        city: c?.city ?? null,
+        ...v,
+      };
+    });
+
+  // ── Job type breakdown ──
+  const jobTypeBreakdown = [...jobTypeMap.entries()]
+    .sort((a, b) => b[1].revenueCents - a[1].revenueCents)
+    .map(([type, v]) => ({
+      type,
+      ...v,
+      avgTicketCents: v.count > 0 ? Math.round(v.revenueCents / v.count) : 0,
+    }));
+
+  // ── Revenue by city ──
+  const cityMap = new Map<
+    string,
+    { revenueCents: number; jobCount: number; customerIds: Set<number> }
+  >();
+  for (const [cid, v] of perCustomer.entries()) {
+    const c = custById.get(cid);
+    const city = c?.city ?? "Unknown";
+    const cur = cityMap.get(city) ?? {
+      revenueCents: 0,
+      jobCount: 0,
+      customerIds: new Set<number>(),
+    };
+    cur.revenueCents += v.revenueCents;
+    cur.jobCount += v.jobCount;
+    cur.customerIds.add(cid);
+    cityMap.set(city, cur);
+  }
+  const revenueByCity = [...cityMap.entries()]
+    .map(([city, v]) => ({
+      city,
+      revenueCents: v.revenueCents,
+      jobCount: v.jobCount,
+      customerCount: v.customerIds.size,
+    }))
+    .sort((a, b) => b.revenueCents - a.revenueCents)
+    .slice(0, 12);
+
+  // ── Dormant customers (last job > 12 mo ago) ──
+  const twelveMoAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
+  const dormantCustomers = [...perCustomer.entries()]
+    .filter(([_, v]) => v.lastCompletedOn && v.lastCompletedOn < twelveMoAgo)
+    .sort((a, b) => b[1].revenueCents - a[1].revenueCents)
+    .slice(0, 25)
+    .map(([cid, v]) => {
+      const c = custById.get(cid);
+      return {
+        id: cid,
+        name: c?.name ?? "Unknown",
+        city: c?.city ?? null,
+        phone_e164: c?.phone_e164 ?? null,
+        lastCompletedOn: v.lastCompletedOn,
+        revenueCents: v.revenueCents,
+      };
+    });
+
+  // ── New customers per month (last 24) ──
+  const newCustMap = new Map<string, number>();
+  for (const c of allCust) {
+    if (!c.created_at) continue;
+    const month = c.created_at.slice(0, 7);
+    newCustMap.set(month, (newCustMap.get(month) ?? 0) + 1);
+  }
+  const newCustomersByMonth = [...newCustMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-24)
+    .map(([month, count]) => ({ month, count }));
+
+  // ── Totals ──
+  const customersWithJobs = perCustomer.size;
+  const repeatCustomers = [...perCustomer.values()].filter((v) => v.jobCount > 1).length;
+  const repeatCustomerRate =
+    customersWithJobs > 0 ? repeatCustomers / customersWithJobs : 0;
+
+  return {
+    monthlyRevenue,
+    topCustomers,
+    jobTypeBreakdown,
+    revenueByCity,
+    dormantCustomers,
+    newCustomersByMonth,
+    totals: {
+      invoiceCount: allInv.length,
+      customerCount: allCust.length,
+      customersWithJobs,
+      repeatCustomerRate,
+    },
+  };
+}
+
 export function formatMoneyShort(cents: number): string {
   const dollars = cents / 100;
   if (dollars >= 1_000_000) return `$${(dollars / 1_000_000).toFixed(1)}M`;
