@@ -36,6 +36,7 @@ export interface Crew {
 export interface Customer {
   id: number;
   hubspot_contact_id: string | null;
+  servicetitan_customer_id: string | null;
   name: string;
   phone_e164: string | null;
   email: string | null;
@@ -45,8 +46,32 @@ export interface Customer {
   zip: string | null;
   neighborhood: string | null;
   notes: string | null;
+  customer_type: string | null;
+  lifetime_revenue_cents: number | null;
+  lifetime_jobs: number | null;
+  last_job_completed_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface InvoiceHistory {
+  id: number;
+  customer_id: number | null;
+  servicetitan_invoice_id: string | null;
+  servicetitan_job_id: string | null;
+  job_number: string | null;
+  completed_on: string | null;
+  invoiced_on: string | null;
+  job_type: string | null;
+  business_unit: string | null;
+  technician: string | null;
+  subtotal_cents: number;
+  tax_cents: number;
+  total_cents: number;
+  balance_cents: number;
+  status: string | null;
+  raw_customer_name: string | null;
+  raw_location: string | null;
 }
 
 export interface Job {
@@ -100,8 +125,13 @@ export async function getCrewMember(id: number): Promise<Crew | null> {
 // Customers
 // ──────────────────────────────────────────────────────────────────────────
 
+export type CustomerSort = "name" | "revenue" | "last_job" | "jobs";
+export type CustomerFilter = "all" | "active" | "dormant" | "top_spenders" | "no_contact";
+
 export interface CustomerListOpts {
   search?: string;
+  sort?: CustomerSort;
+  filter?: CustomerFilter;
   limit?: number;
   offset?: number;
 }
@@ -114,16 +144,50 @@ export async function listCustomers(opts: CustomerListOpts = {}): Promise<{
   const limit = opts.limit ?? 50;
   const offset = opts.offset ?? 0;
 
-  let q = sb
-    .from("customers")
-    .select("*", { count: "exact" })
-    .order("name", { ascending: true })
-    .range(offset, offset + limit - 1);
+  let q = sb.from("customers").select("*", { count: "exact" });
+
+  // Sort
+  switch (opts.sort) {
+    case "revenue":
+      q = q.order("lifetime_revenue_cents", { ascending: false, nullsFirst: false });
+      break;
+    case "last_job":
+      q = q.order("last_job_completed_at", { ascending: false, nullsFirst: false });
+      break;
+    case "jobs":
+      q = q.order("lifetime_jobs", { ascending: false, nullsFirst: false });
+      break;
+    case "name":
+    default:
+      q = q.order("name", { ascending: true });
+  }
+
+  // Filter
+  switch (opts.filter) {
+    case "active": {
+      const twelveMoAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
+      q = q.gte("last_job_completed_at", twelveMoAgo);
+      break;
+    }
+    case "dormant": {
+      const twelveMoAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
+      q = q.lt("last_job_completed_at", twelveMoAgo);
+      break;
+    }
+    case "top_spenders":
+      q = q.gt("lifetime_revenue_cents", 100000); // > $1000
+      break;
+    case "no_contact":
+      q = q.is("phone_e164", null).is("email", null);
+      break;
+  }
 
   if (opts.search) {
     const s = `%${opts.search}%`;
-    q = q.or(`name.ilike.${s},phone_e164.ilike.${s},email.ilike.${s},street_address.ilike.${s}`);
+    q = q.or(`name.ilike.${s},phone_e164.ilike.${s},email.ilike.${s},street_address.ilike.${s},city.ilike.${s}`);
   }
+
+  q = q.range(offset, offset + limit - 1);
 
   const { data, error, count } = await q;
   if (error) throw new Error(`listCustomers: ${error.message}`);
@@ -147,6 +211,159 @@ export async function getCustomerJobs(customerId: number, limit = 20): Promise<J
     .limit(limit);
   if (error) throw new Error(`getCustomerJobs: ${error.message}`);
   return (data ?? []) as Job[];
+}
+
+export async function getCustomerInvoiceHistory(
+  customerId: number,
+  limit = 100
+): Promise<InvoiceHistory[]> {
+  const sb = supabase();
+  const { data, error } = await sb
+    .from("invoice_history")
+    .select("*")
+    .eq("customer_id", customerId)
+    .order("completed_on", { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) throw new Error(`getCustomerInvoiceHistory: ${error.message}`);
+  return (data ?? []) as InvoiceHistory[];
+}
+
+export async function getCustomerLifetimeStats(customerId: number): Promise<{
+  totalRevenueCents: number;
+  totalBalanceCents: number;
+  invoiceCount: number;
+  firstCompletedOn: string | null;
+  lastCompletedOn: string | null;
+}> {
+  const sb = supabase();
+  const { data, error } = await sb
+    .from("invoice_history")
+    .select("total_cents, balance_cents, completed_on")
+    .eq("customer_id", customerId);
+  if (error) throw new Error(`getCustomerLifetimeStats: ${error.message}`);
+
+  const rows = (data ?? []) as Pick<InvoiceHistory, "total_cents" | "balance_cents" | "completed_on">[];
+  let totalRevenueCents = 0;
+  let totalBalanceCents = 0;
+  let firstCompletedOn: string | null = null;
+  let lastCompletedOn: string | null = null;
+  for (const r of rows) {
+    totalRevenueCents += r.total_cents ?? 0;
+    totalBalanceCents += r.balance_cents ?? 0;
+    if (r.completed_on) {
+      if (!firstCompletedOn || r.completed_on < firstCompletedOn) firstCompletedOn = r.completed_on;
+      if (!lastCompletedOn || r.completed_on > lastCompletedOn) lastCompletedOn = r.completed_on;
+    }
+  }
+  return {
+    totalRevenueCents,
+    totalBalanceCents,
+    invoiceCount: rows.length,
+    firstCompletedOn,
+    lastCompletedOn,
+  };
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Dashboard KPIs
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface DashboardKpis {
+  lifetimeRevenueCents: number;
+  revenueThisMonthCents: number;
+  revenueLast12MoCents: number;
+  revenuePrev12MoCents: number;
+  unpaidBalanceCents: number;
+  unpaidInvoiceCount: number;
+  customerCount: number;
+  activeCustomerCount: number;
+  jobsThisWeek: number;
+  topJobTypeThisMonth: { type: string; count: number; revenueCents: number } | null;
+}
+
+export async function getDashboardKpis(): Promise<DashboardKpis> {
+  const sb = supabase();
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const startOfWeek = new Date(now);
+  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  const twelveMoAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString();
+  const twentyFourMoAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate()).toISOString();
+
+  // Pull every invoice in one shot (1090 rows is tiny). Aggregates done in JS.
+  const { data: allInv, error: invErr } = await sb
+    .from("invoice_history")
+    .select("total_cents, balance_cents, completed_on, job_type");
+  if (invErr) throw new Error(`getDashboardKpis invoices: ${invErr.message}`);
+
+  let lifetimeRevenueCents = 0;
+  let revenueThisMonthCents = 0;
+  let revenueLast12MoCents = 0;
+  let revenuePrev12MoCents = 0;
+  let unpaidBalanceCents = 0;
+  let unpaidInvoiceCount = 0;
+  const jobTypesThisMonth = new Map<string, { count: number; revenueCents: number }>();
+
+  for (const i of allInv ?? []) {
+    const total = i.total_cents ?? 0;
+    lifetimeRevenueCents += total;
+    if ((i.balance_cents ?? 0) > 0) {
+      unpaidBalanceCents += i.balance_cents;
+      unpaidInvoiceCount += 1;
+    }
+    if (i.completed_on) {
+      if (i.completed_on >= startOfMonth) {
+        revenueThisMonthCents += total;
+        const t = i.job_type ?? "Unknown";
+        const cur = jobTypesThisMonth.get(t) ?? { count: 0, revenueCents: 0 };
+        cur.count += 1;
+        cur.revenueCents += total;
+        jobTypesThisMonth.set(t, cur);
+      }
+      if (i.completed_on >= twelveMoAgo) revenueLast12MoCents += total;
+      else if (i.completed_on >= twentyFourMoAgo) revenuePrev12MoCents += total;
+    }
+  }
+
+  const [{ count: customerCount }, { count: activeCustomerCount }, { count: jobsThisWeek }] =
+    await Promise.all([
+      sb.from("customers").select("id", { count: "exact", head: true }),
+      sb
+        .from("customers")
+        .select("id", { count: "exact", head: true })
+        .gte("last_job_completed_at", twelveMoAgo),
+      sb
+        .from("jobs")
+        .select("id", { count: "exact", head: true })
+        .gte("scheduled_start", startOfWeek.toISOString()),
+    ]);
+
+  const topJobType =
+    [...jobTypesThisMonth.entries()].sort((a, b) => b[1].revenueCents - a[1].revenueCents)[0] ?? null;
+
+  return {
+    lifetimeRevenueCents,
+    revenueThisMonthCents,
+    revenueLast12MoCents,
+    revenuePrev12MoCents,
+    unpaidBalanceCents,
+    unpaidInvoiceCount,
+    customerCount: customerCount ?? 0,
+    activeCustomerCount: activeCustomerCount ?? 0,
+    jobsThisWeek: jobsThisWeek ?? 0,
+    topJobTypeThisMonth: topJobType
+      ? { type: topJobType[0], count: topJobType[1].count, revenueCents: topJobType[1].revenueCents }
+      : null,
+  };
+}
+
+export function formatMoneyShort(cents: number): string {
+  const dollars = cents / 100;
+  if (dollars >= 1_000_000) return `$${(dollars / 1_000_000).toFixed(1)}M`;
+  if (dollars >= 10_000) return `$${(dollars / 1000).toFixed(0)}K`;
+  if (dollars >= 1000) return `$${(dollars / 1000).toFixed(1)}K`;
+  return `$${dollars.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
 // ──────────────────────────────────────────────────────────────────────────

@@ -25,3 +25,11 @@ yarn-error.log*
 # OS
 .DS_Store
 .vercel
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Migration source exports contain real customer PII (phone, email, address).
+# Keep them local only; the import scripts read them from the local filesystem.
+_docs/migration/source-exports/*.xlsx
+_docs/migration/source-exports/*.csv
