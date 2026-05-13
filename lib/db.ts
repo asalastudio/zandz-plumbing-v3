@@ -446,6 +446,7 @@ export async function getAnalytics(): Promise<AnalyticsData> {
     city: string | null;
     phone_e164: string | null;
     created_at: string;
+    last_job_completed_at: string | null;
   }> = [];
   {
     const PAGE = 1000;
@@ -453,7 +454,7 @@ export async function getAnalytics(): Promise<AnalyticsData> {
     while (true) {
       const { data, error } = await sb
         .from("customers")
-        .select("id, name, city, phone_e164, created_at")
+        .select("id, name, city, phone_e164, created_at, last_job_completed_at")
         .range(from, from + PAGE - 1);
       if (error) throw new Error(`getAnalytics customers: ${error.message}`);
       allCust.push(...(data ?? []));
@@ -559,22 +560,25 @@ export async function getAnalytics(): Promise<AnalyticsData> {
     .slice(0, 12);
 
   // ── Dormant customers (last job > 12 mo ago) ──
+  // Reads from customers.last_job_completed_at directly, which is preserved
+  // from the legacy import even after invoice_history is cleaned. This keeps
+  // re-engagement outreach working without depending on the muddy financial
+  // data we archived in migration 007.
   const twelveMoAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
-  const dormantCustomers = [...perCustomer.entries()]
-    .filter(([_, v]) => v.lastCompletedOn && v.lastCompletedOn < twelveMoAgo)
-    .sort((a, b) => b[1].revenueCents - a[1].revenueCents)
+  const dormantCustomers = allCust
+    .filter((c) => c.last_job_completed_at && c.last_job_completed_at < twelveMoAgo)
+    .sort((a, b) =>
+      (b.last_job_completed_at ?? "").localeCompare(a.last_job_completed_at ?? "")
+    )
     .slice(0, 25)
-    .map(([cid, v]) => {
-      const c = custById.get(cid);
-      return {
-        id: cid,
-        name: c?.name ?? "Unknown",
-        city: c?.city ?? null,
-        phone_e164: c?.phone_e164 ?? null,
-        lastCompletedOn: v.lastCompletedOn,
-        revenueCents: v.revenueCents,
-      };
-    });
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      city: c.city,
+      phone_e164: c.phone_e164,
+      lastCompletedOn: c.last_job_completed_at,
+      revenueCents: perCustomer.get(c.id)?.revenueCents ?? 0,
+    }));
 
   // ── New customers per month (last 24) ──
   const newCustMap = new Map<string, number>();
