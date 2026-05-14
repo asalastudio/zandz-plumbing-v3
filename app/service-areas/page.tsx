@@ -11,7 +11,7 @@ import { serviceAreas } from "@/content/service-areas";
 export const metadata: Metadata = {
   title: "Plumbing Service Areas | Oakland, San Leandro, Berkeley & East Bay",
   description:
-    "Z and Z Plumbing serves the East Bay corridor from our San Leandro headquarters, including Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, Walnut Creek, and Contra Costa County. 24/7 emergency response.",
+    "Z and Z Plumbing serves the East Bay corridor from our San Leandro headquarters, including Alameda County, Contra Costa County, Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, and Walnut Creek. 24/7 emergency response.",
   alternates: { canonical: `${siteSettings.siteUrl}/service-areas/` },
   openGraph: {
     title: "Service Areas | Z and Z Plumbing",
@@ -97,8 +97,8 @@ export default function ServiceAreasHubPage() {
 
             <div className="mt-8 grid grid-cols-3 border border-[#E5E5E5]">
               <div className="border-r border-[#E5E5E5] p-4">
-                <p className="font-display text-4xl font-black uppercase leading-none text-black">17+</p>
-                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">East Bay areas</p>
+                <p className="font-display text-4xl font-black uppercase leading-none text-black">120+</p>
+                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">East Bay ZIPs</p>
               </div>
               <div className="border-r border-[#E5E5E5] p-4">
                 <p className="font-display text-4xl font-black uppercase leading-none text-black">30-60</p>
@@ -188,7 +188,7 @@ export default function ServiceAreasHubPage() {
         <SectionHeading
           eyebrow="Choose Your Area"
           title="East Bay Service Areas."
-          description="Click an area to see the neighborhoods and ZIP codes we serve most often."
+          description="Click an area to see the neighborhoods and ZIP codes we serve. County cards keep every East Bay ZIP covered, even when a city does not have its own page yet."
         />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {ordered.map((area) => (

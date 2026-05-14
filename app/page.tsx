@@ -118,7 +118,7 @@ const secondaryServiceCards = [
 ];
 
 const coverageStats = [
-  { value: "17+", label: "East Bay areas" },
+  { value: "120+", label: "East Bay ZIPs" },
   { value: "30-60", label: "min nearby response" },
   { value: "2003", label: "serving the East Bay" },
 ];

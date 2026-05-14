@@ -8,7 +8,7 @@
  */
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent } from "react";
 import { MapPin, ChevronRight } from "lucide-react";
 
 export default function HeroZipForm({
@@ -18,15 +18,16 @@ export default function HeroZipForm({
 }) {
   const router = useRouter();
   const [zip, setZip] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const dark = variant === "dark";
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!/^\d{5}$/.test(zip)) return;
-    setSubmitting(true);
-    router.push(`/book/?zip=${zip}`);
+    if (!/^\d{5}$/.test(zip) || isPending) return;
+    startTransition(() => {
+      router.push(`/book/?zip=${zip}`);
+    });
   };
 
   return (
@@ -67,11 +68,11 @@ export default function HeroZipForm({
       </div>
       <button
         type="submit"
-        disabled={zip.length !== 5 || submitting}
+        disabled={zip.length !== 5 || isPending}
         className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-3 text-base font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] md:min-h-0 md:py-3.5 md:text-sm"
       >
-        Get Help
-        <ChevronRight className="h-4 w-4" />
+        {isPending ? "Opening..." : "Get Help"}
+        {!isPending && <ChevronRight className="h-4 w-4" />}
       </button>
     </form>
   );

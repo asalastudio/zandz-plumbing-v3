@@ -13,6 +13,7 @@ import { submitLead as submitLeadToHubSpotForm, type LeadPayload } from "@/lib/h
 import { createHubSpotDeal } from "@/lib/hubspot-deals";
 import { sendDispatchEmail } from "@/lib/resend";
 import { sendDispatchSms, sendCustomerReceiptSms } from "@/lib/lead-sms";
+import { lookupServiceAreaBySlug, lookupServiceAreaByZip } from "@/lib/service-area-lookup";
 import { toE164 } from "@/lib/twilio";
 
 export interface LeadInput extends LeadPayload {
@@ -229,19 +230,14 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────
 
-import { serviceAreas } from "@/content/service-areas";
-
 function deriveCity(input: LeadInput): string | null {
   // First try the explicit serviceAreaSlug the client passed
   if (input.serviceAreaSlug) {
-    const a = serviceAreas.find((s) => s.slug === input.serviceAreaSlug);
+    const a = lookupServiceAreaBySlug(input.serviceAreaSlug);
     if (a) return a.city;
   }
   // Fallback: look up by ZIP
-  const zip = input.zip?.trim();
-  if (!zip) return null;
-  const a = serviceAreas.find((s) => s.zips.includes(zip));
-  return a?.city ?? null;
+  return lookupServiceAreaByZip(input.zip)?.city ?? null;
 }
 
 function buildInternalNotes(input: LeadInput): string {

@@ -78,6 +78,13 @@ export function QuickLeadForm({
     setForm((current) => ({ ...current, [key]: value }));
   };
 
+  const resetForm = () => {
+    setForm(buildInitialState(zip, cityLabel));
+    setSubmitting(false);
+    setError(null);
+    setStep("contact");
+  };
+
   const validateContact = (): boolean => {
     if (!form.firstName.trim() || !form.lastName.trim()) {
       setError("Please enter your first and last name.");
@@ -176,13 +183,22 @@ export function QuickLeadForm({
               Your request is in the Z and Z dashboard. A real person will call you at{" "}
               <span className="font-semibold text-black">{form.phone}</span>.
             </p>
-            <a
-              href={`tel:${siteSettings.phoneTel}`}
-              className="mt-5 inline-flex items-center justify-center gap-2 bg-black px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1a1a1a]"
-            >
-              <Phone className="h-4 w-4" aria-hidden="true" />
-              Call now
-            </a>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="inline-flex min-h-12 items-center justify-center border border-black px-5 text-sm font-bold text-black transition-colors hover:bg-black hover:text-white"
+              >
+                Start another request
+              </button>
+              <a
+                href={`tel:${siteSettings.phoneTel}`}
+                className="inline-flex min-h-12 items-center justify-center gap-2 bg-black px-5 text-sm font-bold text-white transition-colors hover:bg-[#1a1a1a]"
+              >
+                <Phone className="h-4 w-4" aria-hidden="true" />
+                Call now
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -46,7 +46,7 @@ function buildFaqs(serviceTitle: string): FaqItem[] {
     },
     {
       question: `Where do you offer this service?`,
-      answer: `Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, Walnut Creek, Contra Costa County, and the surrounding East Bay corridor. See our service areas page for full coverage and ZIP details.`,
+      answer: `Alameda County and Contra Costa County, including Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, Walnut Creek, and the surrounding East Bay corridor. See our service areas page for full coverage and ZIP details.`,
     },
     {
       question: `Do you provide a written estimate before starting work?`,

@@ -30,9 +30,9 @@ import {
   Zap,
   HelpCircle,
 } from "lucide-react";
-import { serviceAreas } from "@/content/service-areas";
 import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { lookupServiceAreaByZip } from "@/lib/service-area-lookup";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -117,7 +117,7 @@ const initialFormState = (initialZip = "", initialService = ""): FormState => {
   const matchedService = SERVICE_OPTIONS.find((s) => s.id === initialService);
   const cleanZip = initialZip.trim();
   const hasInitialZip = /^\d{5}$/.test(cleanZip);
-  const serviceArea = hasInitialZip ? lookupServiceArea(cleanZip) : null;
+  const serviceArea = hasInitialZip ? lookupServiceAreaByZip(cleanZip) : null;
   return {
     zip: cleanZip,
     zipValidated: hasInitialZip,
@@ -135,15 +135,6 @@ const initialFormState = (initialZip = "", initialService = ""): FormState => {
     photo: null,
   };
 };
-
-function lookupServiceArea(zip: string) {
-  const z = zip.trim();
-  if (!/^\d{5}$/.test(z)) return null;
-  for (const area of serviceAreas) {
-    if (area.zips.includes(z)) return { city: area.city, slug: area.slug };
-  }
-  return null;
-}
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 10);
@@ -200,7 +191,7 @@ export default function BookingForm({
       return;
     }
     setSubmitError(null);
-    const match = lookupServiceArea(z);
+    const match = lookupServiceAreaByZip(z);
     setForm((f) => ({
       ...f,
       zip: z,
@@ -222,6 +213,7 @@ export default function BookingForm({
 
   const handleFinalSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setSubmitError(null);
 
     if (!form.firstName.trim() || !form.lastName.trim()) {
@@ -282,6 +274,13 @@ export default function BookingForm({
     }
   };
 
+  const handleStartOver = () => {
+    setSubmitting(false);
+    setSubmitError(null);
+    setForm(initialFormState(initialZip, initialService));
+    goToStep(hasInitialZip ? (hasInitialService ? 3 : 2) : 1);
+  };
+
   // ────────────────────────────────────────────────────────────────────────
   // Render
   // ────────────────────────────────────────────────────────────────────────
@@ -329,7 +328,7 @@ export default function BookingForm({
           />
         )}
 
-        {step === 4 && <StepConfirmation form={form} />}
+        {step === 4 && <StepConfirmation form={form} onStartOver={handleStartOver} />}
       </div>
 
       <p className="mt-4 text-center text-xs text-[#666666]">
@@ -469,8 +468,7 @@ function StepZip({
       )}
 
       <p className="text-xs text-[#999]">
-        We serve the East Bay corridor · San Leandro, Oakland, Berkeley, Alameda, Hayward,
-        Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, Walnut Creek, and Contra Costa County.
+        We serve the East Bay corridor · Alameda County and Contra Costa County ZIPs.
       </p>
     </form>
   );
@@ -885,7 +883,13 @@ function Field({
 // Step 4 — Confirmation
 // ──────────────────────────────────────────────────────────────────────────
 
-function StepConfirmation({ form }: { form: FormState }) {
+function StepConfirmation({
+  form,
+  onStartOver,
+}: {
+  form: FormState;
+  onStartOver: () => void;
+}) {
   return (
     <div className="flex flex-col gap-5 text-center">
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
@@ -920,12 +924,21 @@ function StepConfirmation({ form }: { form: FormState }) {
         </dl>
       </div>
 
-      <a
-        href={`tel:${siteSettings.phoneTel}`}
-        className="inline-flex items-center justify-center gap-2 self-center rounded-xl border-2 border-black bg-black px-6 py-4 text-sm font-bold text-white hover:bg-[#1a1a1a]"
-      >
-        <Phone className="h-4 w-4" /> Or call now: {siteSettings.phone}
-      </a>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={onStartOver}
+          className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-[#D8D8D8] bg-white px-5 text-sm font-black text-black hover:border-black"
+        >
+          Start another request
+        </button>
+        <a
+          href={`tel:${siteSettings.phoneTel}`}
+          className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-black bg-black px-5 text-sm font-bold text-white hover:bg-[#1a1a1a]"
+        >
+          <Phone className="h-4 w-4" /> Call now
+        </a>
+      </div>
     </div>
   );
 }
