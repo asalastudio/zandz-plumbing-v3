@@ -11,10 +11,10 @@ SUPABASE_URL=https://mwxyobjgyxxnlxynfnjg.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<the long eyJhbGci... service_role key>
 ```
 
-Install script-only dependencies:
+Install dependencies from the lockfile:
 
 ```
-npm install xlsx dotenv
+npm install
 ```
 
 ## import-servicetitan-invoices.mjs

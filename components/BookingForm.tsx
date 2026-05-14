@@ -791,7 +791,7 @@ function StepContact({
               fileName={form.photo?.name}
               onChange={(file) => update("photo", file)}
               label="Add a photo"
-              description="Take one quick photo if it helps us understand the issue."
+              description="Take a photo or choose one from your library."
             />
 
             <div>

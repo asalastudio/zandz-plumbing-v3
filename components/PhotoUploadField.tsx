@@ -14,7 +14,7 @@ export function PhotoUploadField({
   fileName,
   onChange,
   label = "Add a photo",
-  description = "Optional, but helpful for leaks, drains, water heaters, and access issues.",
+  description = "Take a photo or choose one from your library.",
   variant = "light",
 }: PhotoUploadFieldProps) {
   const isDark = variant === "dark";
@@ -32,7 +32,6 @@ export function PhotoUploadField({
         <input
           type="file"
           accept="image/*"
-          capture="environment"
           className="sr-only"
           onChange={(event) => onChange(event.target.files?.[0] ?? null)}
         />

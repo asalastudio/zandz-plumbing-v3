@@ -167,13 +167,12 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
         <label className="block">
           <span className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60">
             <Camera className="h-4 w-4 text-[#F96302]" aria-hidden="true" />
-            Job photo
+            Job photo or upload
           </span>
           <input
             name="photo"
             type="file"
             accept="image/*"
-            capture="environment"
             className="w-full border border-white/15 bg-black px-3 py-3 text-sm text-white file:mr-3 file:border-0 file:bg-[#F96302] file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
           />
         </label>

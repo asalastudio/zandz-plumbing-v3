@@ -326,7 +326,7 @@ export function QuickLeadForm({
               fileName={form.photo?.name}
               onChange={(file) => update("photo", file)}
               label="Add a photo"
-              description="Optional. A quick phone photo can help us route the right crew."
+              description="Take a photo or choose one from your library."
             />
           </div>
 

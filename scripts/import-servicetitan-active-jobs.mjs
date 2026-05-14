@@ -27,12 +27,11 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import * as XLSX from "xlsx";
 import { config as loadEnv } from "dotenv";
-import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import ws from "ws";
+import { excelSerialDateToIso, readExcelRows } from "./lib/read-excel-rows.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -94,11 +93,7 @@ function parseLocation(loc) {
 function toIso(v) {
   if (!v) return null;
   if (v instanceof Date) return v.toISOString();
-  if (typeof v === "number") {
-    const d = XLSX.SSF.parse_date_code(v);
-    if (!d) return null;
-    return new Date(Date.UTC(d.y, d.m - 1, d.d, d.H ?? 0, d.M ?? 0, Math.floor(d.S ?? 0))).toISOString();
-  }
+  if (typeof v === "number") return excelSerialDateToIso(v);
   const d = new Date(v);
   return Number.isFinite(d.getTime()) ? d.toISOString() : null;
 }
@@ -122,11 +117,7 @@ function mapStatus(raw) {
 // ──────────────────────────────────────────────────────────────────────────
 
 console.log(`\n📄 Reading: ${xlsxPath}\n`);
-const buf = readFileSync(xlsxPath);
-const wb = XLSX.read(buf, { type: "buffer", cellDates: true });
-const sheetName = wb.SheetNames[0];
-const sheet = wb.Sheets[sheetName];
-const raw = XLSX.utils.sheet_to_json(sheet, { defval: null, raw: true });
+const { sheetName, rows: raw } = await readExcelRows(xlsxPath);
 console.log(`Loaded ${raw.length} active-job rows from sheet "${sheetName}".`);
 
 if (raw.length > 0) {
