@@ -7,21 +7,11 @@ import {
   ChevronRight,
   Menu,
   Phone,
+  Tag,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { siteSettings } from "@/content/site-settings";
-
-const desktopNavLinks = [
-  { label: "Services", href: "/services/" },
-  { label: "Service Areas", href: "/service-areas/" },
-  ...(siteSettings.features.coupons
-    ? [{ label: "Coupons", href: "/coupons/" }]
-    : []),
-  { label: "Videos", href: "/videos/" },
-  { label: "About", href: "/about/" },
-  { label: "Contact", href: "/contact/" },
-];
 
 const mobileServiceLinks = [
   { label: "All Services", href: "/services/" },
@@ -39,6 +29,20 @@ const trustItems = [
   "Since 2003",
 ];
 
+type FeaturedCoupon = {
+  id: number;
+  headline: string;
+  subheadline: string | null;
+  code: string | null;
+};
+
+async function fetchFeaturedCoupon(): Promise<FeaturedCoupon | null> {
+  const res = await fetch("/api/coupons/featured/", { cache: "no-store" });
+  if (!res.ok) return null;
+  const data = (await res.json()) as { coupon?: FeaturedCoupon | null };
+  return data.coupon ?? null;
+}
+
 function isActivePath(pathname: string | null, href: string) {
   if (!pathname) return false;
   const cleanPath = pathname !== "/" ? pathname.replace(/\/$/, "") : pathname;
@@ -55,7 +59,61 @@ function isExactPath(pathname: string | null, href: string) {
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [featuredCoupon, setFeaturedCoupon] = useState<FeaturedCoupon | null>(null);
   const pathname = usePathname();
+  const showCoupons = siteSettings.features.coupons || Boolean(featuredCoupon);
+  const menuCoupon =
+    featuredCoupon ??
+    (siteSettings.features.coupons
+      ? {
+          id: 0,
+          headline: "Current coupons",
+          subheadline: "See today's plumbing specials.",
+          code: null,
+        }
+      : null);
+  const desktopNavLinks = [
+    { label: "Services", href: "/services/" },
+    { label: "Service Areas", href: "/service-areas/" },
+    ...(showCoupons ? [{ label: "Coupons", href: "/coupons/" }] : []),
+    { label: "Videos", href: "/videos/" },
+    { label: "About", href: "/about/" },
+    { label: "Contact", href: "/contact/" },
+  ];
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchFeaturedCoupon()
+      .then((coupon) => {
+        if (!cancelled) setFeaturedCoupon(coupon);
+      })
+      .catch(() => {
+        if (!cancelled) setFeaturedCoupon(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    let cancelled = false;
+
+    fetchFeaturedCoupon()
+      .then((coupon) => {
+        if (!cancelled) setFeaturedCoupon(coupon);
+      })
+      .catch(() => {
+        if (!cancelled) setFeaturedCoupon(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -158,7 +216,7 @@ export function Header() {
           aria-label="Mobile navigation"
           className="fixed inset-0 z-[80] bg-black text-white md:hidden"
         >
-          <div className="flex h-dvh min-h-screen flex-col overflow-y-auto">
+          <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
             <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/10 px-6">
               <Logo variant="light" />
               <button
@@ -179,7 +237,7 @@ export function Header() {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col px-5 py-4">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
               <div className="rounded-lg border border-white/15 bg-white/[0.04] p-3.5">
                 <div>
                   <div>
@@ -209,6 +267,39 @@ export function Header() {
                   Call {siteSettings.phone}
                 </a>
               </div>
+
+              {menuCoupon && (
+                <div className="mt-3 rounded-lg border border-dashed border-[#F96302]/70 bg-[#F96302]/10 p-3.5">
+                  <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-[#F96302]">
+                    <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+                    {featuredCoupon ? "Current coupon" : "Coupons"}
+                  </p>
+                  <p className="mt-2 font-display text-[1.35rem] font-black uppercase leading-none text-white">
+                    {menuCoupon.headline}
+                  </p>
+                  {menuCoupon.subheadline && (
+                    <p className="mt-1 text-sm leading-snug text-white/60">
+                      {menuCoupon.subheadline}
+                    </p>
+                  )}
+                  {menuCoupon.code && (
+                    <p className="mt-2 text-xs font-bold uppercase tracking-[0.08em] text-white/55">
+                      Code{" "}
+                      <span className="font-black text-white">
+                        {menuCoupon.code}
+                      </span>
+                    </p>
+                  )}
+                  <Link
+                    href="/coupons/"
+                    onClick={closeMobileMenu}
+                    className="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#F96302] bg-black px-4 text-sm font-black uppercase tracking-[0.08em] text-white"
+                  >
+                    View coupon
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              )}
 
               <nav className="mt-5" aria-label="Mobile navigation">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
@@ -253,7 +344,7 @@ export function Header() {
                   })}
                 </div>
 
-                {siteSettings.features.coupons && (
+                {showCoupons && (
                   <div className="mt-3 border-t border-white/10 pt-3">
                     <Link
                       href="/coupons/"
