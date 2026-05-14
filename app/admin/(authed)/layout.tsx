@@ -13,6 +13,7 @@ import {
   Tag,
   LogOut,
   BarChart3,
+  Wrench,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -28,6 +29,7 @@ const nav = [
   { href: "/admin/leads", label: "Leads", icon: Inbox },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
+  { href: "/field", label: "Field", icon: Wrench },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/crew", label: "Crew", icon: HardHat },
@@ -96,7 +98,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-white/10 bg-black lg:hidden"
       >
         {nav
-          .filter((n) => ["Dashboard", "Leads", "Dispatch", "Jobs", "Customers"].includes(n.label))
+          .filter((n) => ["Dashboard", "Leads", "Dispatch", "Field", "Jobs"].includes(n.label))
           .map((item) => {
           const Icon = item.icon;
           return (

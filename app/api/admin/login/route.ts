@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
   const password = (formData.get("password") as string | null)?.trim() ?? "";
   const next = (formData.get("next") as string | null) ?? "/admin";
 
-  // Safety: never redirect to a non-admin path via the next param
-  const safeNext = next.startsWith("/admin") ? next : "/admin";
+  // Safety: only redirect into the authenticated OS surfaces.
+  const safeNext = next.startsWith("/admin") || next.startsWith("/field") ? next : "/admin";
 
   if (!process.env.ADMIN_PASSWORD_HASH || !process.env.SESSION_SECRET) {
     return NextResponse.redirect(new URL("/admin/login?error=not-configured", req.url), 303);

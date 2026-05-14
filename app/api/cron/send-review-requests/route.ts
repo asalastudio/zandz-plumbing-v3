@@ -66,9 +66,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, sent: 0, message: "No due requests" });
   }
 
-  const googleReviewUrl =
-    process.env.GOOGLE_REVIEW_URL ?? "https://g.page/r/replace-with-real-cid/review";
-
   const results: Array<{ id: number; ok: boolean; reason?: string }> = [];
 
   for (const r of due) {

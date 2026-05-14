@@ -11,7 +11,6 @@ import {
   Award,
   Clock,
   MapPin,
-  ChevronRight,
 } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";

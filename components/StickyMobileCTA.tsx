@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Phone } from "lucide-react";
 import { siteSettings } from "@/content/site-settings";
 
@@ -10,18 +11,18 @@ export function StickyMobileCTA() {
     >
       <a
         href={`tel:${siteSettings.phoneTel}`}
-        className="bg-[#F5F5F5] flex items-center justify-center gap-2 font-semibold text-black text-sm"
+        className="flex items-center justify-center gap-2 bg-[#F96302] font-bold text-white text-sm"
         aria-label={`Call Z and Z Plumbing at ${siteSettings.phone}`}
       >
         <Phone className="h-5 w-5" aria-hidden="true" />
         {siteSettings.phone}
       </a>
-      <a
+      <Link
         href="/book/"
         className="bg-black text-white flex items-center justify-center font-semibold text-sm"
       >
         Schedule
-      </a>
+      </Link>
     </div>
   );
 }

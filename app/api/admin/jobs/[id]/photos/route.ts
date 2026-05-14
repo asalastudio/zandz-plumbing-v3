@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { isAuthenticated } from "@/lib/auth";
-import { STATUS_TRANSITIONS, type JobStatus } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import {
+  isUploadablePhoto,
+  saveJobPhoto,
+  type JobPhotoCategory,
+} from "@/lib/job-photos";
 
 export const runtime = "nodejs";
 
-const ALL_STATUSES: JobStatus[] = [
-  "new",
-  "scheduled",
-  "en_route",
-  "on_site",
-  "paused",
-  "complete",
-  "invoiced",
-  "paid",
-  "cancelled",
-];
+const CATEGORIES: JobPhotoCategory[] = ["before", "after", "failure", "permit", "invoice", "other"];
 
 export async function POST(
   req: NextRequest,
@@ -35,33 +29,35 @@ export async function POST(
   }
 
   const form = await req.formData();
-  const next = String(form.get("status") ?? "");
-  if (!ALL_STATUSES.includes(next as JobStatus)) {
-    return redirectBack(req, id, "error=bad_status");
+  const photoValue = form.get("photo");
+  const categoryValue = String(form.get("category") ?? "other");
+  const category = CATEGORIES.includes(categoryValue as JobPhotoCategory)
+    ? (categoryValue as JobPhotoCategory)
+    : "other";
+
+  if (!(photoValue instanceof File) || !isUploadablePhoto(photoValue)) {
+    return redirectBack(req, id, "photo=missing");
   }
 
-  const sb = supabase();
-  const { data: job, error: fetchErr } = await sb
-    .from("jobs")
-    .select("status")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (fetchErr || !job) {
-    return NextResponse.redirect(new URL(`/admin/jobs?error=not_found`, req.url), 303);
+  try {
+    await saveJobPhoto({
+      jobId: id,
+      file: photoValue,
+      category,
+      caption: stringOrNull(form.get("caption")),
+    });
+  } catch (err) {
+    console.error("[jobs.photos]", err);
+    return redirectBack(req, id, "photo=error");
   }
 
-  const allowed = STATUS_TRANSITIONS[job.status as JobStatus] ?? [];
-  if (!allowed.includes(next as JobStatus)) {
-    return redirectBack(req, id, "error=invalid_transition");
-  }
+  return redirectBack(req, id, "photo=1");
+}
 
-  const { error: updateErr } = await sb.from("jobs").update({ status: next }).eq("id", id);
-  if (updateErr) {
-    return redirectBack(req, id, "error=db");
-  }
-
-  return redirectBack(req, id, "updated=1");
+function stringOrNull(value: FormDataEntryValue | null): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
 }
 
 function redirectBack(req: NextRequest, jobId: number, query: string): NextResponse {
@@ -73,9 +69,6 @@ function redirectBack(req: NextRequest, jobId: number, query: string): NextRespo
     const ref = new URL(referer);
     const current = new URL(req.url);
     if (ref.origin !== current.origin) return NextResponse.redirect(fallback, 303);
-    if (!ref.pathname.startsWith("/admin") && !ref.pathname.startsWith("/field")) {
-      return NextResponse.redirect(fallback, 303);
-    }
     const [key, value] = query.split("=");
     ref.searchParams.set(key, value ?? "1");
     return NextResponse.redirect(ref, 303);

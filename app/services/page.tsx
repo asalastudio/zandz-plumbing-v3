@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Phone, ChevronRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";
@@ -55,7 +56,7 @@ export default function ServicesHubPage() {
       {/* Hero */}
       <Section bg="black" size="lg">
         <nav aria-label="Breadcrumb" className="mb-6 text-xs font-bold uppercase tracking-[0.12em] text-white/50">
-          <a href="/" className="hover:text-[#F96302]">Home</a>
+          <Link href="/" className="hover:text-[#F96302]">Home</Link>
           <span className="mx-2 text-white/30">/</span>
           <span className="text-white">Services</span>
         </nav>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LearningResource } from "@/lib/db";
 
 interface Props {
@@ -107,12 +108,12 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
       </Field>
 
       <div className="md:col-span-2 flex justify-end gap-3">
-        <a
+        <Link
           href="/admin/learning"
           className="inline-flex items-center bg-transparent border border-white/15 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
         >
           Cancel
-        </a>
+        </Link>
         <button
           type="submit"
           className="inline-flex items-center bg-[#F96302] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602]"

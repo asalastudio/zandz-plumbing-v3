@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
@@ -55,12 +56,12 @@ export function FaucetMark({ size = 44, className }: FaucetMarkProps) {
  * color treatment built in, so the light/dark variant prop is preserved for
  * API compatibility but has no visual effect on the SVG itself.
  */
-export function Logo({ className, linkWrapper = true }: LogoProps) {
+export function Logo({ variant = "light", className, linkWrapper = true }: LogoProps) {
   const mark = (
     <img
-      src="/logo.svg"
+      src={variant === "dark" ? "/logo-dark.svg" : "/logo.svg"}
       alt="Z and Z Plumbing"
-      width={140}
+      width={228}
       height={56}
       className={cn("h-12 w-auto md:h-14", className)}
     />

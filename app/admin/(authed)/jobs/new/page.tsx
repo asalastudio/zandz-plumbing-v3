@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { listCustomers, listCrew, getCustomer } from "@/lib/db";
 import { services } from "@/content/services";
+import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "New Job · Z and Z OS" };
@@ -100,21 +101,7 @@ export default async function NewJobPage({
             </p>
           </Field>
 
-          <Field label="Scheduled start (local time)">
-            <input
-              name="scheduled_start"
-              type="datetime-local"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
-            />
-          </Field>
-
-          <Field label="Scheduled end (optional)">
-            <input
-              name="scheduled_end"
-              type="datetime-local"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
-            />
-          </Field>
+          <ScheduleTimeFields className="md:col-span-2" />
 
           <Field label="Assign to crew">
             <select

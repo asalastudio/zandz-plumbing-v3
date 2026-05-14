@@ -13,7 +13,7 @@
  * and any "Schedule [Service]" link).
  */
 
-import { useState, useEffect, useMemo, type FormEvent } from "react";
+import { useState, useMemo, type FormEvent } from "react";
 import {
   Phone,
   ChevronRight,
@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { serviceAreas } from "@/content/service-areas";
 import { siteSettings } from "@/content/site-settings";
+import { PhotoUploadField } from "@/components/PhotoUploadField";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -108,15 +109,19 @@ interface FormState {
   preferredCallbackTime: string;
   briefDescription: string;
   smsConsent: boolean;
+  photo: File | null;
 }
 
 const initialFormState = (initialZip = "", initialService = ""): FormState => {
   const matchedService = SERVICE_OPTIONS.find((s) => s.id === initialService);
+  const cleanZip = initialZip.trim();
+  const hasInitialZip = /^\d{5}$/.test(cleanZip);
+  const serviceArea = hasInitialZip ? lookupServiceArea(cleanZip) : null;
   return {
-    zip: initialZip,
-    zipValidated: false,
-    serviceArea: null,
-    outOfArea: false,
+    zip: cleanZip,
+    zipValidated: hasInitialZip,
+    serviceArea,
+    outOfArea: hasInitialZip && !serviceArea,
     service: matchedService?.id ?? "",
     serviceLabel: matchedService?.label ?? "",
     firstName: "",
@@ -126,6 +131,7 @@ const initialFormState = (initialZip = "", initialService = ""): FormState => {
     preferredCallbackTime: "",
     briefDescription: "",
     smsConsent: true,
+    photo: null,
   };
 };
 
@@ -157,20 +163,6 @@ export default function BookingForm({
   );
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // If we got an initialZip, auto-validate on mount so step 2 has context.
-  useEffect(() => {
-    if (initialZip && !form.zipValidated) {
-      const match = lookupServiceArea(initialZip);
-      setForm((f) => ({
-        ...f,
-        zipValidated: true,
-        serviceArea: match,
-        outOfArea: !match,
-      }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialZip]);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -231,26 +223,28 @@ export default function BookingForm({
     setSubmitting(true);
 
     try {
+      const payload = new FormData();
+      payload.set("firstName", form.firstName.trim());
+      payload.set("lastName", form.lastName.trim());
+      payload.set("email", form.email.trim());
+      payload.set("phone", phoneDigits);
+      payload.set("zip", form.zip);
+      payload.set("serviceInterest", form.service);
+      payload.set("serviceLabel", form.serviceLabel);
+      payload.set("smsConsent", String(form.smsConsent));
+      payload.set("outOfArea", String(form.outOfArea));
+      if (form.preferredCallbackTime) payload.set("preferredCallbackTime", form.preferredCallbackTime);
+      if (form.briefDescription.trim()) payload.set("briefDescription", form.briefDescription.trim());
+      if (form.serviceArea?.slug) payload.set("serviceAreaSlug", form.serviceArea.slug);
+      payload.set(
+        "sourcePage",
+        sourcePage ?? (typeof window !== "undefined" ? window.location.pathname : "")
+      );
+      if (form.photo) payload.set("photo", form.photo);
+
       const res = await fetch("/api/lead/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          email: form.email.trim(),
-          phone: phoneDigits,
-          zip: form.zip,
-          serviceInterest: form.service,
-          serviceLabel: form.serviceLabel,
-          preferredCallbackTime: form.preferredCallbackTime || undefined,
-          briefDescription: form.briefDescription.trim() || undefined,
-          smsConsent: form.smsConsent,
-          outOfArea: form.outOfArea,
-          serviceAreaSlug: form.serviceArea?.slug,
-          sourcePage:
-            sourcePage ??
-            (typeof window !== "undefined" ? window.location.pathname : undefined),
-        }),
+        body: payload,
       });
 
       if (!res.ok) {
@@ -677,6 +671,13 @@ function StepContact({
         onChange={(v) => update("briefDescription", v)}
         type="textarea"
         placeholder="Anything we should know before we call?"
+      />
+
+      <PhotoUploadField
+        fileName={form.photo?.name}
+        onChange={(file) => update("photo", file)}
+        label="Add a photo"
+        description="Take one quick photo if it helps us understand the issue."
       />
 
       <div>

@@ -19,8 +19,8 @@ export default async function DispatchPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const params = await searchParams;
-  const day = params.date ? new Date(params.date) : new Date();
-  if (Number.isNaN(day.getTime())) day.setTime(Date.now());
+  const parsedDay = params.date ? new Date(params.date) : null;
+  const day = parsedDay && !Number.isNaN(parsedDay.getTime()) ? parsedDay : new Date();
 
   if (!isSupabaseConfigured()) {
     return (

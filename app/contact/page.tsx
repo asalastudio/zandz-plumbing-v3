@@ -286,7 +286,7 @@ export default function ContactPage() {
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div>
             <h2 className="font-display text-4xl font-black uppercase leading-tight text-white md:text-5xl">
-              Need a Plumber Now?
+              Need a plumber now?
             </h2>
             <p className="mt-3 max-w-2xl font-sans text-lg text-white/80 md:text-xl">
               A plumber answers the phone. {siteSettings.cslb}.

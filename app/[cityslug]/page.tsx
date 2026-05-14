@@ -11,7 +11,7 @@ import type { FaqItem } from "@/components/FaqAccordion";
 import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { siteSettings } from "@/content/site-settings";
-import { services, featuredServices } from "@/content/services";
+import { featuredServices } from "@/content/services";
 import { serviceAreas } from "@/content/service-areas";
 import { testimonials } from "@/content/testimonials";
 
@@ -361,7 +361,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div>
             <h2 className="font-display text-4xl font-black uppercase leading-tight text-white md:text-5xl">
-              Need a {area.city} Plumber?
+              Need a plumber in {area.city}?
             </h2>
             <p className="mt-2 font-sans text-base text-white/85">
               Call us or book online. A plumber answers the phone.

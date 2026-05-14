@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Users, Phone, Mail, Plus } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { listCrew, type Crew } from "@/lib/db";

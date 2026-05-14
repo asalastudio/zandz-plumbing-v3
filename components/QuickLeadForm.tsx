@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, ChevronRight, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { siteSettings } from "@/content/site-settings";
+import { PhotoUploadField } from "@/components/PhotoUploadField";
 
 interface QuickLeadFormProps {
   title?: string;
@@ -26,6 +27,7 @@ interface QuickLeadFormState {
   serviceCity: string;
   serviceZip: string;
   briefDescription: string;
+  photo: File | null;
 }
 
 type QuickLeadStep = "contact" | "details" | "done";
@@ -40,6 +42,7 @@ function buildInitialState(zip?: string, cityLabel?: string): QuickLeadFormState
     serviceCity: cityLabel ?? "",
     serviceZip: zip ?? "",
     briefDescription: "",
+    photo: null,
   };
 }
 
@@ -119,27 +122,29 @@ export function QuickLeadForm({
     setSubmitting(true);
 
     try {
+      const payload = new FormData();
+      payload.set("firstName", form.firstName.trim());
+      payload.set("lastName", form.lastName.trim());
+      payload.set("phone", form.phone);
+      payload.set("email", form.email.trim());
+      payload.set("serviceInterest", serviceInterest);
+      payload.set("serviceLabel", serviceLabel);
+      payload.set("smsConsent", "false");
+      payload.set("outOfArea", "false");
+      if (serviceZip || zip?.trim()) payload.set("zip", serviceZip || zip?.trim() || "");
+      if (form.serviceAddress.trim()) payload.set("jobAddress", form.serviceAddress.trim());
+      if (form.serviceCity.trim() || cityLabel) payload.set("jobCity", form.serviceCity.trim() || cityLabel || "");
+      if (form.briefDescription.trim()) payload.set("briefDescription", form.briefDescription.trim());
+      if (serviceAreaSlug) payload.set("serviceAreaSlug", serviceAreaSlug);
+      payload.set(
+        "sourcePage",
+        sourcePage ?? (typeof window !== "undefined" ? window.location.pathname : "")
+      );
+      if (form.photo) payload.set("photo", form.photo);
+
       const res = await fetch("/api/lead/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName.trim(),
-          lastName: form.lastName.trim(),
-          phone: form.phone,
-          email: form.email.trim(),
-          zip: serviceZip || zip?.trim() || undefined,
-          jobAddress: form.serviceAddress.trim() || undefined,
-          jobCity: form.serviceCity.trim() || cityLabel || undefined,
-          serviceInterest,
-          serviceLabel,
-          briefDescription: form.briefDescription.trim() || undefined,
-          smsConsent: false,
-          outOfArea: false,
-          serviceAreaSlug,
-          sourcePage:
-            sourcePage ??
-            (typeof window !== "undefined" ? window.location.pathname : undefined),
-        }),
+        body: payload,
       });
 
       if (!res.ok) {
@@ -313,6 +318,15 @@ export function QuickLeadForm({
               onChange={(value) => update("briefDescription", value)}
               type="textarea"
               placeholder="Tell us what is happening."
+            />
+          </div>
+
+          <div className="mt-4">
+            <PhotoUploadField
+              fileName={form.photo?.name}
+              onChange={(file) => update("photo", file)}
+              label="Add a photo"
+              description="Optional. A quick phone photo can help us route the right crew."
             />
           </div>
 

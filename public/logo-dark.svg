@@ -2,5 +2,5 @@
   <title id="title">Z and Z Plumbing</title>
   <rect x="10" y="18" width="60" height="60" fill="#F96302"/>
   <path d="M40 31c8 10 15 18 15 28 0 9-7 16-15 16s-15-7-15-16c0-10 7-18 15-28Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
-  <text x="86" y="58" fill="#fff" font-family="Barlow Condensed, Arial Narrow, Arial, sans-serif" font-size="33" font-weight="900" letter-spacing="1">ZANDZ PLUMBING</text>
+  <text x="86" y="58" fill="#111" font-family="Barlow Condensed, Arial Narrow, Arial, sans-serif" font-size="33" font-weight="900" letter-spacing="1">ZANDZ PLUMBING</text>
 </svg>

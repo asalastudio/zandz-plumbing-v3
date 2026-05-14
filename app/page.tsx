@@ -161,7 +161,7 @@ export default function HomePage() {
   return (
     <>
       {/* ========== HERO ========== */}
-      <section className="flex min-h-[calc(100svh-98px)] flex-col bg-[#F5F5F5] md:min-h-[calc(100svh-104px)]">
+      <section className="flex min-h-[calc(100svh-162px)] flex-col bg-[#F5F5F5] md:min-h-[calc(100svh-104px)]">
         <div className="relative flex flex-1 overflow-hidden">
           <picture className="absolute inset-0 overflow-hidden">
             <source media="(max-width: 767px)" srcSet="/images/zandz-hero-pipe-system-mobile.jpg" />
@@ -174,30 +174,32 @@ export default function HomePage() {
             />
           </picture>
           <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-[#F5F5F5]/80 via-[#F5F5F5]/40 to-transparent md:hidden" aria-hidden="true" />
-          <div className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 items-center px-6 py-12 md:px-8 md:py-14 lg:px-12">
-            <div className="max-w-[300px] sm:max-w-xl lg:max-w-2xl">
-              <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-4 animate-fade-up">
+          <div className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 items-start px-6 pb-7 pt-7 md:items-center md:px-8 md:py-14 lg:px-12">
+            <div className="max-w-[310px] sm:max-w-xl lg:max-w-2xl">
+              <p className="mb-3 font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-[#F96302] animate-fade-up md:mb-4 md:text-xs">
                 Same-Day East Bay Plumbing.
               </p>
               <h1
-                className="font-display text-6xl md:text-7xl lg:text-[6.5rem] font-black uppercase leading-none tracking-tight text-black mb-6 animate-fade-up"
+                className="mb-4 font-display text-[3.35rem] font-black uppercase leading-[0.96] tracking-tight text-black animate-fade-up md:mb-6 md:text-7xl lg:text-[6.5rem]"
                 style={{ animationDelay: "0.12s" }}
               >
-                The Pros Other Plumbers Call.
+                <span className="md:hidden">The Pros Plumbers Call.</span>
+                <span className="hidden md:inline">The Pros Other Plumbers Call.</span>
               </h1>
               <p
-                className="font-sans text-base text-[#333333] leading-relaxed mb-6 max-w-[280px] sm:max-w-lg sm:text-lg animate-fade-up"
+                className="mb-4 max-w-[290px] font-sans text-[15px] leading-snug text-[#333333] animate-fade-up sm:max-w-lg sm:text-lg md:mb-6 md:leading-relaxed"
                 style={{ animationDelay: "0.28s" }}
               >
-                Licensed for the whole job. From house lines to street-side work, we handle it all on time and built to last.
+                <span className="md:hidden">Licensed for house lines, street-side work, and same-day East Bay plumbing.</span>
+                <span className="hidden md:inline">Licensed for the whole job. From house lines to street-side work, we handle it all on time and built to last.</span>
               </p>
 
               <div
-                className="mb-6 animate-fade-up"
+                className="mb-5 animate-fade-up md:mb-6"
                 style={{ animationDelay: "0.36s" }}
               >
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666]">
-                  Start with your ZIP — we&apos;ll route you to the nearest crew
+                <p className="mb-2 max-w-[300px] text-[10px] font-bold uppercase leading-snug tracking-[0.12em] text-[#666] md:text-[11px]">
+                  Enter your ZIP — we&apos;ll route you to the nearest crew
                 </p>
                 <HeroZipForm variant="light" />
               </div>
@@ -230,7 +232,10 @@ export default function HomePage() {
             {heroStats.map((stat, i) => (
               <div
                 key={stat.label}
-                className="border-b border-r border-white/10 px-6 py-6 text-center last:border-r-0 md:flex md:items-center md:justify-center md:gap-5 md:border-b-0 md:px-10 md:py-8 lg:gap-6 lg:px-12 xl:px-16 animate-fade-in"
+                className={[
+                  "border-r border-white/10 px-6 py-6 text-center last:border-r-0 md:flex md:items-center md:justify-center md:gap-5 md:border-b-0 md:px-10 md:py-8 lg:gap-6 lg:px-12 xl:px-16 animate-fade-in",
+                  i > 1 ? "hidden md:flex" : "",
+                ].join(" ")}
                 style={{ animationDelay: `${0.6 + i * 0.1}s` }}
               >
                 <div className="flex items-center justify-center gap-2">

@@ -15,7 +15,11 @@ export default async function AdminLoginPage({
 }) {
   const params = await searchParams;
   const authed = await isAuthenticated();
-  if (authed) redirect("/admin");
+  const safeNext =
+    params.next?.startsWith("/admin") || params.next?.startsWith("/field")
+      ? params.next
+      : "/admin";
+  if (authed) redirect(safeNext);
 
   const errorMessage =
     params.error === "invalid"
@@ -61,7 +65,7 @@ export default async function AdminLoginPage({
             className="w-full border border-white/15 bg-black px-4 py-4 text-lg text-white outline-none focus:border-[#F96302]"
           />
 
-          <input type="hidden" name="next" value={params.next ?? "/admin"} />
+          <input type="hidden" name="next" value={safeNext} />
 
           <button
             type="submit"

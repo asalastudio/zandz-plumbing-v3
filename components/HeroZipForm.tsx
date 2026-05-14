@@ -52,12 +52,12 @@ export default function HeroZipForm({
           inputMode="numeric"
           pattern="\d{5}"
           maxLength={5}
-          placeholder="Enter your ZIP"
+          placeholder="Enter ZIP code"
           value={zip}
           onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
           aria-label="ZIP code"
           className={[
-            "w-full rounded-xl py-3.5 pl-11 pr-4 text-base font-semibold tracking-wide focus:outline-none",
+            "w-full rounded-xl py-3 pl-11 pr-4 text-base font-semibold tracking-wide focus:outline-none md:py-3.5",
             dark
               ? "border-2 border-white/15 bg-white/10 text-white placeholder:text-white/50 backdrop-blur focus:border-[#F96302]"
               : "border-2 border-black/15 bg-white text-black placeholder:text-[#999] focus:border-[#F96302]",
@@ -67,7 +67,7 @@ export default function HeroZipForm({
       <button
         type="submit"
         disabled={zip.length !== 5 || submitting}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-3.5 text-sm font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc]"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] md:py-3.5"
       >
         Get Help
         <ChevronRight className="h-4 w-4" />
