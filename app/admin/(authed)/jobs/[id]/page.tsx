@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Phone, MapPin, Calendar, User, FileText } from "lucide-react";
+import { ChevronLeft, Phone, MapPin, Calendar, User, FileText, AlertTriangle } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getJob,
@@ -12,15 +12,19 @@ import {
   formatMoney,
   type JobStatus,
 } from "@/lib/db";
+import { DeleteJobButton } from "../../_components/DeleteJobButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function JobDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id: idStr } = await params;
+  const query = await searchParams;
   const id = parseInt(idStr, 10);
   if (!id || Number.isNaN(id)) notFound();
 
@@ -63,6 +67,43 @@ export default async function JobDetailPage({
           </p>
         </div>
       </header>
+
+      {query.error === "has_invoice" && (
+        <div className="mb-8 border border-red-500/30 bg-red-500/10 p-5 text-base text-red-100">
+          This job has invoice records attached, so it is protected from deletion.
+        </div>
+      )}
+
+      {query.error && query.error !== "has_invoice" && (
+        <div className="mb-8 border border-red-500/30 bg-red-500/10 p-5 text-base text-red-100">
+          We could not complete that job action. Please try again.
+        </div>
+      )}
+
+      {job.status === "new" && (
+        <section className="mb-8 border-l-4 border-[#F96302] bg-[#F96302]/10 p-5 md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-[#F96302]">
+                <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+                New lead waiting
+              </p>
+              <p className="mt-2 text-base text-white/75">
+                Call the customer, then move this to Scheduled once it becomes real work.
+              </p>
+            </div>
+            {job.customer?.phone_e164 && (
+              <a
+                href={`tel:${job.customer.phone_e164}`}
+                className="inline-flex items-center justify-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+              >
+                <Phone className="h-4 w-4" aria-hidden="true" />
+                Call lead
+              </a>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Status transitions */}
       {transitions.length > 0 && (
@@ -178,6 +219,19 @@ export default async function JobDetailPage({
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <NotesCard title="Customer-facing notes" body={job.customer_notes} icon={FileText} />
         <NotesCard title="Internal notes" body={job.internal_notes} icon={FileText} highlight />
+      </section>
+
+      <section className="mt-8 border border-red-500/25 bg-red-500/5 p-5 md:p-6">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-red-300">
+          Danger zone
+        </p>
+        <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <p className="max-w-2xl text-sm leading-relaxed text-white/60">
+            Delete test entries or accidental duplicates. Jobs with invoices are protected and will
+            not delete from here.
+          </p>
+          <DeleteJobButton jobId={job.id} />
+        </div>
       </section>
     </div>
   );

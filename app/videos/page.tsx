@@ -89,7 +89,7 @@ export default async function VideosPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="lg" href="/contact/">
+          <Button variant="inverse" size="lg" href="/book/">
             Schedule Service
           </Button>
         </div>

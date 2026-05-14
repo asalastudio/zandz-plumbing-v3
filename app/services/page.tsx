@@ -4,6 +4,7 @@ import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";
 import { ServiceCard } from "@/components/ServiceCard";
 import { TrustStrip } from "@/components/TrustStrip";
+import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { siteSettings } from "@/content/site-settings";
 import { services } from "@/content/services";
 
@@ -78,7 +79,7 @@ export default function ServicesHubPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="lg" href="/contact/">
+          <Button variant="inverse" size="lg" href="#services-intake">
             Schedule Online
           </Button>
         </div>
@@ -130,6 +131,31 @@ export default function ServicesHubPage() {
           >
             Talk to a Plumber
           </Button>
+        </div>
+      </Section>
+
+      {/* Services intake */}
+      <Section bg="black" size="md" id="services-intake">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+              Need help choosing?
+            </p>
+            <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-white md:text-5xl">
+              Request a Plumbing Call Back.
+            </h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
+              If you are not sure which service fits, send the basics. The lead lands in Z and Z&apos;s dashboard and
+              the crew will sort out the category on the call.
+            </p>
+          </div>
+          <QuickLeadForm
+            title="Plumbing service request"
+            description="Name, phone, email, and a quick note are enough to get the callback started."
+            serviceInterest="services-page-request"
+            serviceLabel="Services page request"
+            sourcePage="/services/"
+          />
         </div>
       </Section>
 

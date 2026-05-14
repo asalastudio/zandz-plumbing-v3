@@ -4,6 +4,7 @@ import { Phone, Mail, MapPin, Clock, AlertTriangle } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";
 import { TrustStrip } from "@/components/TrustStrip";
+import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
@@ -108,11 +109,9 @@ export default function ContactPage() {
           <Button
             variant="inverse"
             size="xl"
-            href={`mailto:${siteSettings.email}`}
-            icon={<Mail className="h-5 w-5" />}
-            external
+            href="#contact-intake"
           >
-            Email Us
+            Request a Call Back
           </Button>
         </div>
       </Section>
@@ -144,6 +143,31 @@ export default function ContactPage() {
           >
             {siteSettings.phone}
           </Button>
+        </div>
+      </Section>
+
+      {/* Contact intake */}
+      <Section bg="white" size="md" id="contact-intake">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+              Prefer a callback?
+            </p>
+            <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-black md:text-5xl">
+              Send Your Details.
+            </h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-[#333333]">
+              Calling is fastest, especially for emergencies. For non-urgent work, this form creates a new lead in the
+              Z and Z dashboard so the team can call you back.
+            </p>
+          </div>
+          <QuickLeadForm
+            title="Contact request"
+            description="Name, phone, email, and a short note are enough. We will confirm the job details on the call."
+            serviceInterest="contact-page-request"
+            serviceLabel="Contact page request"
+            sourcePage="/contact/"
+          />
         </div>
       </Section>
 

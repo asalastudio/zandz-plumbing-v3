@@ -159,7 +159,7 @@ export function Footer() {
               ))}
             </ul>
             <a
-              href="/contact/#schedule"
+              href="/book/"
               className="inline-flex items-center justify-center w-full bg-[#F96302] text-white py-3 px-6 text-sm font-bold uppercase tracking-wide rounded-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602]"
             >
               Schedule Online

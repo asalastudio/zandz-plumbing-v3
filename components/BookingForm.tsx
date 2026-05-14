@@ -231,7 +231,7 @@ export default function BookingForm({
     setSubmitting(true);
 
     try {
-      const res = await fetch("/api/lead", {
+      const res = await fetch("/api/lead/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

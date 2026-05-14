@@ -29,7 +29,7 @@ export interface LeadPayload {
   lastName: string;
   email: string;
   phone: string;
-  zip: string;
+  zip?: string;
   serviceInterest: string;
   preferredCallbackTime?: string;
   briefDescription?: string;
@@ -58,7 +58,7 @@ export async function submitLead(
     { name: "lastname", value: payload.lastName },
     { name: "email", value: payload.email },
     { name: "phone", value: payload.phone },
-    { name: "zip_code", value: payload.zip },
+    { name: "zip_code", value: payload.zip ?? "" },
     { name: "service_interest", value: payload.serviceInterest },
     { name: "preferred_callback_time", value: payload.preferredCallbackTime ?? "" },
     { name: "brief_description", value: payload.briefDescription ?? "" },

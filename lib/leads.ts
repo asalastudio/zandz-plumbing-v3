@@ -43,6 +43,7 @@ const failed = (detail: string): SideEffect => ({ ok: false, detail });
 
 export async function ingestLead(input: LeadInput): Promise<LeadResult> {
   const fullName = `${input.firstName} ${input.lastName}`.trim();
+  const zip = input.zip?.trim() || undefined;
   const phoneE164 = toE164(input.phone);
   if (!phoneE164) {
     return {
@@ -100,7 +101,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
             name: fullName,
             phone_e164: phoneE164,
             email: input.email,
-            zip: input.zip,
+            zip: zip ?? null,
             city: cityFromArea,
           })
           .select("id")
@@ -119,7 +120,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
           service_type: input.serviceInterest,
           service_label: input.serviceLabel ?? input.serviceInterest,
           status: "new",
-          job_zip: input.zip,
+          job_zip: zip ?? null,
           job_city: cityFromArea,
           customer_notes: input.briefDescription ?? null,
           internal_notes: internalNotes,
@@ -149,7 +150,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       lastName: input.lastName,
       email: input.email,
       phone: phoneE164,
-      zip: input.zip,
+      zip,
       serviceLabel: input.serviceLabel ?? input.serviceInterest,
       briefDescription: input.briefDescription,
       sourcePage: input.sourcePage,
@@ -165,8 +166,8 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       phoneFormatted: input.phone,
       phoneE164: phoneE164,
       email: input.email,
-      zip: input.zip,
-      city: cityFromArea ?? "(unknown)",
+      zip: zip ?? "Not provided",
+      city: cityFromArea ?? (zip ? "(unknown)" : "Not provided"),
       serviceLabel: input.serviceLabel ?? input.serviceInterest,
       preferredCallbackTime: input.preferredCallbackTime,
       briefDescription: input.briefDescription,
@@ -181,8 +182,8 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
   const dispatchSmsRes = await safeAwait(
     sendDispatchSms({
       name: fullName,
-      city: cityFromArea ?? input.zip,
-      zip: input.zip,
+      city: cityFromArea ?? (zip ? "Unknown city" : "No city"),
+      zip: zip ?? "No ZIP",
       serviceLabel: input.serviceLabel ?? input.serviceInterest,
       phoneFormatted: input.phone,
       outOfArea: input.outOfArea ?? false,
@@ -233,13 +234,16 @@ function deriveCity(input: LeadInput): string | null {
     if (a) return a.city;
   }
   // Fallback: look up by ZIP
-  const a = serviceAreas.find((s) => s.zips.includes(input.zip));
+  const zip = input.zip?.trim();
+  if (!zip) return null;
+  const a = serviceAreas.find((s) => s.zips.includes(zip));
   return a?.city ?? null;
 }
 
 function buildInternalNotes(input: LeadInput): string {
   const parts: string[] = [];
   if (input.outOfArea) parts.push("⚠️ OUT_OF_AREA — verify before dispatch");
+  if (!input.zip) parts.push("ZIP not provided on embedded form");
   parts.push(`Web lead via ${input.sourcePage ?? "unknown source"}`);
   if (input.preferredCallbackTime) {
     parts.push(`Preferred callback: ${input.preferredCallbackTime}`);

@@ -6,6 +6,7 @@ import {
   CalendarCheck,
   Briefcase,
   Users,
+  Inbox,
   Star,
   HardHat,
   Video,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
+import { AdminLeadTicker } from "./_components/AdminLeadTicker";
 
 export const metadata: Metadata = {
   title: "Z and Z OS · Admin",
@@ -23,6 +25,7 @@ export const metadata: Metadata = {
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/jobs?status=new", label: "Leads", icon: Inbox },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
@@ -62,6 +65,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
+      <AdminLeadTicker />
+
       {/* Layout: sidebar + main */}
       <div className="mx-auto flex max-w-[1800px] gap-8 px-6 py-8">
         <aside className="hidden w-56 flex-shrink-0 lg:block">
@@ -91,7 +96,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-white/10 bg-black lg:hidden"
       >
         {nav
-          .filter((n) => ["Dashboard", "Dispatch", "Jobs", "Customers", "Crew"].includes(n.label))
+          .filter((n) => ["Dashboard", "Leads", "Dispatch", "Jobs", "Customers"].includes(n.label))
           .map((item) => {
           const Icon = item.icon;
           return (

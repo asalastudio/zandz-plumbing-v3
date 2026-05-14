@@ -9,9 +9,16 @@ import {
   TrendingUp,
   AlertCircle,
   Wrench,
+  Inbox,
+  PhoneCall,
 } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { getDashboardKpis, formatMoneyShort, formatMoney } from "@/lib/db";
+import {
+  getDashboardKpis,
+  listNewLeadNotifications,
+  formatMoneyShort,
+  formatMoney,
+} from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +27,10 @@ export default async function AdminDashboardPage() {
     return <NotConfigured />;
   }
 
-  const kpis = await getDashboardKpis();
+  const [kpis, newLeads] = await Promise.all([
+    getDashboardKpis(),
+    listNewLeadNotifications(4),
+  ]);
   const yoyDelta =
     kpis.revenuePrev12MoCents > 0
       ? Math.round(
@@ -47,6 +57,55 @@ export default async function AdminDashboardPage() {
           Your business at a glance. Numbers refresh every page load.
         </p>
       </header>
+
+      <section className="mb-8">
+        <Link
+          href="/admin/jobs?status=new"
+          className={`group block border p-5 transition-colors duration-150 md:p-6 ${
+            newLeads.count > 0
+              ? "border-[#F96302] bg-[#F96302]/10 hover:bg-[#F96302]/15"
+              : "border-white/10 bg-white/5 hover:bg-white/10"
+          }`}
+        >
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#F96302]">
+                <Inbox className="h-5 w-5" aria-hidden="true" />
+                Lead inbox
+              </p>
+              <h2 className="mt-2 font-display text-3xl font-black uppercase tracking-tight md:text-4xl">
+                {newLeads.count > 0
+                  ? `${newLeads.count} new ${newLeads.count === 1 ? "lead" : "leads"}`
+                  : "No new leads"}
+              </h2>
+              <p className="mt-2 text-base text-white/70">
+                New website submissions land here before they become scheduled jobs.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white group-hover:text-[#F96302]">
+              Review leads
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+            </span>
+          </div>
+
+          {newLeads.rows.length > 0 && (
+            <ul className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-2">
+              {newLeads.rows.map((lead) => (
+                <li key={lead.id} className="border border-white/10 bg-black/25 px-4 py-3">
+                  <p className="truncate text-base font-bold text-white">
+                    {lead.customer?.name ?? "New lead"}
+                  </p>
+                  <p className="mt-1 flex items-center gap-2 truncate text-sm text-white/60">
+                    <PhoneCall className="h-4 w-4 shrink-0 text-[#F96302]" aria-hidden="true" />
+                    {lead.service_label ?? lead.service_type}
+                    {lead.job_zip ? ` · ${lead.job_zip}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Link>
+      </section>
 
       {/* Primary KPIs · revenue */}
       <section className="mb-6">

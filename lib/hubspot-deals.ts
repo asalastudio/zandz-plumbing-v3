@@ -28,7 +28,7 @@ export interface DealLeadInput {
   lastName: string;
   email: string;
   phone: string;
-  zip: string;
+  zip?: string;
   serviceLabel: string;
   briefDescription?: string;
   sourcePage?: string;
@@ -75,8 +75,8 @@ async function upsertContactByEmail(
     lastname: input.lastName,
     email: input.email,
     phone: input.phone,
-    zip: input.zip,
     lead_source: "website",
+    ...(input.zip ? { zip: input.zip } : {}),
   };
 
   // Try create first (most common case)
@@ -131,7 +131,7 @@ async function createDeal(
 
   const dealName = input.outOfArea
     ? `[OUT-OF-AREA] ${input.firstName} ${input.lastName} — ${input.serviceLabel}`
-    : `${input.firstName} ${input.lastName} — ${input.serviceLabel} (${input.zip})`;
+    : `${input.firstName} ${input.lastName} — ${input.serviceLabel}${input.zip ? ` (${input.zip})` : ""}`;
 
   const properties: Record<string, string> = {
     dealname: dealName,

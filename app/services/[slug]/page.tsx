@@ -8,6 +8,7 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { TrustStrip } from "@/components/TrustStrip";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import type { FaqItem } from "@/components/FaqAccordion";
+import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { siteSettings } from "@/content/site-settings";
 import { services } from "@/content/services";
 import { serviceAreas } from "@/content/service-areas";
@@ -144,7 +145,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="lg" href="/contact/">
+          <Button variant="inverse" size="lg" href="#service-intake">
             Get a Quote
           </Button>
         </div>
@@ -183,6 +184,36 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             </p>
             <p className="mt-1 text-sm text-[#333333]">A plumber answers the phone.</p>
           </div>
+        </div>
+      </Section>
+
+      {/* Service intake */}
+      <Section bg="black" size="md" id="service-intake">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+              Book {service.shortTitle}
+            </p>
+            <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-white md:text-5xl">
+              Send the Basics. We&apos;ll Call.
+            </h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
+              This short form creates a new lead in Z and Z&apos;s dashboard for {service.title.toLowerCase()}.
+              The crew can confirm the address, scope, and schedule on the callback.
+            </p>
+            <ul className="mt-6 space-y-3 text-base font-semibold text-white/80">
+              <li className="border-l-2 border-[#F96302] pl-3">First name, last name, phone, and email.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">Optional note so the call starts faster.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">For emergencies, call {siteSettings.phone}.</li>
+            </ul>
+          </div>
+          <QuickLeadForm
+            title={`${service.shortTitle} request`}
+            description="Tell us who to call and what is happening. We will confirm the details before dispatch."
+            serviceInterest={service.slug}
+            serviceLabel={service.title}
+            sourcePage={`/services/${service.slug}/`}
+          />
         </div>
       </Section>
 
@@ -272,7 +303,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             >
               {siteSettings.phone}
             </Button>
-            <Button variant="secondary" size="lg" href="/contact/">
+            <Button variant="secondary" size="lg" href="#service-intake">
               Schedule Online
             </Button>
           </div>

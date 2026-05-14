@@ -10,9 +10,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { firstName, lastName, email, phone, zip, serviceInterest } = body;
+  const { firstName, lastName, email, phone, serviceInterest } = body;
 
-  if (!firstName || !lastName || !email || !phone || !zip || !serviceInterest) {
+  if (!firstName || !lastName || !email || !phone || !serviceInterest) {
     return NextResponse.json(
       { error: "Missing required fields" },
       { status: 400 }

@@ -244,7 +244,7 @@ export default function WaterHeaterOaklandPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="xl" href="/contact/">
+          <Button variant="inverse" size="xl" href="/book/?zip=94601&service=water-heater">
             Get a Quote
           </Button>
         </div>
@@ -490,7 +490,7 @@ export default function WaterHeaterOaklandPage() {
             >
               Call {siteSettings.phone}
             </Button>
-            <Button variant="inverse" size="lg" href="/contact/">
+            <Button variant="inverse" size="lg" href="/book/?zip=94601&service=water-heater">
               Schedule Online
             </Button>
           </div>

@@ -17,7 +17,7 @@ export function StickyMobileCTA() {
         {siteSettings.phone}
       </a>
       <a
-        href="/contact/#schedule"
+        href="/book/"
         className="bg-black text-white flex items-center justify-center font-semibold text-sm"
       >
         Schedule

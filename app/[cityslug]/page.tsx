@@ -8,6 +8,7 @@ import { ServiceCard } from "@/components/ServiceCard";
 import { TrustStrip } from "@/components/TrustStrip";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import type { FaqItem } from "@/components/FaqAccordion";
+import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { siteSettings } from "@/content/site-settings";
 import { services, featuredServices } from "@/content/services";
@@ -165,7 +166,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="lg" href="/contact/">
+          <Button variant="inverse" size="lg" href="#city-intake">
             Schedule Online
           </Button>
         </div>
@@ -240,6 +241,39 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               </div>
             </div>
           </div>
+        </div>
+      </Section>
+
+      {/* City intake */}
+      <Section bg="black" size="md" id="city-intake">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+              Book in {area.city}
+            </p>
+            <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-white md:text-5xl">
+              Request a Call Back.
+            </h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
+              Skip the phone tag. Send your contact details here and the request lands in the Z and Z lead dashboard
+              with {area.city} already attached.
+            </p>
+            <ul className="mt-6 space-y-3 text-base font-semibold text-white/80">
+              <li className="border-l-2 border-[#F96302] pl-3">Name, phone, email, and a short note.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">No account. No long questionnaire.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">Emergency? Call {siteSettings.phone} now.</li>
+            </ul>
+          </div>
+          <QuickLeadForm
+            title={`${area.city} plumbing request`}
+            description="Tell us who to call and what is going on. We will confirm the issue and next available arrival window."
+            serviceInterest="city-plumbing-request"
+            serviceLabel={`${area.city} plumbing request`}
+            sourcePage={`/${area.slug}/`}
+            zip={area.zips[0]}
+            serviceAreaSlug={area.slug}
+            cityLabel={area.city}
+          />
         </div>
       </Section>
 
@@ -343,7 +377,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
             >
               {siteSettings.phone}
             </Button>
-            <Button variant="secondary" size="lg" href="/contact/">
+            <Button variant="secondary" size="lg" href="#city-intake">
               Schedule Online
             </Button>
           </div>

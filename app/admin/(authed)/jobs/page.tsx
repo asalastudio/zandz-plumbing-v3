@@ -9,10 +9,12 @@ import {
   formatMoney,
   type JobStatus,
 } from "@/lib/db";
+import { DeleteJobButton } from "../_components/DeleteJobButton";
 
 export const dynamic = "force-dynamic";
 
 const FILTERS: { label: string; status: JobStatus | "open" | "all" }[] = [
+  { label: "New Leads", status: "new" },
   { label: "Open", status: "open" },
   { label: "Scheduled", status: "scheduled" },
   { label: "On Site", status: "on_site" },
@@ -25,10 +27,12 @@ const FILTERS: { label: string; status: JobStatus | "open" | "all" }[] = [
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; deleted?: string; error?: string }>;
 }) {
   const params = await searchParams;
-  const status = (params.status as JobStatus | "open" | "all") ?? "open";
+  const requestedStatus = params.status as JobStatus | "open" | "all" | undefined;
+  const validStatuses = new Set(FILTERS.map((f) => f.status));
+  const status = requestedStatus && validStatuses.has(requestedStatus) ? requestedStatus : "open";
 
   if (!isSupabaseConfigured()) {
     return (
@@ -49,10 +53,18 @@ export default async function JobsPage({
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#F96302]">Jobs</p>
           <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
-            All Jobs
+            {status === "new" ? "Lead Inbox" : "All Jobs"}
           </h1>
           <p className="mt-3 max-w-2xl text-base text-white/70">
-            {count.toLocaleString()} {status === "all" ? "total" : status === "open" ? "open" : STATUS_LABEL[status as JobStatus].toLowerCase()}.
+            {status === "new"
+              ? `${count.toLocaleString()} new ${count === 1 ? "lead" : "leads"} waiting for follow-up.`
+              : `${count.toLocaleString()} ${
+                  status === "all"
+                    ? "total"
+                    : status === "open"
+                      ? "open"
+                      : STATUS_LABEL[status as JobStatus].toLowerCase()
+                }.`}
           </p>
         </div>
         <Link
@@ -63,6 +75,18 @@ export default async function JobsPage({
           New job
         </Link>
       </header>
+
+      {params.deleted === "1" && (
+        <div className="mb-6 border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-sm font-bold uppercase tracking-wide text-emerald-200">
+          Job deleted.
+        </div>
+      )}
+
+      {params.error && (
+        <div className="mb-6 border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm font-bold uppercase tracking-wide text-red-200">
+          We could not complete that job action.
+        </div>
+      )}
 
       {/* Status filter pills */}
       <nav className="mb-6 flex flex-wrap gap-2 overflow-x-auto">
@@ -99,7 +123,7 @@ export default async function JobsPage({
                 <Th>Assigned</Th>
                 <Th>Status</Th>
                 <Th>Amount</Th>
-                <Th></Th>
+                <Th>Actions</Th>
               </tr>
             </thead>
             <tbody>
@@ -125,10 +149,13 @@ export default async function JobsPage({
                   <td className="px-5 py-4 text-base text-white/70">
                     {formatMoney(j.final_amount_cents ?? j.estimated_amount_cents)}
                   </td>
-                  <td className="px-5 py-4 text-right">
-                    <Link href={`/admin/jobs/${j.id}`} className="text-white/40 hover:text-[#F96302]">
-                      <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                    </Link>
+                  <td className="px-5 py-4">
+                    <div className="flex items-center justify-end gap-4">
+                      <DeleteJobButton jobId={j.id} label="Delete" compact />
+                      <Link href={`/admin/jobs/${j.id}`} className="text-white/40 hover:text-[#F96302]">
+                        <ChevronRight className="h-5 w-5" aria-hidden="true" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

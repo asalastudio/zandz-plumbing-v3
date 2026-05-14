@@ -4,6 +4,7 @@ import { Phone, MapPin, ChevronRight, Navigation, Clock } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";
 import { TrustStrip } from "@/components/TrustStrip";
+import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
@@ -72,7 +73,7 @@ export default function ServiceAreasHubPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="lg" href="/contact/">
+          <Button variant="inverse" size="lg" href="#service-area-intake">
             Schedule Online
           </Button>
         </div>
@@ -154,6 +155,31 @@ export default function ServiceAreasHubPage() {
               allowFullScreen
             />
           </div>
+        </div>
+      </Section>
+
+      {/* Service area intake */}
+      <Section bg="black" size="md" id="service-area-intake">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+              Not sure if we cover you?
+            </p>
+            <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-white md:text-5xl">
+              Send a Quick Request.
+            </h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
+              We can verify the service area when we call. Your request still lands in the dashboard so the team can
+              follow up clearly.
+            </p>
+          </div>
+          <QuickLeadForm
+            title="Service area request"
+            description="Tell us who to call and where the problem is generally located. We will confirm coverage on the callback."
+            serviceInterest="service-area-request"
+            serviceLabel="Service area request"
+            sourcePage="/service-areas/"
+          />
         </div>
       </Section>
 
@@ -240,7 +266,7 @@ export default function ServiceAreasHubPage() {
             >
               {siteSettings.phone}
             </Button>
-            <Button variant="secondary" size="lg" href="/contact/">
+            <Button variant="secondary" size="lg" href="#service-area-intake">
               Schedule Online
             </Button>
           </div>

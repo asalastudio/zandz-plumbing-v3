@@ -101,6 +101,16 @@ export interface JobWithRelations extends Job {
   assignee?: Crew | null;
 }
 
+export interface NewLeadNotification {
+  id: number;
+  service_type: string;
+  service_label: string | null;
+  job_city: string | null;
+  job_zip: string | null;
+  created_at: string;
+  customer?: Pick<Customer, "id" | "name" | "phone_e164" | "email"> | null;
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Crew
 // ──────────────────────────────────────────────────────────────────────────
@@ -668,6 +678,33 @@ export async function listJobs(opts: JobListOpts = {}): Promise<{
   const { data, error, count } = await q;
   if (error) throw new Error(`listJobs: ${error.message}`);
   return { rows: (data ?? []) as JobWithRelations[], count: count ?? 0 };
+}
+
+export async function listNewLeadNotifications(limit = 5): Promise<{
+  rows: NewLeadNotification[];
+  count: number;
+}> {
+  const sb = supabase();
+  const { data, error, count } = await sb
+    .from("jobs")
+    .select(
+      "id, service_type, service_label, job_city, job_zip, created_at, customer:customers(id, name, phone_e164, email)",
+      { count: "exact" }
+    )
+    .eq("status", "new")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(`listNewLeadNotifications: ${error.message}`);
+  const rows = (data ?? []).map((row) => {
+    const customer = Array.isArray(row.customer) ? row.customer[0] : row.customer;
+    return {
+      ...row,
+      customer: customer ?? null,
+    };
+  }) as NewLeadNotification[];
+
+  return { rows, count: count ?? 0 };
 }
 
 export async function getJob(id: number): Promise<JobWithRelations | null> {
