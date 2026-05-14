@@ -35,5 +35,8 @@ export const siteSettings: SiteSettings = {
     chamberOfCommerce:
       "https://www.chamberofcommerce.com/business-directory/california/oakland/plumber/32393621-z-and-z-plumbing",
   },
+  features: {
+    coupons: false,
+  },
   siteUrl: "https://zandzplumbing.com",
 };

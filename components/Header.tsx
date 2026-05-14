@@ -2,32 +2,34 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  CalendarClock,
   ChevronRight,
   Menu,
   Phone,
-  ShieldCheck,
-  Wrench,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { siteSettings } from "@/content/site-settings";
 
-const navLinks = [
+const desktopNavLinks = [
   { label: "Services", href: "/services/" },
-  { label: "About", href: "/about/" },
-  { label: "Service Area", href: "/service-areas/" },
+  { label: "Service Areas", href: "/service-areas/" },
+  ...(siteSettings.features.coupons
+    ? [{ label: "Coupons", href: "/coupons/" }]
+    : []),
   { label: "Videos", href: "/videos/" },
-  { label: "Coupons", href: "/coupons/" },
+  { label: "About", href: "/about/" },
   { label: "Contact", href: "/contact/" },
 ];
 
-const featuredLinks = [
-  { label: "Emergency", href: "/services/emergency/" },
-  { label: "Drains", href: "/services/drain-cleaning/" },
+const mobileServiceLinks = [
+  { label: "All Services", href: "/services/" },
+  { label: "Emergency Plumbing", href: "/services/emergency/" },
+  { label: "Drain Cleaning", href: "/services/drain-cleaning/" },
   { label: "Water Heaters", href: "/services/water-heater/" },
   { label: "Sewer Lines", href: "/services/sewer-lateral/" },
+  { label: "Service Areas", href: "/service-areas/" },
 ];
 
 const trustItems = [
@@ -37,8 +39,23 @@ const trustItems = [
   "Since 2003",
 ];
 
+function isActivePath(pathname: string | null, href: string) {
+  if (!pathname) return false;
+  const cleanPath = pathname !== "/" ? pathname.replace(/\/$/, "") : pathname;
+  const cleanHref = href !== "/" ? href.replace(/\/$/, "") : href;
+  return cleanPath === cleanHref || cleanPath.startsWith(`${cleanHref}/`);
+}
+
+function isExactPath(pathname: string | null, href: string) {
+  if (!pathname) return false;
+  const cleanPath = pathname !== "/" ? pathname.replace(/\/$/, "") : pathname;
+  const cleanHref = href !== "/" ? href.replace(/\/$/, "") : href;
+  return cleanPath === cleanHref;
+}
+
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -69,7 +86,7 @@ export function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8" aria-label="Primary navigation">
-            {navLinks.map((link) => (
+            {desktopNavLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -90,27 +107,34 @@ export function Header() {
           </a>
 
           {/* Mobile menu toggle */}
-          <button
-            type="button"
-            className="inline-flex min-h-12 min-w-12 items-center justify-center text-white md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-menu"
-          >
-            {mobileOpen ? (
-              <X className="h-6 w-6" aria-hidden="true" />
-            ) : (
+          {!mobileOpen && (
+            <button
+              type="button"
+              className="inline-flex min-h-12 min-w-12 items-center justify-center text-white md:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+              aria-expanded="false"
+              aria-controls="mobile-menu"
+            >
               <Menu className="h-6 w-6" aria-hidden="true" />
-            )}
-          </button>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Trust strip */}
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-[1800px] px-6 md:px-8 lg:px-12">
-          <div className="flex items-center gap-0 overflow-x-auto py-2 hide-scrollbar">
+          <div className="flex min-h-10 items-center justify-center gap-3 md:hidden">
+            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-white/70">
+              CSLB #896116
+            </span>
+            <span className="text-xs text-[#F96302]" aria-hidden="true">|</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-white/70">
+              Since 2003
+            </span>
+          </div>
+          <div className="hidden items-center gap-0 overflow-x-auto py-2 hide-scrollbar md:flex">
             {trustItems.map((item, i) => (
               <span key={item} className="flex items-center flex-shrink-0">
                 <span className="text-xs font-semibold text-white/70 uppercase tracking-[0.06em] whitespace-nowrap">
@@ -147,104 +171,110 @@ export function Header() {
               </button>
             </div>
 
-            <div className="flex-shrink-0 border-b border-white/10 px-6">
-              <div className="flex items-center gap-0 overflow-x-auto py-3 hide-scrollbar">
-                {trustItems.map((item, i) => (
-                  <span key={item} className="flex flex-shrink-0 items-center">
-                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-white/70 whitespace-nowrap">
-                      {item}
-                    </span>
-                    {i < trustItems.length - 1 && (
-                      <span className="mx-4 text-xs text-[#F96302]" aria-hidden="true">|</span>
-                    )}
-                  </span>
-                ))}
+            <div className="flex-shrink-0 border-b border-white/10 px-5">
+              <div className="flex min-h-10 items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.1em] text-white/60">
+                <span>CSLB #896116</span>
+                <span className="text-[#F96302]" aria-hidden="true">|</span>
+                <span>Since 2003</span>
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col px-6 py-5">
-              <div className="rounded-lg border border-white/15 bg-white/[0.04] p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-[#F96302]">
-                    <CalendarClock className="h-6 w-6 text-white" aria-hidden="true" />
-                  </div>
+            <div className="flex flex-1 flex-col px-5 py-4">
+              <div className="rounded-lg border border-white/15 bg-white/[0.04] p-3.5">
+                <div>
                   <div>
-                    <p className="font-display text-2xl font-black uppercase leading-none">
+                    <p className="font-display text-[1.35rem] font-black uppercase leading-none">
                       Book in 60 seconds
                     </p>
-                    <p className="mt-1 text-sm leading-snug text-white/65">
-                      Enter ZIP, pick the issue, and get a callback to lock the window.
+                    <p className="mt-1 text-sm leading-snug text-white/60">
+                      ZIP, issue, info. We call to lock it in.
                     </p>
                   </div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  {["ZIP", "Issue", "Callback"].map((label, index) => (
-                    <div key={label} className="rounded-lg bg-black/35 px-2 py-3">
-                      <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-[#F96302] text-sm font-black">
-                        {index + 1}
-                      </span>
-                      <span className="mt-2 block text-[11px] font-black uppercase tracking-[0.08em] text-white/75">
-                        {label}
-                      </span>
-                    </div>
-                  ))}
                 </div>
 
                 <Link
                   href="/book/"
                   onClick={closeMobileMenu}
-                  className="mt-4 flex min-h-14 items-center justify-center gap-2 rounded-lg bg-[#F96302] px-5 text-base font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400]"
+                  className="mt-3 flex min-h-14 items-center justify-center gap-2 rounded-lg bg-[#F96302] px-5 text-base font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400]"
                 >
                   Schedule online
                   <ChevronRight className="h-5 w-5" aria-hidden="true" />
                 </Link>
               </div>
 
-              <nav className="mt-5 flex flex-col" aria-label="Mobile navigation">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={closeMobileMenu}
-                    className="flex min-h-14 items-center justify-between border-b border-white/10 py-3 text-2xl font-black uppercase tracking-wide text-white transition-colors duration-150 hover:text-[#F96302]"
-                  >
-                    {link.label}
-                    <ChevronRight className="h-5 w-5 text-white/35" aria-hidden="true" />
-                  </Link>
-                ))}
+              <nav className="mt-5" aria-label="Mobile navigation">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-white/45">
+                    Services
+                  </p>
+                  {(pathname?.startsWith("/services") || pathname?.startsWith("/service-areas")) && (
+                    <span className="text-[11px] font-black uppercase tracking-[0.12em] text-[#F96302]">
+                      Current
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-1 pt-2">
+                  {mobileServiceLinks.map((link) => {
+                    const active =
+                      link.href === "/services/"
+                        ? isExactPath(pathname, link.href)
+                        : isActivePath(pathname, link.href);
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={closeMobileMenu}
+                        aria-current={active ? "page" : undefined}
+                        className={[
+                          "flex min-h-12 items-center justify-between rounded-lg px-3 text-base font-bold transition-colors duration-150",
+                          active
+                            ? "bg-white/[0.08] text-white ring-1 ring-[#F96302]/70"
+                            : "text-white/75 hover:bg-white/[0.06] hover:text-white",
+                        ].join(" ")}
+                      >
+                        {link.label}
+                        <ChevronRight
+                          className={[
+                            "h-4 w-4",
+                            active ? "text-[#F96302]" : "text-white/30",
+                          ].join(" ")}
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {siteSettings.features.coupons && (
+                  <div className="mt-3 border-t border-white/10 pt-3">
+                    <Link
+                      href="/coupons/"
+                      onClick={closeMobileMenu}
+                      aria-current={isActivePath(pathname, "/coupons/") ? "page" : undefined}
+                      className={[
+                        "flex min-h-[54px] items-center justify-between rounded-lg px-3 text-[1.25rem] font-black uppercase tracking-wide transition-colors duration-150",
+                        isActivePath(pathname, "/coupons/")
+                          ? "bg-white/[0.08] text-white ring-1 ring-[#F96302]/70"
+                          : "text-white hover:bg-white/[0.06] hover:text-[#F96302]",
+                      ].join(" ")}
+                    >
+                      Coupons
+                      <ChevronRight className="h-5 w-5 text-white/35" aria-hidden="true" />
+                    </Link>
+                  </div>
+                )}
               </nav>
 
-              <div className="mt-5">
-                <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.12em] text-white/45">
-                  <Wrench className="h-4 w-4 text-[#F96302]" aria-hidden="true" />
-                  Fast paths
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {featuredLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={closeMobileMenu}
-                      className="flex min-h-12 items-center rounded-lg border border-white/10 px-3 text-sm font-bold text-white/75 transition-colors hover:border-[#F96302] hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-1 gap-3 pb-4">
+              <div className="mt-auto pt-5 pb-4">
                 <a
                   href={`tel:${siteSettings.phoneTel}`}
-                  className="flex min-h-14 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white text-base font-black text-black"
+                  className="flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white text-sm font-black text-black"
                 >
-                  <Phone className="h-5 w-5" aria-hidden="true" />
+                  <Phone className="h-4 w-4" aria-hidden="true" />
                   {siteSettings.phone}
                 </a>
-                <p className="flex items-start gap-2 text-sm leading-relaxed text-white/45">
-                  <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#F96302]" aria-hidden="true" />
-                  CSLB #896116. C-36 Plumbing and A General Engineering. Serving the East Bay since 2003.
+                <p className="mt-3 text-center text-xs leading-relaxed text-white/40">
+                  Two licenses, one East Bay crew.
                 </p>
               </div>
             </div>

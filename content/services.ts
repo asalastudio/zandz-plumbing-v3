@@ -4,7 +4,7 @@ export const services: Service[] = [
   {
     slug: "sewer-lateral",
     title: "Sewer Lateral Services",
-    shortTitle: "Sewer & Drain",
+    shortTitle: "Sewer Lines",
     icon: "GitMerge",
     summary: "Clogs, root intrusion, line cleaning, camera inspections, and more.",
     description:
@@ -24,9 +24,9 @@ export const services: Service[] = [
   {
     slug: "water-heater",
     title: "Water Heater Services",
-    shortTitle: "Water & Gas Lines",
+    shortTitle: "Water Heaters",
     icon: "Thermometer",
-    summary: "Replacements, repipes, emergency line work, and more.",
+    summary: "Tank and tankless repair, replacement, and same-day installs.",
     description:
       "Tank and tankless water heater repair and replacement. We stock common units and can often install same day.",
     featured: true,
@@ -64,9 +64,9 @@ export const services: Service[] = [
   {
     slug: "gas-line",
     title: "Gas Line Services",
-    shortTitle: "Street & Infrastructure",
+    shortTitle: "Gas Lines",
     icon: "Flame",
-    summary: "Trench work, laterals, street repairs, utility connections, and more.",
+    summary: "Gas repair, replacement, trench work, and utility connections.",
     description:
       "Gas line repair, replacement, and new installation. We handle both interior gas piping and street-side service line work under our General Engineering license.",
     featured: true,

@@ -29,6 +29,9 @@ export interface SiteSettings {
     homeAdvisor?: string;
     chamberOfCommerce?: string;
   };
+  features: {
+    coupons: boolean;
+  };
   siteUrl: string;
 }
 

@@ -36,6 +36,7 @@ async function loadCoupons(): Promise<Coupon[]> {
 
 export default async function CouponsPage() {
   const coupons = await loadCoupons();
+  const hasCoupons = coupons.length > 0;
 
   return (
     <>
@@ -55,10 +56,12 @@ export default async function CouponsPage() {
           Special deals
         </p>
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
-          Current Coupons.
+          {hasCoupons ? "Current Coupons." : "Coupons & Specials."}
         </h1>
         <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
-          Three live deals. Mention them when you book and we will apply the discount on your invoice.
+          {hasCoupons
+            ? "Mention the deal when you book and we will apply the discount on your invoice."
+            : "No active coupon is running right now. Call or schedule and we will quote the work clearly before paid service starts."}
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button
@@ -127,7 +130,9 @@ export default async function CouponsPage() {
               Ready to book?
             </h2>
             <p className="mt-3 max-w-2xl font-sans text-lg text-white/90 md:text-xl">
-              Mention the coupon when you call. We will apply it on your invoice.
+              {hasCoupons
+                ? "Mention the coupon when you call. We will apply it on your invoice."
+                : "Need service now? Call and we will walk you through the next step."}
             </p>
           </div>
           <Button

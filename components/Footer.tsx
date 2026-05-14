@@ -5,8 +5,8 @@ import { Logo } from "@/components/Logo";
 import { siteSettings } from "@/content/site-settings";
 
 const serviceLinks = [
-  { label: "Sewer & Drain Services", href: "/services/sewer-lateral/" },
-  { label: "Water & Gas Lines", href: "/services/water-heater/" },
+  { label: "Sewer Lines", href: "/services/sewer-lateral/" },
+  { label: "Water Heaters", href: "/services/water-heater/" },
   { label: "Emergency Plumbing", href: "/services/emergency/" },
   { label: "Repipe", href: "/services/repipe/" },
   { label: "Drain Cleaning", href: "/services/drain-cleaning/" },
@@ -37,7 +37,9 @@ const aboutLinks = [
   { label: "Our Team", href: "/about/" },
   { label: "Reviews", href: "/reviews/" },
   { label: "Videos & Guides", href: "/videos/" },
-  { label: "Coupons", href: "/coupons/" },
+  ...(siteSettings.features.coupons
+    ? [{ label: "Coupons", href: "/coupons/" }]
+    : []),
   { label: "Careers", href: "/careers/" },
 ];
 
@@ -125,7 +127,7 @@ export function Footer() {
           {/* Service area */}
           <div>
             <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4">
-              Served Area
+              Service Areas
             </h3>
             <ul className="space-y-2">
               {areaLinks.map((link) => (

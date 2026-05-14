@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone } from "lucide-react";
@@ -7,7 +8,22 @@ import { siteSettings } from "@/content/site-settings";
 
 export function StickyMobileCTA() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/book")) return null;
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const updateVisibility = () => {
+      setIsVisible(window.scrollY > 520);
+    };
+
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+    };
+  }, [pathname]);
+
+  if (pathname?.startsWith("/book") || !isVisible) return null;
 
   return (
     <div

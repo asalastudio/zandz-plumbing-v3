@@ -13,7 +13,7 @@
  * and any "Schedule [Service]" link).
  */
 
-import { useState, useMemo, useRef, type FormEvent } from "react";
+import { useId, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   Phone,
   ChevronRight,
@@ -420,6 +420,8 @@ function StepZip({
   onSubmit: (e?: FormEvent) => void;
   error: string | null;
 }) {
+  const zipInputId = useId();
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div>
@@ -433,11 +435,15 @@ function StepZip({
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
+          <label htmlFor={zipInputId} className="sr-only">
+            ZIP code
+          </label>
           <MapPin
             className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#999]"
             strokeWidth={1.5}
           />
           <input
+            id={zipInputId}
             type="text"
             inputMode="numeric"
             autoComplete="postal-code"
@@ -723,30 +729,6 @@ function StepContact({
         </span>
       </label>
 
-      {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          <AlertCircle className="h-4 w-4" /> {error}
-        </div>
-      )}
-
-      <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-center sm:justify-between">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#F96302] px-8 py-4 text-base font-black text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] sm:w-auto"
-        >
-          {submitting ? "Sending..." : "Request callback"}
-          {!submitting && <ChevronRight className="h-4 w-4" />}
-        </button>
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex min-h-12 items-center gap-1 self-start rounded-xl border border-[#D8D8D8] bg-white px-4 text-base font-bold text-[#555] hover:text-black"
-        >
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
-      </div>
-
       <div className="rounded-xl border border-[#E5E5E5] bg-[#FAFAFA]">
         <button
           type="button"
@@ -827,6 +809,30 @@ function StepContact({
           </div>
         )}
       </div>
+
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          <AlertCircle className="h-4 w-4" /> {error}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-center sm:justify-between">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#F96302] px-8 py-4 text-base font-black text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] sm:w-auto"
+        >
+          {submitting ? "Sending..." : "Request callback"}
+          {!submitting && <ChevronRight className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex min-h-12 items-center gap-1 self-start rounded-xl border border-[#D8D8D8] bg-white px-4 text-base font-bold text-[#555] hover:text-black"
+        >
+          <ChevronLeft className="h-4 w-4" /> Back
+        </button>
+      </div>
     </form>
   );
 }
@@ -848,14 +854,20 @@ function Field({
   placeholder?: string;
   autoComplete?: string;
 }) {
+  const fieldId = useId();
+
   return (
     <div>
-      <label className="mb-1.5 block text-[15px] font-bold leading-snug text-[#444]">
+      <label
+        htmlFor={fieldId}
+        className="mb-1.5 block text-[15px] font-bold leading-snug text-[#444]"
+      >
         {label}
         {required && <span className="ml-1 text-[#F96302]">*</span>}
       </label>
       {type === "textarea" ? (
         <textarea
+          id={fieldId}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={3}
@@ -865,6 +877,7 @@ function Field({
         />
       ) : (
         <input
+          id={fieldId}
           type={type}
           inputMode={type === "tel" ? "tel" : undefined}
           value={value}
