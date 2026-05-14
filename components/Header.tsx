@@ -200,6 +200,14 @@ export function Header() {
                   Schedule online
                   <ChevronRight className="h-5 w-5" aria-hidden="true" />
                 </Link>
+                <a
+                  href={`tel:${siteSettings.phoneTel}`}
+                  className="mt-2 flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-black text-black"
+                  aria-label={`Call Z and Z Plumbing at ${siteSettings.phone}`}
+                >
+                  <Phone className="h-4 w-4" aria-hidden="true" />
+                  Call {siteSettings.phone}
+                </a>
               </div>
 
               <nav className="mt-5" aria-label="Mobile navigation">
@@ -264,19 +272,9 @@ export function Header() {
                   </div>
                 )}
               </nav>
-
-              <div className="mt-auto pt-5 pb-4">
-                <a
-                  href={`tel:${siteSettings.phoneTel}`}
-                  className="flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white text-sm font-black text-black"
-                >
-                  <Phone className="h-4 w-4" aria-hidden="true" />
-                  {siteSettings.phone}
-                </a>
-                <p className="mt-3 text-center text-xs leading-relaxed text-white/40">
-                  Two licenses, one East Bay crew.
-                </p>
-              </div>
+              <p className="mt-auto pb-4 pt-5 text-center text-xs leading-relaxed text-white/40">
+                Two licenses, one East Bay crew.
+              </p>
             </div>
           </div>
         </div>
