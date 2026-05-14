@@ -51,18 +51,19 @@ export function FaucetMark({ size = 44, className }: FaucetMarkProps) {
 }
 
 /**
- * Full brand logo (faucet + wordmark). Renders the supplied SVG from
- * /public/logo.svg at the appropriate size. The SVG already has the brand
- * color treatment built in, so the light/dark variant prop is preserved for
- * API compatibility but has no visual effect on the SVG itself.
+ * Full brand logo (faucet + wordmark). The light variant is the main
+ * white/orange brand asset for black header/footer surfaces. The dark variant
+ * stays compact for customer-facing white pages where the main mark would lose
+ * contrast.
  */
 export function Logo({ variant = "light", className, linkWrapper = true }: LogoProps) {
+  const src = variant === "dark" ? "/logo-dark.svg" : "/logo.svg";
   const mark = (
     <img
-      src={variant === "dark" ? "/logo-dark.svg" : "/logo.svg"}
+      src={src}
       alt="Z and Z Plumbing"
-      width={228}
-      height={56}
+      width={variant === "dark" ? 228 : 220}
+      height={variant === "dark" ? 56 : 80}
       className={cn("h-12 w-auto md:h-14", className)}
     />
   );
