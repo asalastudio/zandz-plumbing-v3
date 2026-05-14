@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/jobs?status=new", label: "Leads", icon: Inbox },
+  { href: "/admin/leads", label: "Leads", icon: Inbox },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },

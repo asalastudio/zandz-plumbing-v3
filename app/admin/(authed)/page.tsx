@@ -60,7 +60,7 @@ export default async function AdminDashboardPage() {
 
       <section className="mb-8">
         <Link
-          href="/admin/jobs?status=new"
+          href="/admin/leads"
           className={`group block border p-5 transition-colors duration-150 md:p-6 ${
             newLeads.count > 0
               ? "border-[#F96302] bg-[#F96302]/10 hover:bg-[#F96302]/15"
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
                 New website submissions land here before they become scheduled jobs.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white group-hover:text-[#F96302]">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-white group-hover:text-[#F96302]">
               Review leads
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </span>

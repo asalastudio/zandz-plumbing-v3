@@ -144,7 +144,7 @@ export default function BlogIndexPage() {
               {siteSettings.phone}
             </Button>
             <Button variant="secondary" size="lg" href="/book/">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>

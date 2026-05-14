@@ -80,7 +80,7 @@ export default function ServicesHubPage() {
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="lg" href="#services-intake">
-            Schedule Online
+            Schedule online
           </Button>
         </div>
       </Section>

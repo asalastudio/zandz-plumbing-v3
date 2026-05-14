@@ -150,7 +150,7 @@ export default function FinancingPage() {
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="lg" href="/book/">
-            Get a Quote
+            Get a quote
           </Button>
         </div>
       </Section>
@@ -289,7 +289,7 @@ export default function FinancingPage() {
               {siteSettings.phone}
             </Button>
             <Button variant="secondary" size="lg" href="/book/">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>

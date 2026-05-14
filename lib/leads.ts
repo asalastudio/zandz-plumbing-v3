@@ -44,6 +44,7 @@ const failed = (detail: string): SideEffect => ({ ok: false, detail });
 export async function ingestLead(input: LeadInput): Promise<LeadResult> {
   const fullName = `${input.firstName} ${input.lastName}`.trim();
   const zip = input.zip?.trim() || undefined;
+  const jobAddress = input.jobAddress?.trim() || undefined;
   const phoneE164 = toE164(input.phone);
   if (!phoneE164) {
     return {
@@ -59,6 +60,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     };
   }
   const cityFromArea = deriveCity(input);
+  const jobCity = input.jobCity?.trim() || cityFromArea;
 
   // ── 1. Supabase: customer + job (the source of truth for the admin UI) ──
   let supabaseJobId: number | undefined;
@@ -102,7 +104,8 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
             phone_e164: phoneE164,
             email: input.email,
             zip: zip ?? null,
-            city: cityFromArea,
+            street_address: jobAddress ?? null,
+            city: jobCity,
           })
           .select("id")
           .single();
@@ -120,8 +123,9 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
           service_type: input.serviceInterest,
           service_label: input.serviceLabel ?? input.serviceInterest,
           status: "new",
+          job_address: jobAddress ?? null,
           job_zip: zip ?? null,
-          job_city: cityFromArea,
+          job_city: jobCity,
           customer_notes: input.briefDescription ?? null,
           internal_notes: internalNotes,
         })
@@ -167,7 +171,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       phoneE164: phoneE164,
       email: input.email,
       zip: zip ?? "Not provided",
-      city: cityFromArea ?? (zip ? "(unknown)" : "Not provided"),
+      city: jobCity ?? (zip ? "(unknown)" : "Not provided"),
       serviceLabel: input.serviceLabel ?? input.serviceInterest,
       preferredCallbackTime: input.preferredCallbackTime,
       briefDescription: input.briefDescription,
@@ -182,7 +186,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
   const dispatchSmsRes = await safeAwait(
     sendDispatchSms({
       name: fullName,
-      city: cityFromArea ?? (zip ? "Unknown city" : "No city"),
+      city: jobCity ?? (zip ? "Unknown city" : "No city"),
       zip: zip ?? "No ZIP",
       serviceLabel: input.serviceLabel ?? input.serviceInterest,
       phoneFormatted: input.phone,
@@ -244,6 +248,8 @@ function buildInternalNotes(input: LeadInput): string {
   const parts: string[] = [];
   if (input.outOfArea) parts.push("⚠️ OUT_OF_AREA — verify before dispatch");
   if (!input.zip) parts.push("ZIP not provided on embedded form");
+  if (input.jobAddress) parts.push(`Service address: ${input.jobAddress}`);
+  if (input.jobCity) parts.push(`Service city: ${input.jobCity}`);
   parts.push(`Web lead via ${input.sourcePage ?? "unknown source"}`);
   if (input.preferredCallbackTime) {
     parts.push(`Preferred callback: ${input.preferredCallbackTime}`);

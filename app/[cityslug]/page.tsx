@@ -167,7 +167,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="lg" href="#city-intake">
-            Schedule Online
+            Schedule online
           </Button>
         </div>
       </Section>
@@ -252,7 +252,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               Book in {area.city}
             </p>
             <h2 className="font-display text-4xl font-black uppercase leading-tight tracking-tight text-white md:text-5xl">
-              Request a Call Back.
+              Request a call back.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
               Skip the phone tag. Send your contact details here and the request lands in the Z and Z lead dashboard
@@ -378,7 +378,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               {siteSettings.phone}
             </Button>
             <Button variant="secondary" size="lg" href="#city-intake">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>

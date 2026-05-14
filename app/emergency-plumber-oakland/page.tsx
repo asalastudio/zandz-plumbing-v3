@@ -246,7 +246,7 @@ export default function EmergencyPlumberOaklandPage() {
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="xl" href="/book/?zip=94601&service=emergency">
-            Schedule Online
+            Schedule online
           </Button>
         </div>
         <p className="mt-6 max-w-3xl text-sm font-semibold uppercase tracking-[0.12em] text-white/55">

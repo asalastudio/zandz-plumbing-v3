@@ -74,7 +74,7 @@ export default function ServiceAreasHubPage() {
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="lg" href="#service-area-intake">
-            Schedule Online
+            Schedule online
           </Button>
         </div>
       </Section>
@@ -267,7 +267,7 @@ export default function ServiceAreasHubPage() {
               {siteSettings.phone}
             </Button>
             <Button variant="secondary" size="lg" href="#service-area-intake">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>

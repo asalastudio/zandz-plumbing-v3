@@ -217,7 +217,7 @@ export default function HomePage() {
                   Call {siteSettings.phone}
                 </Button>
                 <Button variant="ghost" size="xl" href="/book/">
-                  Schedule Online
+                  Schedule online
                 </Button>
               </div>
             </div>
@@ -647,7 +647,7 @@ export default function HomePage() {
                 {siteSettings.phone}
               </Button>
               <Button variant="secondary" size="lg" href="/book/">
-                Schedule Online
+                Schedule online
               </Button>
             </div>
           </div>

@@ -216,7 +216,7 @@ export default function DrainCleaningOaklandPage() {
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="xl" href="/book/?zip=94601&service=clog">
-            Schedule Online
+            Schedule online
           </Button>
         </div>
         <p className="mt-6 max-w-3xl text-sm font-semibold uppercase tracking-[0.12em] text-white/55">
@@ -456,7 +456,7 @@ export default function DrainCleaningOaklandPage() {
               Call {siteSettings.phone}
             </Button>
             <Button variant="inverse" size="lg" href="/book/?zip=94601&service=clog">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>

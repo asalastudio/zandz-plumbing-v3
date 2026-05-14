@@ -426,9 +426,9 @@ function StepZip({
         <button
           type="submit"
           disabled={zip.length !== 5}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-4 text-sm font-bold uppercase tracking-[0.1em] text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] disabled:text-white sm:px-8"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] disabled:text-white sm:px-8"
         >
-          Check Coverage
+          Check coverage
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -566,14 +566,14 @@ function StepService({
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <a
               href={`tel:${siteSettings.phoneTel}`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-4 text-base font-black uppercase tracking-[0.06em] text-red-700 transition-colors hover:bg-red-50"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-4 text-base font-bold text-red-700 transition-colors hover:bg-red-50"
             >
               <Phone className="h-5 w-5" /> Call {siteSettings.phone}
             </a>
             <button
               type="button"
               onClick={onContinueEmergency}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/40 px-5 py-4 text-sm font-bold uppercase tracking-[0.08em] text-white transition-colors hover:border-white"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/40 px-5 py-4 text-sm font-bold text-white transition-colors hover:border-white"
             >
               Or finish the form
               <ChevronRight className="h-4 w-4" />
@@ -585,7 +585,7 @@ function StepService({
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-1 self-start text-xs font-bold uppercase tracking-[0.1em] text-[#666] hover:text-black"
+        className="inline-flex items-center gap-1 self-start text-sm font-bold text-[#666] hover:text-black"
       >
         <ChevronLeft className="h-4 w-4" /> Change ZIP
       </button>
@@ -628,7 +628,7 @@ function StepContact({
       {isEmergency && (
         <a
           href={`tel:${siteSettings.phoneTel}`}
-          className="flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-black uppercase tracking-[0.08em] text-white hover:bg-red-700"
+          className="flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700"
         >
           <Phone className="h-4 w-4" /> Emergency? Call {siteSettings.phone} now
         </a>
@@ -680,7 +680,7 @@ function StepContact({
       />
 
       <div>
-        <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.1em] text-[#666]">
+        <label className="mb-1.5 block text-sm font-semibold text-[#555]">
           Best time to call (optional)
         </label>
         <div className="grid grid-cols-4 gap-2">
@@ -700,7 +700,7 @@ function StepContact({
                 )
               }
               className={[
-                "rounded-lg border-2 px-2 py-2.5 text-xs font-bold uppercase tracking-[0.06em] transition-all",
+                "rounded-lg border-2 px-2 py-2.5 text-sm font-bold transition-all",
                 form.preferredCallbackTime === slot.id
                   ? "border-[#F96302] bg-[#FFF7F2] text-[#F96302]"
                   : "border-[#E5E5E5] bg-white text-[#666] hover:border-[#F96302]",
@@ -735,16 +735,16 @@ function StepContact({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-1 self-start text-xs font-bold uppercase tracking-[0.1em] text-[#666] hover:text-black"
+          className="inline-flex items-center gap-1 self-start text-sm font-bold text-[#666] hover:text-black"
         >
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-8 py-4 text-sm font-black uppercase tracking-[0.1em] text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc]"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-8 py-4 text-sm font-bold text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc]"
         >
-          {submitting ? "Sending…" : "Get a Call Back"}
+          {submitting ? "Sending..." : "Get a call back"}
           {!submitting && <ChevronRight className="h-4 w-4" />}
         </button>
       </div>
@@ -771,7 +771,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.1em] text-[#666]">
+      <label className="mb-1.5 block text-sm font-semibold text-[#555]">
         {label}
         {required && <span className="ml-1 text-[#F96302]">*</span>}
       </label>
@@ -821,7 +821,7 @@ function StepConfirmation({ form }: { form: FormState }) {
       </div>
 
       <div className="rounded-xl bg-[#F5F5F5] p-4 text-left text-sm">
-        <p className="text-xs font-bold uppercase tracking-[0.1em] text-[#666]">
+        <p className="text-sm font-semibold text-[#555]">
           Your request
         </p>
         <dl className="mt-2 grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5 text-sm">
@@ -840,7 +840,7 @@ function StepConfirmation({ form }: { form: FormState }) {
 
       <a
         href={`tel:${siteSettings.phoneTel}`}
-        className="inline-flex items-center justify-center gap-2 self-center rounded-xl border-2 border-black bg-black px-6 py-4 text-sm font-black uppercase tracking-[0.1em] text-white hover:bg-[#1a1a1a]"
+        className="inline-flex items-center justify-center gap-2 self-center rounded-xl border-2 border-black bg-black px-6 py-4 text-sm font-bold text-white hover:bg-[#1a1a1a]"
       >
         <Phone className="h-4 w-4" /> Or call now: {siteSettings.phone}
       </a>

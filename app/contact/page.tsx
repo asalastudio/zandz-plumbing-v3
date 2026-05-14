@@ -104,14 +104,14 @@ export default function ContactPage() {
             icon={<Phone className="h-5 w-5" />}
             external
           >
-            Call Now
+            Call now
           </Button>
           <Button
             variant="inverse"
             size="xl"
             href="#contact-intake"
           >
-            Request a Call Back
+            Request a call back
           </Button>
         </div>
       </Section>

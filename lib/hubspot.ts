@@ -30,6 +30,8 @@ export interface LeadPayload {
   email: string;
   phone: string;
   zip?: string;
+  jobAddress?: string;
+  jobCity?: string;
   serviceInterest: string;
   preferredCallbackTime?: string;
   briefDescription?: string;

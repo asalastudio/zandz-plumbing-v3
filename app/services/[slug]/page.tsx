@@ -146,7 +146,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             Call {siteSettings.phone}
           </Button>
           <Button variant="inverse" size="lg" href="#service-intake">
-            Get a Quote
+            Get a quote
           </Button>
         </div>
       </Section>
@@ -304,7 +304,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               {siteSettings.phone}
             </Button>
             <Button variant="secondary" size="lg" href="#service-intake">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>

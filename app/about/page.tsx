@@ -145,7 +145,7 @@ export default function AboutPage() {
               Call {siteSettings.phone}
             </Button>
             <Button variant="inverse" size="xl" href="/book/">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function AboutPage() {
               {siteSettings.phone}
             </Button>
             <Button variant="secondary" size="lg" href="/book/">
-              Schedule Online
+              Schedule online
             </Button>
           </div>
         </div>
