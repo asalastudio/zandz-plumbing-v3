@@ -554,9 +554,9 @@ export default function SewerLateralOaklandPage() {
         <SectionHeading eyebrow="Related" title="Keep Reading." />
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[
+            { label: "EBMUD PSL Compliance Hub", href: "/ebmud-compliance/" },
             { label: "Plumber in Oakland", href: "/plumber-oakland-ca/" },
             { label: "Sewer Lateral Service Hub", href: "/services/sewer-lateral/" },
-            { label: "All East Bay Service Areas", href: "/service-areas/" },
             { label: "Contact Z and Z", href: "/contact/" },
           ].map((link) => (
             <li key={link.href}>

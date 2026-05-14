@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/videos/`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/coupons/`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/sewer-lateral-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${base}/ebmud-compliance/`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/emergency-plumber-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${base}/water-heater-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/drain-cleaning-oakland/`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
