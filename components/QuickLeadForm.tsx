@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, ChevronRight, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { isValidNanp10Digits } from "@/lib/phone";
 
 interface QuickLeadFormProps {
   title?: string;
@@ -92,8 +93,8 @@ export function QuickLeadForm({
     }
 
     const phoneDigits = form.phone.replace(/\D/g, "");
-    if (phoneDigits.length !== 10) {
-      setError("Please enter a valid 10-digit phone number.");
+    if (!isValidNanp10Digits(phoneDigits)) {
+      setError("Please enter a valid US phone number.");
       return false;
     }
 

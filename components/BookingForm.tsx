@@ -33,6 +33,7 @@ import {
 import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { lookupServiceAreaByZip } from "@/lib/service-area-lookup";
+import { isValidNanp10Digits } from "@/lib/phone";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -221,8 +222,8 @@ export default function BookingForm({
       return;
     }
     const phoneDigits = form.phone.replace(/\D/g, "");
-    if (phoneDigits.length !== 10) {
-      setSubmitError("Please enter a valid 10-digit phone number.");
+    if (!isValidNanp10Digits(phoneDigits)) {
+      setSubmitError("Please enter a valid US phone number.");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {

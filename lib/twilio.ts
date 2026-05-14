@@ -1,5 +1,6 @@
 import twilio, { type Twilio } from "twilio";
 import { siteSettings } from "@/content/site-settings";
+import { digitsOnly, normalizeNanpToE164 } from "@/lib/phone";
 
 /**
  * Twilio client + sending helper.
@@ -108,17 +109,15 @@ export function validateTwilioSignature(
  */
 export function toE164(rawPhone: string): string | null {
   if (!rawPhone) return null;
-  const digits = rawPhone.replace(/\D/g, "");
+  const normalizedNanp = normalizeNanpToE164(rawPhone);
+  if (normalizedNanp) return normalizedNanp;
 
-  if (digits.length === 10) {
-    return `+1${digits}`;
-  }
-  if (digits.length === 11 && digits.startsWith("1")) {
+  const digits = digitsOnly(rawPhone);
+
+  if (rawPhone.trim().startsWith("+") && !digits.startsWith("1") && digits.length >= 10 && digits.length <= 15) {
     return `+${digits}`;
   }
-  if (rawPhone.startsWith("+") && digits.length >= 10) {
-    return `+${digits}`;
-  }
+
   return null;
 }
 
