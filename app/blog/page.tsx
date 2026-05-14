@@ -35,7 +35,7 @@ const directions = [
   { label: "Water Heater Oakland", href: "/water-heater-oakland/", detail: "Tank and tankless repair and install." },
   { label: "Drain Cleaning Oakland", href: "/drain-cleaning-oakland/", detail: "Snake, camera, hydrojet." },
   { label: "24/7 Emergency", href: "/emergency-plumber-oakland/", detail: "We answer the phone." },
-  { label: "Service Areas", href: "/service-areas/", detail: "10 East Bay cities we cover." },
+  { label: "Service Areas", href: "/service-areas/", detail: "East Bay corridor coverage." },
 ];
 
 export default function BlogIndexPage() {

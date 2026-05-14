@@ -24,8 +24,16 @@ export const siteSettings: SiteSettings = {
   social: {
     facebook: "https://www.facebook.com/zandzplumbing",
     instagram: "https://www.instagram.com/zandzplumbing",
-    yelp: "https://www.yelp.com/biz/z-and-z-plumbing-san-leandro",
+    // Canonical Yelp listing carries the 238 reviews; the slug is "-oakland-3"
+    // even after the HQ moves to San Leandro because Yelp keeps the slug stable.
+    // See address-transition-strategy-2026-05-11.md for the SAB-first conversion plan.
+    yelp: "https://www.yelp.com/biz/z-and-z-plumbing-oakland-3",
     google: "https://www.google.com/search?q=Z+and+Z+Plumbing",
+    bbb: "https://www.bbb.org/us/ca/oakland/profile/plumber/z-z-plumbing-1116-486229",
+    nextdoor: "https://nextdoor.com/pages/z-and-z-plumbing-oakland-ca/",
+    homeAdvisor: "https://www.homeadvisor.com/sp/z-and-z-plumbing",
+    chamberOfCommerce:
+      "https://www.chamberofcommerce.com/business-directory/california/oakland/plumber/32393621-z-and-z-plumbing",
   },
   siteUrl: "https://zandzplumbing.com",
 };

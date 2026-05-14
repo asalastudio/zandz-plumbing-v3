@@ -66,7 +66,7 @@ export default function ServicesHubPage() {
         </h1>
         <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
           From house lines to street-side work, Z and Z holds the licenses to take the job from diagnosis to completion.
-          Twelve service categories. One crew. Same-day response across 10 East Bay cities.
+          Twelve service categories. One crew. Same-day response across the East Bay corridor.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button

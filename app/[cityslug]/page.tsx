@@ -71,6 +71,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
   const otherAreas = serviceAreas.filter((a) => a.slug !== area.slug);
   const featuredForCity = featuredServices;
   const faqs = buildCityFaqs(area.city, area.isHQ);
+  const areaSchemaType = area.city.includes("County") ? "AdministrativeArea" : "City";
 
   const url = `${siteSettings.siteUrl}/${area.slug}/`;
 
@@ -106,7 +107,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
       },
     },
     areaServed: {
-      "@type": "City",
+      "@type": areaSchemaType,
       name: area.city,
       address: {
         "@type": "PostalAddress",

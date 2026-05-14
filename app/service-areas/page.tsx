@@ -10,12 +10,12 @@ import { serviceAreas } from "@/content/service-areas";
 export const metadata: Metadata = {
   title: "Plumbing Service Areas | Oakland, San Leandro, Berkeley & East Bay",
   description:
-    "Z and Z Plumbing serves 10 East Bay cities from our San Leandro headquarters. Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Richmond, Emeryville, Pinole, and Lafayette. 24/7 emergency response.",
+    "Z and Z Plumbing serves the East Bay corridor from our San Leandro headquarters, including Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, Walnut Creek, and Contra Costa County. 24/7 emergency response.",
   alternates: { canonical: `${siteSettings.siteUrl}/service-areas/` },
   openGraph: {
     title: "Service Areas | Z and Z Plumbing",
     description:
-      "10 East Bay cities. Same-day plumbing service from our San Leandro base. Two licenses. One crew.",
+      "East Bay corridor coverage. Same-day plumbing service from our San Leandro base. Two licenses. One crew.",
     url: `${siteSettings.siteUrl}/service-areas/`,
     type: "website",
   },
@@ -55,11 +55,12 @@ export default function ServiceAreasHubPage() {
           East Bay Coverage
         </p>
         <h1 className="max-w-4xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
-          Ten East Bay Cities. One San Leandro Base.
+          East Bay Corridor. One San Leandro Base.
         </h1>
         <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
-          Z and Z Plumbing dispatches out of San Leandro and runs calls across Alameda and western Contra Costa counties.
-          Oakland is our biggest market. Same-day response is typical inside our service map.
+          Z and Z Plumbing dispatches out of San Leandro and runs calls across Alameda County, Contra Costa County,
+          and the corridor from Castro Valley through Dublin and Pleasanton up to Walnut Creek. Oakland is our biggest market. Same-day response is
+          typical inside our service map.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button
@@ -95,8 +96,8 @@ export default function ServiceAreasHubPage() {
 
             <div className="mt-8 grid grid-cols-3 border border-[#E5E5E5]">
               <div className="border-r border-[#E5E5E5] p-4">
-                <p className="font-display text-4xl font-black uppercase leading-none text-black">10</p>
-                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">East Bay cities</p>
+                <p className="font-display text-4xl font-black uppercase leading-none text-black">17+</p>
+                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">East Bay areas</p>
               </div>
               <div className="border-r border-[#E5E5E5] p-4">
                 <p className="font-display text-4xl font-black uppercase leading-none text-black">30-60</p>
@@ -156,12 +157,12 @@ export default function ServiceAreasHubPage() {
         </div>
       </Section>
 
-      {/* 10-city grid */}
+      {/* Service area grid */}
       <Section bg="light-gray" size="lg">
         <SectionHeading
-          eyebrow="Choose Your City"
-          title="10 East Bay Service Areas."
-          description="Click a city to see the neighborhoods we serve and the services we run most often in that area."
+          eyebrow="Choose Your Area"
+          title="East Bay Service Areas."
+          description="Click an area to see the neighborhoods and ZIP codes we serve most often."
         />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {ordered.map((area) => (
@@ -226,7 +227,7 @@ export default function ServiceAreasHubPage() {
               Outside the Map? Still Call.
             </h2>
             <p className="mt-2 font-sans text-base text-white/85">
-              We sometimes take calls outside our core 10 cities. Ring us and we will tell you straight.
+              We sometimes take calls outside our regular East Bay corridor. Ring us and we will tell you straight.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">

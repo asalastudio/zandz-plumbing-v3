@@ -50,7 +50,7 @@ export async function submitLead(
 
   if (!portalId || !formId) {
     console.warn("[HubSpot] Missing HUBSPOT_PORTAL_ID or HUBSPOT_FORM_ID. lead not submitted");
-    return { ok: true };
+    return { ok: true, error: "HubSpot Forms env not set — skipped" };
   }
 
   const fields: HubSpotField[] = [

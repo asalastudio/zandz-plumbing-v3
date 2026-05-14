@@ -234,8 +234,8 @@ export default function ContactPage() {
       <Section bg="light-gray" size="md">
         <SectionHeading
           eyebrow="Service Area"
-          title="10 East Bay Cities."
-          description="Tap any city to see what we cover there."
+          title="East Bay Service Areas."
+          description="Tap any area to see what we cover there."
         />
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {serviceAreas.map((area) => (

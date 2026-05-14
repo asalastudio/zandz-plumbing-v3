@@ -37,7 +37,7 @@ function buildFaqs(serviceTitle: string): FaqItem[] {
   return [
     {
       question: `How fast can Z and Z get a plumber out for ${serviceTitle.toLowerCase()}?`,
-      answer: `Z and Z dispatches from San Leandro and typically responds within 30 to 60 minutes inside our 10-city East Bay service area. Emergency calls run 24/7 every day of the year.`,
+      answer: `Z and Z dispatches from San Leandro and typically responds within 30 to 60 minutes inside our core East Bay service corridor. Emergency calls run 24/7 every day of the year.`,
     },
     {
       question: `Are your plumbers licensed and insured?`,
@@ -45,7 +45,7 @@ function buildFaqs(serviceTitle: string): FaqItem[] {
     },
     {
       question: `Where do you offer this service?`,
-      answer: `Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Richmond, Emeryville, Pinole, and Lafayette. See our service areas page for full coverage and ZIP details.`,
+      answer: `Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, Walnut Creek, Contra Costa County, and the surrounding East Bay corridor. See our service areas page for full coverage and ZIP details.`,
     },
     {
       question: `Do you provide a written estimate before starting work?`,
@@ -191,7 +191,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         <SectionHeading
           eyebrow="Where We Run Calls"
           title={`${service.shortTitle} Across the East Bay.`}
-          description="We dispatch from San Leandro and cover 10 cities. Tap any city to see local detail."
+          description="We dispatch from San Leandro and cover the East Bay corridor. Tap any area to see local detail."
         />
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {serviceAreas.map((area) => (

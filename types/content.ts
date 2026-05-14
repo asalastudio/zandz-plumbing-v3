@@ -24,6 +24,10 @@ export interface SiteSettings {
     instagram?: string;
     yelp?: string;
     google?: string;
+    bbb?: string;
+    nextdoor?: string;
+    homeAdvisor?: string;
+    chamberOfCommerce?: string;
   };
   siteUrl: string;
 }

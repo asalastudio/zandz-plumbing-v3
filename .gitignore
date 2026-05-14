@@ -33,3 +33,4 @@ tsconfig.tsbuildinfo
 # Keep them local only; the import scripts read them from the local filesystem.
 _docs/migration/source-exports/*.xlsx
 _docs/migration/source-exports/*.csv
+.env*.local

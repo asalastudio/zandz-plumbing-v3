@@ -85,7 +85,7 @@ const benefits = [
     icon: Clock,
     title: "Steady East Bay work",
     detail:
-      "23 years in the same service area. Oakland, San Leandro, Berkeley, Alameda, and 6 other East Bay cities. No traveling out of the area. No nights unless you sign up for the on-call emergency rotation.",
+      "23 years in the same East Bay service area. Oakland, San Leandro, Berkeley, Alameda, Fremont, Union City, Newark, Dublin, Pleasanton, Walnut Creek, and nearby corridor calls. No long-distance travel. No nights unless you sign up for the on-call emergency rotation.",
   },
   {
     icon: MapPin,

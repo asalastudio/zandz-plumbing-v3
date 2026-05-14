@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Container } from "@/components/Container";
 import { Button } from "@/components/Button";
+import HeroZipForm from "@/components/HeroZipForm";
 import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
@@ -117,7 +118,7 @@ const secondaryServiceCards = [
 ];
 
 const coverageStats = [
-  { value: "10", label: "East Bay cities" },
+  { value: "17+", label: "East Bay areas" },
   { value: "30-60", label: "min nearby response" },
   { value: "2003", label: "serving the East Bay" },
 ];
@@ -143,7 +144,13 @@ const serviceAreaMapPositions: Record<
   "plumber-san-leandro-ca": { x: 57, y: 62, labelX: 18, labelY: 14, mobileLabelX: -78, mobileLabelY: 18, tone: "hq" },
   "plumber-castro-valley-ca": { x: 70, y: 62, labelX: 18, labelY: -22, mobileLabelX: -120, tone: "standard" },
   "plumber-hayward-ca": { x: 64, y: 76, labelX: 18, labelY: 14, mobileLabelX: -78, tone: "standard" },
+  "plumber-union-city-ca": { x: 62, y: 86, labelX: -116, labelY: 8, mobileLabelX: -108, tone: "standard" },
+  "plumber-fremont-ca": { x: 71, y: 92, labelX: 18, labelY: -22, mobileLabelX: -86, tone: "standard" },
+  "plumber-newark-ca": { x: 56, y: 93, labelX: -90, labelY: -24, mobileLabelX: -82, tone: "standard" },
+  "plumber-dublin-ca": { x: 83, y: 69, labelX: 18, labelY: 12, mobileLabelX: -76, tone: "standard" },
+  "plumber-pleasanton-ca": { x: 83, y: 80, labelX: 18, labelY: 12, mobileLabelX: -100, tone: "standard" },
   "plumber-lafayette-ca": { x: 78, y: 32, labelX: 18, labelY: -18, mobileLabelX: -108, tone: "standard" },
+  "plumber-walnut-creek-ca": { x: 82, y: 18, labelX: 18, labelY: -12, mobileLabelX: -118, tone: "standard" },
 };
 
 export default function HomePage() {
@@ -179,11 +186,22 @@ export default function HomePage() {
                 The Pros Other Plumbers Call.
               </h1>
               <p
-                className="font-sans text-base text-[#333333] leading-relaxed mb-8 max-w-[280px] sm:max-w-lg sm:text-lg animate-fade-up"
+                className="font-sans text-base text-[#333333] leading-relaxed mb-6 max-w-[280px] sm:max-w-lg sm:text-lg animate-fade-up"
                 style={{ animationDelay: "0.28s" }}
               >
                 Licensed for the whole job. From house lines to street-side work, we handle it all on time and built to last.
               </p>
+
+              <div
+                className="mb-6 animate-fade-up"
+                style={{ animationDelay: "0.36s" }}
+              >
+                <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666]">
+                  Start with your ZIP — we&apos;ll route you to the nearest crew
+                </p>
+                <HeroZipForm variant="light" />
+              </div>
+
               <div
                 className="hidden gap-4 md:flex md:flex-row animate-fade-up"
                 style={{ animationDelay: "0.44s" }}
@@ -198,7 +216,7 @@ export default function HomePage() {
                 >
                   Call {siteSettings.phone}
                 </Button>
-                <Button variant="ghost" size="xl" href="/contact/">
+                <Button variant="ghost" size="xl" href="/book/">
                   Schedule Online
                 </Button>
               </div>
@@ -329,10 +347,10 @@ export default function HomePage() {
                   East Bay Coverage.
                 </p>
                 <h2 className="font-display text-5xl md:text-6xl font-black uppercase leading-tight text-black">
-                  We Serve 10 East Bay Cities.
+                  We Serve the East Bay Corridor.
                 </h2>
                 <p className="mt-5 max-w-xl font-sans text-xl leading-relaxed text-[#333333]">
-                  Headquartered in San Leandro and built for East Bay housing stock, sewer laterals, and street-side work. The map shows our core service corridor from Pinole and Richmond down through Oakland, Alameda, San Leandro, Castro Valley, and Hayward.
+                  Headquartered in San Leandro and built for East Bay housing stock, sewer laterals, and street-side work. The map shows our core service corridor from Pinole and Richmond down through Oakland, Alameda, San Leandro, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, and up to Walnut Creek.
                 </p>
               </div>
 
@@ -628,7 +646,7 @@ export default function HomePage() {
               >
                 {siteSettings.phone}
               </Button>
-              <Button variant="secondary" size="lg" href="/contact/">
+              <Button variant="secondary" size="lg" href="/book/">
                 Schedule Online
               </Button>
             </div>

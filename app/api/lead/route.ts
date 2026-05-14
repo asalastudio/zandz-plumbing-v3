@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { submitLead, type LeadPayload } from "@/lib/hubspot";
+import { ingestLead, type LeadInput } from "@/lib/leads";
 
 export async function POST(req: NextRequest) {
-  let body: Partial<LeadPayload>;
+  let body: Partial<LeadInput>;
 
   try {
     body = await req.json();
@@ -13,14 +13,30 @@ export async function POST(req: NextRequest) {
   const { firstName, lastName, email, phone, zip, serviceInterest } = body;
 
   if (!firstName || !lastName || !email || !phone || !zip || !serviceInterest) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 }
+    );
   }
 
-  const result = await submitLead(body as LeadPayload);
+  const result = await ingestLead(body as LeadInput);
+
+  // Log every outcome so failures surface in Vercel logs without blocking the
+  // customer-facing response. The customer only needs to know the lead landed
+  // somewhere durable (Supabase if configured, HubSpot Forms otherwise).
+  console.log("[lead] outcomes", {
+    supabaseJobId: result.supabaseJobId,
+    outcomes: Object.fromEntries(
+      Object.entries(result.outcomes).map(([k, v]) => [k, v.ok ? (v.skipped ? "skipped" : "ok") : `err: ${v.detail}`])
+    ),
+  });
 
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 502 });
+    return NextResponse.json(
+      { error: "We couldn't save your request. Please call us directly." },
+      { status: 502 }
+    );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, jobId: result.supabaseJobId });
 }

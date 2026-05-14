@@ -63,7 +63,7 @@ const timeline = [
   {
     year: "Today",
     title: "San Leandro headquarters",
-    detail: `Z and Z runs out of ${siteSettings.address.street} in San Leandro and serves 10 East Bay cities, with Oakland as our largest market.`,
+    detail: `Z and Z runs out of ${siteSettings.address.street} in San Leandro and serves the East Bay corridor, with Oakland as our largest market.`,
   },
 ];
 

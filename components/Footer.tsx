@@ -21,8 +21,13 @@ const areaLinks = [
   { label: "San Leandro", href: "/plumber-san-leandro-ca/" },
   { label: "Alameda", href: "/plumber-alameda-ca/" },
   { label: "Hayward", href: "/plumber-hayward-ca/" },
-  { label: "Union City", href: "/plumber-hayward-ca/" },
+  { label: "Union City", href: "/plumber-union-city-ca/" },
+  { label: "Fremont", href: "/plumber-fremont-ca/" },
+  { label: "Newark", href: "/plumber-newark-ca/" },
   { label: "Castro Valley", href: "/plumber-castro-valley-ca/" },
+  { label: "Dublin", href: "/plumber-dublin-ca/" },
+  { label: "Pleasanton", href: "/plumber-pleasanton-ca/" },
+  { label: "Walnut Creek", href: "/plumber-walnut-creek-ca/" },
   { label: "See All Areas", href: "/service-areas/" },
 ];
 
