@@ -99,9 +99,9 @@ async function upsertContactByEmail(
     const text = await createRes.text();
     // HubSpot includes existing id in the error body
     const m = text.match(/Existing ID:\s*(\d+)/);
-    const id = m?.[1];
+    const id = m?.[1] ?? await searchContactIdByEmail(bearer, input.email);
     if (id) {
-      await fetch(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts/${id}`, {
+      const updateRes = await fetch(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${bearer}`,
@@ -109,12 +109,50 @@ async function upsertContactByEmail(
         },
         body: JSON.stringify({ properties }),
       });
+      if (!updateRes.ok) {
+        throw new Error(`contact update failed: ${updateRes.status} ${await updateRes.text()}`);
+      }
       return id;
     }
   }
 
   const text = await createRes.text();
   throw new Error(`contact create failed: ${createRes.status} ${text}`);
+}
+
+async function searchContactIdByEmail(
+  bearer: string,
+  email: string
+): Promise<string | null> {
+  const res = await fetch(`${HUBSPOT_API_BASE}/crm/v3/objects/contacts/search`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${bearer}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      filterGroups: [
+        {
+          filters: [
+            {
+              propertyName: "email",
+              operator: "EQ",
+              value: email,
+            },
+          ],
+        },
+      ],
+      limit: 1,
+      properties: ["email"],
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`contact search failed: ${res.status} ${await res.text()}`);
+  }
+
+  const data = await res.json();
+  return data.results?.[0]?.id ?? null;
 }
 
 // ──────────────────────────────────────────────────────────────────────────

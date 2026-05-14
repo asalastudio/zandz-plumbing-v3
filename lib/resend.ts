@@ -90,7 +90,7 @@ function buildDispatchHtml(i: DispatchEmailInput): string {
     ? row("Customer notes", escapeHtml(i.briefDescription))
     : "";
 
-  const sourceRow = i.sourcePage ? row("Source page", i.sourcePage) : "";
+  const sourceRow = i.sourcePage ? row("Source page", escapeHtml(i.sourcePage)) : "";
 
   const dashboardLine = i.supabaseJobId
     ? `<p style="margin-top:24px;font-size:13px;color:#666;">

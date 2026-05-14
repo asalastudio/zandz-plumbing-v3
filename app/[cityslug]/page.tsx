@@ -335,7 +335,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
             <li key={a.slug}>
               <Link
                 href={`/${a.slug}/`}
-                className="block border border-[#E5E5E5] bg-white px-4 py-3 text-center font-display text-base font-black uppercase tracking-tight text-black transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302]"
+                className="block border border-[#D8D8D8] bg-white px-5 py-4 text-center font-sans text-lg font-extrabold leading-snug text-black transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302] md:text-xl"
               >
                 {a.city}
               </Link>

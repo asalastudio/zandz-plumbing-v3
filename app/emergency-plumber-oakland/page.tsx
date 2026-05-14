@@ -423,7 +423,7 @@ export default function EmergencyPlumberOaklandPage() {
           <div className="flex items-center gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
             <Clock className="h-5 w-5 flex-shrink-0 text-[#F96302]" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-black">
+              <p className="font-sans text-lg font-extrabold leading-snug text-black">
                 30-60 min daytime
               </p>
               <p className="mt-1 text-sm text-[#333333]">Most Oakland addresses during business hours.</p>
@@ -432,7 +432,7 @@ export default function EmergencyPlumberOaklandPage() {
           <div className="flex items-center gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
             <Clock className="h-5 w-5 flex-shrink-0 text-[#F96302]" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-black">
+              <p className="font-sans text-lg font-extrabold leading-snug text-black">
                 Night and weekend
               </p>
               <p className="mt-1 text-sm text-[#333333]">Same crew, same number, after-hours rate applies.</p>
@@ -441,7 +441,7 @@ export default function EmergencyPlumberOaklandPage() {
           <div className="flex items-center gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
             <ShieldCheck className="h-5 w-5 flex-shrink-0 text-[#F96302]" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-black">
+              <p className="font-sans text-lg font-extrabold leading-snug text-black">
                 Licensed for it all
               </p>
               <p className="mt-1 text-sm text-[#333333]">C-36 + A General Engineering on every truck.</p>
@@ -522,10 +522,10 @@ export default function EmergencyPlumberOaklandPage() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="flex items-center justify-between gap-2 border border-[#E5E5E5] bg-white px-5 py-4 font-display text-base font-black uppercase tracking-tight text-black transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302]"
+                className="flex min-h-20 items-center justify-between gap-4 border border-[#D8D8D8] bg-white px-5 py-5 font-sans text-lg font-extrabold leading-snug text-black transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302] md:px-6 md:text-xl"
               >
                 <span>{link.label}</span>
-                <ChevronRight className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                <ChevronRight className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
               </Link>
             </li>
           ))}

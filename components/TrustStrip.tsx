@@ -48,14 +48,13 @@ const items: TrustItem[] = [
 export function TrustStrip({ invert = false, compact = false, className }: TrustStripProps) {
   const borderClass = invert ? "border-white/10" : "border-[#E5E5E5]";
   const labelClass = invert ? "text-white" : "text-black";
-  const detailClass = invert ? "text-white/60" : "text-[#666666]";
+  const detailClass = invert ? "text-white/70" : "text-[#4A4A4A]";
   const iconWrapClass = invert ? "bg-white/10" : "bg-[#F5F5F5]";
 
   return (
     <div
       className={cn(
-        "grid grid-cols-2 border md:grid-cols-5",
-        borderClass,
+        "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5",
         className
       )}
       role="list"
@@ -68,21 +67,21 @@ export function TrustStrip({ invert = false, compact = false, className }: Trust
             key={item.label}
             role="listitem"
             className={cn(
-              "flex items-start gap-3 border-b border-r p-4 md:p-5",
+              "flex items-start gap-4 border bg-white p-5 md:p-6",
               borderClass,
-              "last:border-r-0 md:[&:nth-child(n+4)]:border-b-0",
+              invert && "bg-white/5",
               compact && "p-3 md:p-4"
             )}
           >
             <div
               className={cn(
-                "flex h-10 w-10 flex-shrink-0 items-center justify-center",
+                "flex h-12 w-12 flex-shrink-0 items-center justify-center",
                 iconWrapClass
               )}
             >
               <Icon
                 className={cn(
-                  "h-5 w-5 text-[#F96302]",
+                  "h-6 w-6 text-[#F96302]",
                   item.star && "fill-[#F96302]"
                 )}
                 strokeWidth={1.5}
@@ -92,13 +91,13 @@ export function TrustStrip({ invert = false, compact = false, className }: Trust
             <div className="min-w-0">
               <p
                 className={cn(
-                  "font-display text-base font-black uppercase leading-tight tracking-tight md:text-lg",
+                  "font-sans text-lg font-extrabold leading-tight md:text-xl",
                   labelClass
                 )}
               >
                 {item.label}
               </p>
-              <p className={cn("mt-1 text-xs leading-snug md:text-sm", detailClass)}>
+              <p className={cn("mt-2 text-base leading-relaxed md:text-lg", detailClass)}>
                 {item.detail}
               </p>
             </div>

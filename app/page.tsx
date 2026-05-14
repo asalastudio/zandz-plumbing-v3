@@ -596,7 +596,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-sm font-semibold text-white/60 uppercase tracking-wide">
-                5.0 average rating from 100+ reviews
+                4.6 Google. 4.5 Yelp. 257+ combined reviews.
               </p>
             </div>
 

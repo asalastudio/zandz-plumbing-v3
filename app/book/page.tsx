@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 const trustPoints = [
   { value: "23", label: "Years in business" },
-  { value: "5.0", label: "Avg review rating" },
+  { value: "257+", label: "Combined reviews" },
   { value: "30-60", label: "Min response time" },
   { value: "24/7", label: "Emergency coverage" },
 ];

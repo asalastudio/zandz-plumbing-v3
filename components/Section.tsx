@@ -78,7 +78,7 @@ export function SectionHeading({
   return (
     <div className={cn("mb-10 md:mb-12", alignment, className)}>
       {eyebrow && (
-        <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+        <p className="mb-4 font-sans text-sm font-bold uppercase tracking-[0.08em] text-[#F96302] md:text-base">
           {eyebrow}
         </p>
       )}

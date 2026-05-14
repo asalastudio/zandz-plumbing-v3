@@ -453,10 +453,10 @@ export default function WaterHeaterOaklandPage() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="flex items-center justify-between gap-2 border border-[#E5E5E5] bg-white px-5 py-4 font-display text-base font-black uppercase tracking-tight text-black transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302]"
+                className="flex min-h-20 items-center justify-between gap-4 border border-[#D8D8D8] bg-white px-5 py-5 font-sans text-lg font-extrabold leading-snug text-black transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302] md:px-6 md:text-xl"
               >
                 <span>{link.label}</span>
-                <ChevronRight className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+                <ChevronRight className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
               </Link>
             </li>
           ))}

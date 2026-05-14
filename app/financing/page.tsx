@@ -212,7 +212,7 @@ export default function FinancingPage() {
           <div className="flex items-start gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
             <ShieldCheck className="h-5 w-5 flex-shrink-0 text-[#F96302] mt-0.5" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-black">
+              <p className="font-sans text-lg font-extrabold leading-snug text-black">
                 No upfront credit pull
               </p>
               <p className="mt-1 text-sm text-[#333333]">
@@ -223,7 +223,7 @@ export default function FinancingPage() {
           <div className="flex items-start gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
             <ClipboardCheck className="h-5 w-5 flex-shrink-0 text-[#F96302] mt-0.5" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-black">
+              <p className="font-sans text-lg font-extrabold leading-snug text-black">
                 Clear written quote
               </p>
               <p className="mt-1 text-sm text-[#333333]">
@@ -234,7 +234,7 @@ export default function FinancingPage() {
           <div className="flex items-start gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
             <CreditCard className="h-5 w-5 flex-shrink-0 text-[#F96302] mt-0.5" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-display text-base font-black uppercase tracking-tight text-black">
+              <p className="font-sans text-lg font-extrabold leading-snug text-black">
                 Third-party lenders
               </p>
               <p className="mt-1 text-sm text-[#333333]">
