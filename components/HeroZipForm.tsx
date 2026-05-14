@@ -3,9 +3,8 @@
 /**
  * HeroZipForm — single ZIP field for the home-page hero.
  *
- * On submit it pushes the visitor to /book?zip=XXXXX which preloads the
- * BookingForm at step 2 (issue selection). Keeps the hero clean and ships
- * conversion-style ZIP-first intake without changing the rest of the hero.
+ * On submit it pushes the visitor to /book/?zip=XXXXX, which preloads the
+ * BookingForm at step 2 (issue selection).
  */
 
 import { useRouter } from "next/navigation";
@@ -27,7 +26,7 @@ export default function HeroZipForm({
     e.preventDefault();
     if (!/^\d{5}$/.test(zip)) return;
     setSubmitting(true);
-    router.push(`/book?zip=${zip}`);
+    router.push(`/book/?zip=${zip}`);
   };
 
   return (
@@ -50,6 +49,8 @@ export default function HeroZipForm({
         <input
           type="text"
           inputMode="numeric"
+          autoComplete="postal-code"
+          enterKeyHint="go"
           pattern="\d{5}"
           maxLength={5}
           placeholder="Enter ZIP code"
@@ -57,7 +58,7 @@ export default function HeroZipForm({
           onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
           aria-label="ZIP code"
           className={[
-            "w-full rounded-xl py-3 pl-11 pr-4 text-base font-semibold tracking-wide focus:outline-none md:py-3.5",
+            "h-14 w-full rounded-xl py-3 pl-11 pr-4 text-base font-semibold tracking-wide focus:outline-none md:h-auto md:py-3.5",
             dark
               ? "border-2 border-white/15 bg-white/10 text-white placeholder:text-white/50 backdrop-blur focus:border-[#F96302]"
               : "border-2 border-black/15 bg-white text-black placeholder:text-[#999] focus:border-[#F96302]",
@@ -67,7 +68,7 @@ export default function HeroZipForm({
       <button
         type="submit"
         disabled={zip.length !== 5 || submitting}
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-3 text-sm font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] md:py-3.5"
+        className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-3 text-base font-black uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] md:min-h-0 md:py-3.5 md:text-sm"
       >
         Get Help
         <ChevronRight className="h-4 w-4" />

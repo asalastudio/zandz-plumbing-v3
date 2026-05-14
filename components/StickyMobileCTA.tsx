@@ -1,8 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Phone } from "lucide-react";
 import { siteSettings } from "@/content/site-settings";
 
 export function StickyMobileCTA() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/book")) return null;
+
   return (
     <div
       data-marketing="true"

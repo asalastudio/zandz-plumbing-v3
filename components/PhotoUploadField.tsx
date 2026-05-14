@@ -23,7 +23,7 @@ export function PhotoUploadField({
     <div className="space-y-2">
       <label
         className={[
-          "flex cursor-pointer items-center gap-3 border-2 px-4 py-4 transition-colors",
+          "flex min-h-16 cursor-pointer items-center gap-3 border-2 px-4 py-4 transition-colors",
           isDark
             ? "border-white/15 bg-black text-white hover:border-[#F96302]"
             : "rounded-xl border-[#E5E5E5] bg-white text-black hover:border-[#F96302]",
@@ -40,7 +40,7 @@ export function PhotoUploadField({
           <Camera className="h-6 w-6" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-black uppercase tracking-[0.12em]">
+          <span className="block text-base font-black uppercase tracking-[0.08em]">
             {fileName ? "Photo ready" : label}
           </span>
           <span
@@ -59,7 +59,7 @@ export function PhotoUploadField({
           type="button"
           onClick={() => onChange(null)}
           className={[
-            "inline-flex items-center gap-1 text-sm font-bold",
+            "inline-flex min-h-11 items-center gap-1 rounded-xl px-3 text-base font-bold",
             isDark ? "text-white/55 hover:text-[#F96302]" : "text-[#666666] hover:text-[#F96302]",
           ].join(" ")}
         >

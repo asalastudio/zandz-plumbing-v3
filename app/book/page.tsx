@@ -28,10 +28,10 @@ const trustPoints = [
 export default function BookPage() {
   return (
     <>
-      <section className="bg-[#F5F5F5] pt-12 pb-16 md:pt-20 md:pb-24">
+      <section className="bg-[#F5F5F5] pb-12 pt-5 md:pt-20 md:pb-24">
         <Container>
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.05fr_1fr] lg:items-start">
-            <div>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-12">
+            <div className="order-2 hidden lg:order-1 lg:block">
               <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
                 Book online · East Bay
               </p>
@@ -70,10 +70,22 @@ export default function BookPage() {
               </div>
             </div>
 
-            <div className="lg:sticky lg:top-24">
+            <div className="order-1 lg:sticky lg:top-24 lg:order-2">
+              <h1 className="sr-only lg:hidden">Get a plumber out today</h1>
               <Suspense fallback={<FormSkeleton />}>
                 <BookBookingFormClient />
               </Suspense>
+              <div className="mt-4 lg:hidden">
+                <p className="font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-[#F96302]">
+                  Book online · East Bay
+                </p>
+                <h2 className="mt-2 font-display text-4xl font-black uppercase leading-[0.95] tracking-tight text-black">
+                  Get a Plumber Out Today.
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-[#333]">
+                  ZIP, issue, contact info. We&apos;ll call back to confirm.
+                </p>
+              </div>
             </div>
           </div>
         </Container>

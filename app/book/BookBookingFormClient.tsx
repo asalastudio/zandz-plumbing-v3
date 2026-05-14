@@ -10,7 +10,7 @@ import BookingForm from "@/components/BookingForm";
  */
 export default function BookBookingFormClient() {
   const params = useSearchParams();
-  const zip = params.get("zip") ?? "";
+  const zip = (params.get("zip") ?? "").replace(/\D/g, "").slice(0, 5);
   const service = params.get("service") ?? "";
   return (
     <BookingForm

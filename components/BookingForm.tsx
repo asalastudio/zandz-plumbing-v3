@@ -13,11 +13,12 @@
  * and any "Schedule [Service]" link).
  */
 
-import { useState, useMemo, type FormEvent } from "react";
+import { useState, useMemo, useRef, type FormEvent } from "react";
 import {
   Phone,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   CheckCircle2,
   AlertCircle,
   MapPin,
@@ -157,7 +158,12 @@ export default function BookingForm({
   initialService = "",
   sourcePage,
 }: BookingFormProps) {
-  const [step, setStep] = useState<Step>(initialZip ? 2 : 1);
+  const formShellRef = useRef<HTMLDivElement>(null);
+  const hasInitialZip = /^\d{5}$/.test(initialZip.trim());
+  const hasInitialService = SERVICE_OPTIONS.some((s) => s.id === initialService);
+  const [step, setStep] = useState<Step>(
+    hasInitialZip ? (hasInitialService ? 3 : 2) : 1
+  );
   const [form, setForm] = useState<FormState>(() =>
     initialFormState(initialZip, initialService)
   );
@@ -173,6 +179,18 @@ export default function BookingForm({
     [form.service]
   );
   const isEmergency = selectedService?.emergency === true;
+
+  const goToStep = (nextStep: Step) => {
+    setStep(nextStep);
+    window.requestAnimationFrame(() => {
+      formShellRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+        block: "start",
+      });
+    });
+  };
 
   const handleZipSubmit = (e?: FormEvent) => {
     e?.preventDefault();
@@ -190,7 +208,7 @@ export default function BookingForm({
       serviceArea: match,
       outOfArea: !match,
     }));
-    setStep(2);
+    goToStep(2);
   };
 
   const handleServiceSelect = (option: ServiceOption) => {
@@ -198,7 +216,7 @@ export default function BookingForm({
     update("serviceLabel", option.label);
     // Don't auto-advance on emergency — they may want to fill the form OR call.
     if (!option.emergency) {
-      setStep(3);
+      goToStep(3);
     }
   };
 
@@ -256,7 +274,7 @@ export default function BookingForm({
         return;
       }
 
-      setStep(4);
+      goToStep(4);
     } catch {
       setSubmitError("Network hiccup. Please try again or call us directly.");
     } finally {
@@ -269,10 +287,14 @@ export default function BookingForm({
   // ────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="w-full max-w-2xl">
+    <div
+      id="booking-form"
+      ref={formShellRef}
+      className="w-full max-w-2xl scroll-mt-32 md:scroll-mt-28"
+    >
       <ProgressBar step={step} />
 
-      <div className="mt-6 rounded-2xl border border-[#E5E5E5] bg-white p-6 shadow-2xl md:p-8">
+      <div className="mt-4 rounded-2xl border border-[#E5E5E5] bg-white p-5 shadow-2xl md:mt-6 md:p-8">
         {step === 1 && (
           <StepZip
             zip={form.zip}
@@ -289,8 +311,8 @@ export default function BookingForm({
             zip={form.zip}
             selectedService={form.service}
             onSelect={handleServiceSelect}
-            onBack={() => setStep(1)}
-            onContinueEmergency={() => setStep(3)}
+            onBack={() => goToStep(1)}
+            onContinueEmergency={() => goToStep(3)}
             isEmergency={isEmergency}
           />
         )}
@@ -300,7 +322,7 @@ export default function BookingForm({
             form={form}
             update={update}
             onSubmit={handleFinalSubmit}
-            onBack={() => setStep(2)}
+            onBack={() => goToStep(2)}
             submitting={submitting}
             error={submitError}
             isEmergency={isEmergency}
@@ -329,46 +351,57 @@ export default function BookingForm({
 // ──────────────────────────────────────────────────────────────────────────
 
 function ProgressBar({ step }: { step: Step }) {
-  const labels = ["ZIP", "Service", "Contact", "Done"];
+  const labels = ["ZIP", "Issue", "Info"];
+  const activeStep = step === 4 ? 3 : step;
   return (
-    <div className="flex items-center gap-2">
-      {labels.map((label, i) => {
-        const n = (i + 1) as Step;
-        const isActive = step === n;
-        const isDone = step > n;
-        return (
-          <div key={label} className="flex flex-1 items-center gap-2">
-            <div
-              className={[
-                "flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors",
-                isDone
-                  ? "border-[#F96302] bg-[#F96302] text-white"
-                  : isActive
-                    ? "border-[#F96302] bg-white text-[#F96302]"
-                    : "border-[#D8D8D8] bg-white text-[#999]",
-              ].join(" ")}
-            >
-              {isDone ? <CheckCircle2 className="h-4 w-4" /> : n}
-            </div>
-            <span
-              className={[
-                "hidden text-[11px] font-bold uppercase tracking-[0.1em] sm:inline",
-                isActive ? "text-black" : "text-[#999]",
-              ].join(" ")}
-            >
-              {label}
-            </span>
-            {i < labels.length - 1 && (
+    <div aria-label="Booking progress">
+      <div className="mb-3 flex items-center justify-between text-xs font-black uppercase tracking-[0.12em]">
+        <span className="text-[#666]">
+          {step === 4 ? "Complete" : `Step ${activeStep} of 3`}
+        </span>
+        <span className="text-[#F96302]">
+          {step === 4 ? "Done" : labels[activeStep - 1]}
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        {labels.map((label, i) => {
+          const n = (i + 1) as Step;
+          const isActive = step !== 4 && activeStep === n;
+          const isDone = step === 4 || activeStep > n;
+          return (
+            <div key={label} className="flex flex-1 items-center gap-2">
               <div
                 className={[
-                  "h-px flex-1 transition-colors",
-                  isDone ? "bg-[#F96302]" : "bg-[#D8D8D8]",
+                  "flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-black transition-colors md:h-8 md:w-8 md:text-xs",
+                  isDone
+                    ? "border-[#F96302] bg-[#F96302] text-white"
+                    : isActive
+                      ? "border-[#F96302] bg-white text-[#F96302]"
+                      : "border-[#D8D8D8] bg-white text-[#999]",
                 ].join(" ")}
-              />
-            )}
-          </div>
-        );
-      })}
+              >
+                {isDone ? <CheckCircle2 className="h-4 w-4" /> : n}
+              </div>
+              <span
+                className={[
+                  "text-[11px] font-black uppercase tracking-[0.1em]",
+                  isActive ? "text-black" : "text-[#999]",
+                ].join(" ")}
+              >
+                {label}
+              </span>
+              {i < labels.length - 1 && (
+                <div
+                  className={[
+                    "h-px flex-1 transition-colors",
+                    isDone ? "bg-[#F96302]" : "bg-[#D8D8D8]",
+                  ].join(" ")}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -408,19 +441,21 @@ function StepZip({
           <input
             type="text"
             inputMode="numeric"
+            autoComplete="postal-code"
+            enterKeyHint="go"
             pattern="\d{5}"
             maxLength={5}
             placeholder="ZIP code"
             value={zip}
             autoFocus
             onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 5))}
-            className="w-full rounded-xl border-2 border-[#E5E5E5] bg-white py-4 pl-12 pr-4 text-lg font-bold tracking-wider text-black placeholder:text-[#999] placeholder:font-normal focus:border-[#F96302] focus:outline-none"
+            className="h-14 w-full rounded-xl border-2 border-[#E5E5E5] bg-white py-4 pl-12 pr-4 text-lg font-bold tracking-wider text-black placeholder:text-[#999] placeholder:font-normal focus:border-[#F96302] focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={zip.length !== 5}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] disabled:text-white sm:px-8"
+          className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#F96302] px-6 py-4 text-base font-black text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] disabled:text-white sm:px-8"
         >
           Check coverage
           <ChevronRight className="h-4 w-4" />
@@ -501,7 +536,7 @@ function StepService({
           What&apos;s the issue?
         </h2>
         <p className="mt-2 text-sm text-[#666] md:text-base">
-          Pick the closest match. The crew will sort out the details.
+          Pick the closest match to continue. The crew will sort out the details.
         </p>
       </div>
 
@@ -516,7 +551,7 @@ function StepService({
               type="button"
               onClick={() => onSelect(opt)}
               className={[
-                "flex items-start gap-3 rounded-xl border-2 p-4 text-left transition-all",
+                "flex min-h-[88px] items-center gap-4 rounded-xl border-2 p-4 text-left transition-all",
                 isSelected
                   ? isEmergencyChip
                     ? "border-red-600 bg-red-50"
@@ -528,22 +563,22 @@ function StepService({
             >
               <div
                 className={[
-                  "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
+                  "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg",
                   isEmergencyChip ? "bg-red-600 text-white" : "bg-black text-[#F96302]",
                 ].join(" ")}
               >
-                <Icon className="h-5 w-5" strokeWidth={1.5} />
+                <Icon className="h-6 w-6" strokeWidth={1.5} />
               </div>
               <div>
                 <p
                   className={[
-                    "font-display text-lg font-black uppercase leading-tight",
+                    "font-display text-xl font-black uppercase leading-tight",
                     isEmergencyChip ? "text-red-700" : "text-black",
                   ].join(" ")}
                 >
                   {opt.label}
                 </p>
-                <p className="mt-1 text-xs text-[#666]">{opt.description}</p>
+                <p className="mt-1 text-sm leading-snug text-[#666]">{opt.description}</p>
               </div>
             </button>
           );
@@ -560,14 +595,14 @@ function StepService({
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <a
               href={`tel:${siteSettings.phoneTel}`}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-4 text-base font-bold text-red-700 transition-colors hover:bg-red-50"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-white px-5 py-4 text-base font-black text-red-700 transition-colors hover:bg-red-50"
             >
               <Phone className="h-5 w-5" /> Call {siteSettings.phone}
             </a>
             <button
               type="button"
               onClick={onContinueEmergency}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/40 px-5 py-4 text-sm font-bold text-white transition-colors hover:border-white"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-white/40 px-5 py-4 text-base font-black text-white transition-colors hover:border-white"
             >
               Or finish the form
               <ChevronRight className="h-4 w-4" />
@@ -579,7 +614,7 @@ function StepService({
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-1 self-start text-sm font-bold text-[#666] hover:text-black"
+        className="inline-flex min-h-12 items-center gap-1 self-start rounded-xl border border-[#D8D8D8] bg-white px-4 text-base font-bold text-[#555] hover:text-black"
       >
         <ChevronLeft className="h-4 w-4" /> Change ZIP
       </button>
@@ -608,8 +643,10 @@ function StepContact({
   error: string | null;
   isEmergency: boolean;
 }) {
+  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
+
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+    <form onSubmit={onSubmit} className="flex flex-col gap-4 md:gap-5">
       <div>
         <h2 className="font-display text-3xl font-black uppercase leading-tight text-black md:text-4xl">
           How do we reach you?
@@ -617,6 +654,16 @@ function StepContact({
         <p className="mt-2 text-sm text-[#666] md:text-base">
           We&apos;ll call to confirm details and book the appointment.
         </p>
+        <p className="mt-3 inline-flex rounded-full bg-[#FFF7F2] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#F96302]">
+          Required: name, phone, email
+        </p>
+        {(form.serviceLabel || form.zip) && (
+          <p className="mt-3 rounded-xl bg-[#F5F5F5] px-3 py-2 text-xs font-semibold text-[#333]">
+            {form.serviceLabel || "Plumbing request"}
+            {form.zip && ` · ZIP ${form.zip}`}
+            {form.serviceArea?.city && ` · ${form.serviceArea.city}`}
+          </p>
+        )}
       </div>
 
       {isEmergency && (
@@ -628,7 +675,7 @@ function StepContact({
         </a>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3">
         <Field
           label="First name"
           value={form.firstName}
@@ -665,54 +712,6 @@ function StepContact({
         placeholder="you@example.com"
       />
 
-      <Field
-        label="Quick description (optional)"
-        value={form.briefDescription}
-        onChange={(v) => update("briefDescription", v)}
-        type="textarea"
-        placeholder="Anything we should know before we call?"
-      />
-
-      <PhotoUploadField
-        fileName={form.photo?.name}
-        onChange={(file) => update("photo", file)}
-        label="Add a photo"
-        description="Take one quick photo if it helps us understand the issue."
-      />
-
-      <div>
-        <label className="mb-1.5 block text-sm font-semibold text-[#555]">
-          Best time to call (optional)
-        </label>
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { id: "asap", label: "ASAP" },
-            { id: "morning", label: "Morning" },
-            { id: "afternoon", label: "Afternoon" },
-            { id: "evening", label: "Evening" },
-          ].map((slot) => (
-            <button
-              key={slot.id}
-              type="button"
-              onClick={() =>
-                update(
-                  "preferredCallbackTime",
-                  form.preferredCallbackTime === slot.id ? "" : slot.id
-                )
-              }
-              className={[
-                "rounded-lg border-2 px-2 py-2.5 text-sm font-bold transition-all",
-                form.preferredCallbackTime === slot.id
-                  ? "border-[#F96302] bg-[#FFF7F2] text-[#F96302]"
-                  : "border-[#E5E5E5] bg-white text-[#666] hover:border-[#F96302]",
-              ].join(" ")}
-            >
-              {slot.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <label className="flex items-start gap-2.5 cursor-pointer">
         <input
           type="checkbox"
@@ -720,9 +719,9 @@ function StepContact({
           onChange={(e) => update("smsConsent", e.target.checked)}
           className="mt-0.5 h-4 w-4 rounded border-[#D8D8D8] text-[#F96302] accent-[#F96302]"
         />
-        <span className="text-xs leading-relaxed text-[#666]">
-          OK to text me appointment confirmations, ETAs, and a Google review request after the
-          job. Message and data rates may apply. Reply STOP to opt out. We never sell your number.
+        <span className="text-xs leading-snug text-[#666]">
+          OK to text appointment confirmations, ETAs, and a review request after the job.
+          Msg/data rates may apply. Reply STOP to opt out.
         </span>
       </label>
 
@@ -732,22 +731,103 @@ function StepContact({
         </div>
       )}
 
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-1 self-start text-sm font-bold text-[#666] hover:text-black"
-        >
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
+      <div className="flex flex-col gap-3 sm:flex-row-reverse sm:items-center sm:justify-between">
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#F96302] px-8 py-4 text-sm font-bold text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc]"
+          className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#F96302] px-8 py-4 text-base font-black text-white transition-all hover:bg-[#d95400] disabled:cursor-not-allowed disabled:bg-[#cccccc] sm:w-auto"
         >
-          {submitting ? "Sending..." : "Get a call back"}
+          {submitting ? "Sending..." : "Request callback"}
           {!submitting && <ChevronRight className="h-4 w-4" />}
         </button>
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex min-h-12 items-center gap-1 self-start rounded-xl border border-[#D8D8D8] bg-white px-4 text-base font-bold text-[#555] hover:text-black"
+        >
+          <ChevronLeft className="h-4 w-4" /> Back
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-[#E5E5E5] bg-[#FAFAFA]">
+        <button
+          type="button"
+          onClick={() => setShowOptionalDetails((open) => !open)}
+          aria-expanded={showOptionalDetails}
+          aria-controls="booking-optional-details"
+          className="flex min-h-16 w-full items-center justify-between gap-3 px-4 py-3 text-left"
+        >
+          <span>
+            <span className="block text-base font-black text-black">
+              Add details or photo
+            </span>
+            <span className="mt-0.5 block text-sm leading-snug text-[#666]">
+              Optional, but helpful for faster dispatch.
+            </span>
+          </span>
+          <ChevronDown
+            className={[
+              "h-5 w-5 flex-shrink-0 text-[#F96302] transition-transform",
+              showOptionalDetails ? "rotate-180" : "",
+            ].join(" ")}
+            aria-hidden="true"
+          />
+        </button>
+
+        {showOptionalDetails && (
+          <div
+            id="booking-optional-details"
+            className="flex flex-col gap-4 border-t border-[#E5E5E5] p-4"
+          >
+            <Field
+              label="Quick description (optional)"
+              value={form.briefDescription}
+              onChange={(v) => update("briefDescription", v)}
+              type="textarea"
+              placeholder="Anything we should know before we call?"
+            />
+
+            <PhotoUploadField
+              fileName={form.photo?.name}
+              onChange={(file) => update("photo", file)}
+              label="Add a photo"
+              description="Take one quick photo if it helps us understand the issue."
+            />
+
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-[#555]">
+                Best time to call (optional)
+              </label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  { id: "asap", label: "ASAP" },
+                  { id: "morning", label: "Morning" },
+                  { id: "afternoon", label: "Afternoon" },
+                  { id: "evening", label: "Evening" },
+                ].map((slot) => (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    onClick={() =>
+                      update(
+                        "preferredCallbackTime",
+                        form.preferredCallbackTime === slot.id ? "" : slot.id
+                      )
+                    }
+                    className={[
+                      "rounded-lg border-2 px-2 py-2.5 text-sm font-bold transition-all",
+                      form.preferredCallbackTime === slot.id
+                        ? "border-[#F96302] bg-[#FFF7F2] text-[#F96302]"
+                        : "border-[#E5E5E5] bg-white text-[#666] hover:border-[#F96302]",
+                    ].join(" ")}
+                  >
+                    {slot.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </form>
   );
@@ -772,7 +852,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-[#555]">
+      <label className="mb-1.5 block text-[15px] font-bold leading-snug text-[#444]">
         {label}
         {required && <span className="ml-1 text-[#F96302]">*</span>}
       </label>
@@ -783,17 +863,18 @@ function Field({
           rows={3}
           maxLength={500}
           placeholder={placeholder}
-          className="w-full rounded-xl border-2 border-[#E5E5E5] bg-white px-4 py-3 text-sm text-black placeholder:text-[#999] focus:border-[#F96302] focus:outline-none"
+          className="w-full rounded-xl border-2 border-[#E5E5E5] bg-white px-4 py-3 text-base text-black placeholder:text-[#999] focus:border-[#F96302] focus:outline-none"
         />
       ) : (
         <input
           type={type}
+          inputMode={type === "tel" ? "tel" : undefined}
           value={value}
           required={required}
           autoComplete={autoComplete}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-xl border-2 border-[#E5E5E5] bg-white px-4 py-3 text-sm text-black placeholder:text-[#999] focus:border-[#F96302] focus:outline-none"
+          className="h-14 w-full rounded-xl border-2 border-[#E5E5E5] bg-white px-4 py-3 text-base text-black placeholder:text-[#999] focus:border-[#F96302] focus:outline-none"
         />
       )}
     </div>
