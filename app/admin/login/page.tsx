@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { redirect } from "next/navigation";
-import { FaucetMark } from "@/components/Logo";
 import { isAuthenticated } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -34,7 +34,14 @@ export default async function AdminLoginPage({
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-10">
-          <FaucetMark size={56} />
+          <Image
+            src="/images/Z%26Z-Icon.svg"
+            alt="Z and Z Plumbing"
+            width={80}
+            height={80}
+            priority
+            className="h-20 w-20"
+          />
           <h1 className="mt-6 font-display text-3xl font-black uppercase tracking-tight text-white">
             Z and Z OS
           </h1>
