@@ -23,7 +23,7 @@ export const siteSettings: SiteSettings = {
   hours: "24/7 Emergency Service",
   social: {
     facebook: "https://www.facebook.com/zandzplumbing",
-    instagram: "https://www.instagram.com/z_and_z_plumming_bay_area",
+    instagram: "https://www.instagram.com/z_and_z_plumbing_bay_area",
     // Canonical Yelp listing carries the 238 reviews; the slug is "-oakland-3"
     // even after the HQ moves to San Leandro because Yelp keeps the slug stable.
     // See address-transition-strategy-2026-05-11.md for the SAB-first conversion plan.
