@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { isValidNanp10Digits } from "@/lib/phone";
+import { trackEvent } from "@/lib/analytics";
 
 interface QuickLeadFormProps {
   title?: string;
@@ -161,6 +162,12 @@ export function QuickLeadForm({
         return;
       }
 
+      trackEvent("generate_lead", {
+        form: "quick_lead",
+        service: serviceInterest,
+        source_page: sourcePage,
+        city: cityLabel,
+      });
       setStep("done");
     } catch {
       setError("Network hiccup. Please try again or call us directly.");

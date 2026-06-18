@@ -5,7 +5,10 @@ import { serviceAreas } from "@/content/service-areas";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteSettings.siteUrl;
-  const now = new Date();
+  // Stable last-modified date. Using a fixed date avoids the false "modified
+  // today" freshness signal that `new Date()` produced on every build/request.
+  // Bump this when content is meaningfully updated site-wide.
+  const now = new Date("2026-06-17T00:00:00-08:00");
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: now, changeFrequency: "weekly", priority: 1.0 },

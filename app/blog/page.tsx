@@ -17,7 +17,9 @@ export const metadata: Metadata = {
     url: `${siteSettings.siteUrl}/blog/`,
     type: "website",
   },
-  robots: { index: true, follow: true },
+  // Placeholder until real posts ship — avoid indexing a thin/empty page.
+  // Flip back to { index: true, follow: true } when blog content is published.
+  robots: { index: false, follow: true },
 };
 
 const breadcrumbSchema = {

@@ -53,6 +53,10 @@ export interface ServiceArea {
   intro: string;
   neighborhoods: string[];
   isHQ: boolean;
+  /** Unique, factual local detail (housing era, terrain, known plumbing realities) used on the city page to avoid templated/doorway content. */
+  localContext?: string;
+  /** The plumbing issues most relevant to this city's housing stock. */
+  commonIssues?: string[];
 }
 
 export interface Testimonial {

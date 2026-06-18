@@ -183,9 +183,25 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               Built for {area.city} Housing Stock.
             </h2>
             <p className="mt-5 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
-              We run calls in {area.city} from our San Leandro dispatch base. Two California licenses on the truck, one
-              crew on every job, and the East Bay knowledge to spot the issue fast.
+              {area.localContext ??
+                `We run calls in ${area.city} from our San Leandro dispatch base. Two California licenses on the truck, one crew on every job, and the East Bay knowledge to spot the issue fast.`}
             </p>
+
+            {area.commonIssues && area.commonIssues.length > 0 && (
+              <div className="mt-8">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#666666] mb-3">
+                  What we see most in {area.city}
+                </p>
+                <ul className="space-y-2">
+                  {area.commonIssues.map((issue) => (
+                    <li key={issue} className="flex gap-2 text-base leading-relaxed text-[#333333]">
+                      <span className="mt-1 text-[#F96302]" aria-hidden="true">▪</span>
+                      <span>{issue}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {area.neighborhoods.length > 0 && (
               <div className="mt-8">

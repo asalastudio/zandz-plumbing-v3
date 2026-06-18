@@ -22,44 +22,31 @@ const aiCrawlers = [
   "DuckAssistBot",     // DuckDuckGo AI
 ];
 
+// Single source of truth for disallowed paths. This is a Next.js site (no
+// WordPress), so legacy /wp-* and /feed/ rules were removed. We only block
+// the admin app, internal APIs, job-tracking URLs, and tracking-param URLs.
+const disallow = [
+  "/*?ref=",
+  "/*?utm_",
+  "/admin/",
+  "/api/",
+  "/track/",
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: [
-          "/wp-admin/",
-          "/wp-content/",
-          "/wp-includes/",
-          "/wp-json/",
-          "/feed/",
-          "/*/feed/",
-          "/*?ref=",
-          "/*?utm_",
-          "/admin/",
-          "/api/",
-          "/track/",
-        ],
+        disallow,
       },
       // Explicit allow rules per AI crawler. Same disallow list as the
       // catch-all so we don't accidentally leak admin or job-tracking URLs.
       ...aiCrawlers.map((userAgent) => ({
         userAgent,
         allow: "/",
-        disallow: [
-          "/wp-admin/",
-          "/wp-content/",
-          "/wp-includes/",
-          "/wp-json/",
-          "/feed/",
-          "/*/feed/",
-          "/*?ref=",
-          "/*?utm_",
-          "/admin/",
-          "/api/",
-          "/track/",
-        ],
+        disallow,
       })),
     ],
     sitemap: `${siteSettings.siteUrl}/sitemap.xml`,

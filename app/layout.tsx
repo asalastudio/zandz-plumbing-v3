@@ -5,6 +5,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { StickyMobileCTA } from "@/components/StickyMobileCTA";
+import { AnalyticsEvents } from "@/components/AnalyticsEvents";
 import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
@@ -160,6 +161,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <StickyMobileCTA />
+        <AnalyticsEvents />
 
         {/* Google Analytics 4 — only rendered when NEXT_PUBLIC_GA_ID is set */}
         {GA_ID && (

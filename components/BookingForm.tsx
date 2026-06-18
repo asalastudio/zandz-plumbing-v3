@@ -34,6 +34,7 @@ import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { lookupServiceAreaByZip } from "@/lib/service-area-lookup";
 import { isValidNanp10Digits } from "@/lib/phone";
+import { trackEvent } from "@/lib/analytics";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -267,6 +268,11 @@ export default function BookingForm({
         return;
       }
 
+      trackEvent("generate_lead", {
+        form: "booking",
+        service: form.service,
+        zip: form.zip,
+      });
       goToStep(4);
     } catch {
       setSubmitError("Network hiccup. Please try again or call us directly.");
