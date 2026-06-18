@@ -10,6 +10,7 @@ import {
   type JobWithRelations,
   type Crew,
 } from "@/lib/db";
+import { PACIFIC_TZ, pacificDayFromIsoDate, startOfPacificDay, pacificYmd } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,8 @@ export default async function DispatchPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const params = await searchParams;
-  const parsedDay = params.date ? new Date(params.date) : null;
-  const day = parsedDay && !Number.isNaN(parsedDay.getTime()) ? parsedDay : new Date();
+  // Interpret ?date=YYYY-MM-DD as a Pacific calendar day (not UTC).
+  const day = pacificDayFromIsoDate(params.date) ?? startOfPacificDay(new Date());
 
   if (!isSupabaseConfigured()) {
     return (
@@ -36,16 +37,18 @@ export default async function DispatchPage({
   ]);
 
   const dayLabel = day.toLocaleDateString("en-US", {
+    timeZone: PACIFIC_TZ,
     weekday: "long",
     month: "long",
     day: "numeric",
   });
 
-  const yesterday = new Date(day);
-  yesterday.setDate(day.getDate() - 1);
-  const tomorrow = new Date(day);
-  tomorrow.setDate(day.getDate() + 1);
-  const todayIso = new Date().toISOString().slice(0, 10);
+  // `day` is a Pacific-midnight instant, so a ±1 day shift keeps the correct
+  // YYYY-MM-DD after slicing the ISO string.
+  const yesterday = new Date(day.getTime() - 24 * 60 * 60 * 1000);
+  const tomorrow = new Date(day.getTime() + 24 * 60 * 60 * 1000);
+  const ymdNow = pacificYmd(new Date());
+  const todayIso = `${ymdNow.year}-${String(ymdNow.month).padStart(2, "0")}-${String(ymdNow.day).padStart(2, "0")}`;
 
   const unassigned = jobs.filter((j) => !j.assigned_to);
   const byCrew = new Map<number, JobWithRelations[]>();

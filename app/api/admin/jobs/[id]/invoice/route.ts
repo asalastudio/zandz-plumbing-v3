@@ -40,6 +40,14 @@ export async function POST(
     return NextResponse.redirect(new URL(`/admin/jobs/${jobId}?invoice=no_customer`, req.url), 303);
   }
 
+  // Only invoice once the work is done. Mirrors the status state machine
+  // (complete -> invoiced -> paid) so a job cannot jump straight from
+  // new/scheduled/on_site to invoiced by hitting this route.
+  const INVOICEABLE = new Set(["complete", "invoiced", "paid"]);
+  if (!INVOICEABLE.has(job.status)) {
+    return NextResponse.redirect(new URL(`/admin/jobs/${jobId}?invoice=not_complete`, req.url), 303);
+  }
+
   let lineItems;
   let notes: string | null;
   let sendNow = false;

@@ -26,9 +26,11 @@ export default async function AdminLoginPage({
       ? "That password did not match. Try again."
       : params.error === "missing"
         ? "Enter the admin password."
-        : params.error === "not-configured"
-          ? "Admin password is not configured yet. Set ADMIN_PASSWORD_HASH in environment."
-          : null;
+        : params.error === "throttled"
+          ? "Too many attempts. Wait a few minutes and try again."
+          : params.error === "not-configured"
+            ? "Admin password is not configured yet. Set ADMIN_PASSWORD_HASH in environment."
+            : null;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
