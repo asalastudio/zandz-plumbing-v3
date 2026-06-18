@@ -108,7 +108,7 @@ function buildInvoiceBody(i: SendInvoiceEmailInput): string {
     <div style="margin-top:24px;">
       ${paymentButton}
       <span style="display:inline-block;width:8px;"></span>
-      ${emailButton(i.trackingUrl, "View job", "outline")}
+      ${emailButton(i.trackingUrl, "View invoice", "outline")}
     </div>
     <p style="margin:24px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.5;">Questions? Call ${escapeHtml(siteSettings.phone)}.</p>`;
 }
