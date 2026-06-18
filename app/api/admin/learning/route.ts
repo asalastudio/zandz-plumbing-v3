@@ -46,6 +46,11 @@ export async function POST(req: NextRequest) {
   if (!title || !url) {
     return NextResponse.redirect(new URL("/admin/learning/new?error=missing", req.url), 303);
   }
+  // Validate against the enum before the insert so an out-of-range value gives
+  // a clean error instead of leaking a raw Postgres enum error into the URL.
+  if (mediaType !== "video" && mediaType !== "image") {
+    return NextResponse.redirect(new URL("/admin/learning/new?error=invalid_media_type", req.url), 303);
+  }
 
   const ytId = mediaType === "video" ? extractYouTubeId(url) : null;
   const thumb = String(form.get("thumbnail_url") ?? "").trim() || (ytId ? youtubeThumbnailUrl(ytId) : null);

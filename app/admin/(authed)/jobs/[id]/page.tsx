@@ -266,6 +266,7 @@ export default async function JobDetailPage({
         defaultDescription={`${job.service_label ?? job.service_type} service`}
         defaultAmountCents={job.final_amount_cents ?? job.estimated_amount_cents}
         customerEmail={job.customer?.email ?? null}
+        canInvoice={["complete", "invoiced", "paid"].includes(job.status)}
       />
 
       {/* Notes */}
@@ -300,6 +301,7 @@ function InvoiceFlash({ status }: { status: string }) {
     paid: "Invoice marked paid.",
     invalid: "Add at least one invoice line with a description, quantity, and price.",
     no_customer: "This job needs a customer before an invoice can be created.",
+    not_complete: "Mark this job Complete before invoicing it.",
     no_email: "The invoice was created, but this customer does not have an email address.",
     email_skipped: "Invoice created, but email is not configured yet.",
     email_failed: "Invoice created, but the email did not send. Try again from the invoice card.",
@@ -325,12 +327,14 @@ function InvoiceSection({
   defaultDescription,
   defaultAmountCents,
   customerEmail,
+  canInvoice,
 }: {
   jobId: number;
   invoices: InvoiceRecord[];
   defaultDescription: string;
   defaultAmountCents: number | null;
   customerEmail: string | null;
+  canInvoice: boolean;
 }) {
   const defaultPrice = defaultAmountCents ? (defaultAmountCents / 100).toFixed(2) : "";
   const stripeReady = isStripeConfigured();
@@ -361,6 +365,7 @@ function InvoiceSection({
         </span>
       </div>
 
+      {canInvoice ? (
       <form action={`/api/admin/jobs/${jobId}/invoice`} method="POST" className="border border-white/10 bg-black/30 p-4 md:p-5">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, index) => (
@@ -442,6 +447,11 @@ function InvoiceSection({
           </p>
         )}
       </form>
+      ) : (
+        <div className="border border-dashed border-white/15 bg-black/30 px-5 py-6 text-sm leading-relaxed text-white/55">
+          Mark this job <span className="font-bold text-white/80">Complete</span> before creating an invoice. Existing invoices stay visible below.
+        </div>
+      )}
 
       <div className="mt-5 space-y-3">
         {invoices.length === 0 ? (
