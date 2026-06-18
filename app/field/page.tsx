@@ -12,8 +12,16 @@ import {
   type JobWithRelations,
 } from "@/lib/db";
 import { Logo } from "@/components/Logo";
+import { RegisterServiceWorker } from "./RegisterServiceWorker";
 
 export const dynamic = "force-dynamic";
+
+export const viewport = { themeColor: "#0a0a0a" };
+
+export const metadata = {
+  title: "Z and Z OS Field",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Z&Z Field" },
+};
 
 const FIELD_STATUSES: JobStatus[] = ["scheduled", "en_route", "on_site", "paused"];
 
@@ -94,6 +102,7 @@ export default async function FieldPage({
 function FieldShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#0a0a0a] pb-8 text-white">
+      <RegisterServiceWorker />
       <header className="sticky top-0 z-20 border-b border-white/10 bg-black/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-xl items-center justify-between">
           <Logo linkWrapper={false} className="h-9" />
@@ -163,7 +172,25 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
         encType="multipart/form-data"
         className="mt-4 border-t border-white/10 pt-4"
       >
-        <input type="hidden" name="category" value={job.status === "complete" ? "after" : "before"} />
+        <fieldset className="mb-3">
+          <legend className="mb-2 text-sm font-bold uppercase tracking-wide text-white/60">
+            Photo type
+          </legend>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="cursor-pointer">
+              <input type="radio" name="category" value="before" defaultChecked className="peer sr-only" />
+              <span className="block border border-white/15 bg-black py-3 text-center text-sm font-bold uppercase tracking-wide text-white/60 peer-checked:border-[#F96302] peer-checked:bg-[#F96302]/15 peer-checked:text-[#F96302]">
+                Before
+              </span>
+            </label>
+            <label className="cursor-pointer">
+              <input type="radio" name="category" value="after" className="peer sr-only" />
+              <span className="block border border-white/15 bg-black py-3 text-center text-sm font-bold uppercase tracking-wide text-white/60 peer-checked:border-[#F96302] peer-checked:bg-[#F96302]/15 peer-checked:text-[#F96302]">
+                After
+              </span>
+            </label>
+          </div>
+        </fieldset>
         <label className="block">
           <span className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60">
             <Camera className="h-4 w-4 text-[#F96302]" aria-hidden="true" />
