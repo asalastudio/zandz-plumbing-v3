@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
 import type { Customer, Job, JobStatus } from "@/lib/db";
 import { randomToken, siteOrigin } from "@/lib/url";
@@ -363,6 +364,164 @@ export async function markInvoicePaidByCheckoutSession(
   if (error) throw new Error(`markInvoicePaidByCheckoutSession: ${error.message}`);
   if (!data?.id) return;
   await markInvoicePaid(data.id, paymentMethod);
+}
+
+// ── Standalone (custom) invoices ────────────────────────────────────────────
+
+/**
+ * Create an invoice that is NOT required to be tied to a job. customer_id is
+ * required; job_id is optional. Used by the custom-invoice builder.
+ */
+export async function createCustomInvoice(input: {
+  customerId: number;
+  jobId?: number | null;
+  lineItems: InvoiceLineItem[];
+  notes?: string | null;
+}): Promise<InvoiceRecord> {
+  const amountCents = invoiceTotalCents(input.lineItems);
+  const { data, error } = await supabase()
+    .from("invoices")
+    .insert({
+      job_id: input.jobId ?? null,
+      customer_id: input.customerId,
+      amount_cents: amountCents,
+      line_items: input.lineItems,
+      notes: input.notes || null,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(`createCustomInvoice: ${error.message}`);
+  return normalizeInvoice(data);
+}
+
+export interface InvoiceView {
+  invoice: InvoiceRecord;
+  customer: { id: number; name: string; email: string | null; phone_e164: string | null } | null;
+  jobServiceLabel: string | null;
+}
+
+/** Load an invoice + its customer for the public view / sending. No job required. */
+export async function getInvoiceForView(invoiceId: number): Promise<InvoiceView | null> {
+  const sb = supabase();
+  const { data: invoiceData, error } = await sb
+    .from("invoices")
+    .select("*")
+    .eq("id", invoiceId)
+    .maybeSingle();
+
+  if (error) throw new Error(`getInvoiceForView: ${error.message}`);
+  if (!invoiceData) return null;
+
+  const invoice = normalizeInvoice(invoiceData);
+
+  let customer: InvoiceView["customer"] = null;
+  if (invoice.customer_id) {
+    const { data } = await sb
+      .from("customers")
+      .select("id, name, email, phone_e164")
+      .eq("id", invoice.customer_id)
+      .maybeSingle();
+    if (data) {
+      customer = {
+        id: Number(data.id),
+        name: String(data.name ?? "Customer"),
+        email: nullableString(data.email),
+        phone_e164: nullableString(data.phone_e164),
+      };
+    }
+  }
+
+  let jobServiceLabel: string | null = null;
+  if (invoice.job_id) {
+    const { data } = await sb
+      .from("jobs")
+      .select("service_label, service_type")
+      .eq("id", invoice.job_id)
+      .maybeSingle();
+    jobServiceLabel = nullableString(data?.service_label) ?? nullableString(data?.service_type);
+  }
+
+  return { invoice, customer, jobServiceLabel };
+}
+
+export interface InvoiceListItem {
+  id: number;
+  amount_cents: number;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  customer_name: string | null;
+  job_id: number | null;
+}
+
+export async function listInvoices(limit = 200): Promise<InvoiceListItem[]> {
+  const { data, error } = await supabase()
+    .from("invoices")
+    .select("id, amount_cents, sent_at, paid_at, created_at, job_id, customers(name)")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(`listInvoices: ${error.message}`);
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    const cust = row.customers as { name?: string } | { name?: string }[] | null;
+    const customer_name = Array.isArray(cust)
+      ? (cust[0]?.name ?? null)
+      : (cust?.name ?? null);
+    return {
+      id: Number(row.id),
+      amount_cents: Number(row.amount_cents ?? 0),
+      sent_at: nullableString(row.sent_at),
+      paid_at: nullableString(row.paid_at),
+      created_at: String(row.created_at ?? ""),
+      customer_name,
+      job_id: row.job_id == null ? null : Number(row.job_id),
+    };
+  });
+}
+
+// ── Signed public invoice tokens (no DB row needed) ─────────────────────────
+//
+// token = base64url(invoiceId) + "." + HMAC(invoiceId). Verifiable, stateless,
+// and tamper-proof, so the public /i/[token] page needs no schema change.
+
+function invoiceTokenSecret(): string {
+  return process.env.SESSION_SECRET ?? "dev-insecure-invoice-secret";
+}
+
+function invoiceSig(invoiceId: number): string {
+  return crypto
+    .createHmac("sha256", invoiceTokenSecret())
+    .update(`invoice:${invoiceId}`)
+    .digest("base64url")
+    .slice(0, 24);
+}
+
+export function invoiceToken(invoiceId: number): string {
+  const payload = Buffer.from(String(invoiceId)).toString("base64url");
+  return `${payload}.${invoiceSig(invoiceId)}`;
+}
+
+export function verifyInvoiceToken(token: string): number | null {
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [payload, sig] = parts;
+  let id: number;
+  try {
+    id = parseInt(Buffer.from(payload, "base64url").toString("utf8"), 10);
+  } catch {
+    return null;
+  }
+  if (!id || Number.isNaN(id) || id < 1) return null;
+  const expected = invoiceSig(id);
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  return id;
+}
+
+export function invoiceViewUrl(invoiceId: number): string {
+  return `${siteOrigin()}/i/${invoiceToken(invoiceId)}`;
 }
 
 function valueToString(value: FormDataEntryValue | undefined): string {

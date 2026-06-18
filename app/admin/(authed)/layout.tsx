@@ -14,6 +14,7 @@ import {
   LogOut,
   BarChart3,
   Wrench,
+  FileText,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -31,6 +32,7 @@ const nav = [
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/field", label: "Field", icon: Wrench },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/admin/invoices", label: "Invoices", icon: FileText },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/crew", label: "Crew", icon: HardHat },
   { href: "/admin/learning", label: "Videos", icon: Video },
