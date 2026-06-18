@@ -1,14 +1,17 @@
 /**
  * Shared branded email infrastructure for Z and Z Plumbing.
  *
- * Centralizes three things every scenario email needs:
  *   1. sendEmail()        — the Resend POST. Skips cleanly (ok + skipped) when
  *                           RESEND_API_KEY is unset, so the pipeline never
  *                           blocks on email.
- *   2. renderEmailLayout()— the branded HTML shell: black header + orange
- *                           eyebrow + white card + NAP/license footer.
- *   3. helpers            — escapeHtml/escapeAttr, emailButton, formatMoney,
- *                           and From/Reply-To resolution.
+ *   2. renderEmailLayout()— the branded shell, built with email-bulletproof
+ *                           HTML: real <head> + MSO conditionals, table-based
+ *                           layout (Outlook ignores max-width on divs), a
+ *                           logo lockup, black header, white card, and an
+ *                           NAP/license footer.
+ *   3. emailButton()      — a bulletproof table-cell button (padding on the
+ *                           <td> so Outlook renders it), not a bare <a>.
+ *   4. helpers            — escapeHtml/escapeAttr, formatMoney, From/Reply-To.
  *
  * Brand is Home Depot-inspired: orange #F96302, black, white. Per the brand
  * voice rules, no em-dashes in customer-facing copy.
@@ -24,6 +27,11 @@ export const BRAND = {
   hairline: "#E5E5E5",
   panel: "#F5F5F5",
 } as const;
+
+const FONT =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
+
+const LOGO_URL = `${siteSettings.siteUrl}/email/logo-icon.png`;
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
@@ -107,7 +115,7 @@ export function replyToInbox(): string {
   return process.env.REPLY_TO_EMAIL ?? siteSettings.email;
 }
 
-// ── Branded layout ──────────────────────────────────────────────────────────
+// ── Branded layout (bulletproof, table-based) ───────────────────────────────
 
 export interface LayoutInput {
   /** small uppercase orange label above the heading */
@@ -120,53 +128,90 @@ export interface LayoutInput {
   bodyHtml: string;
   /** hidden inbox-preview text */
   preheader?: string;
+  /** unused; kept for signature compatibility (fixed 600px) */
   maxWidth?: number;
 }
 
 export function renderEmailLayout(i: LayoutInput): string {
-  const width = i.maxWidth ?? 600;
   const preheader = i.preheader
-    ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(i.preheader)}</div>`
+    ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;opacity:0;">${escapeHtml(i.preheader)}‌${"&nbsp;".repeat(60)}</div>`
     : "";
 
   return `<!doctype html>
-<html><body style="margin:0;background:${BRAND.panel};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;color:${BRAND.ink};">
-  ${preheader}
-  <div style="max-width:${width}px;margin:0 auto;padding:24px 16px;">
-    <div style="background:${BRAND.black};color:#fff;padding:24px;border-radius:8px 8px 0 0;">
-      <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${BRAND.orange};">${escapeHtml(i.eyebrow)}</p>
-      <h1 style="margin:8px 0 0;font-size:26px;line-height:1.12;font-weight:900;letter-spacing:-0.01em;">${escapeHtml(i.heading)}</h1>
-      ${i.headingSub ? `<p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:14px;line-height:1.5;">${escapeHtml(i.headingSub)}</p>` : ""}
-    </div>
-    <div style="background:#fff;border:1px solid ${BRAND.hairline};border-top:none;border-radius:0 0 8px 8px;padding:24px;">
-      ${i.bodyHtml}
-    </div>
-    ${renderFooter()}
-  </div>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light only">
+<title>${escapeHtml(siteSettings.name)}</title>
+<!--[if mso]>
+<style>table,td,th{mso-line-height-rule:exactly;border-collapse:collapse}</style>
+<![endif]-->
+</head>
+<body style="margin:0;padding:0;background:${BRAND.panel};-webkit-text-size-adjust:100%;">
+${preheader}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BRAND.panel};">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+        <tr>
+          <td style="padding:0 4px 16px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="vertical-align:middle;"><img src="${escapeAttr(LOGO_URL)}" width="40" height="40" alt="${escapeAttr(siteSettings.name)}" style="display:block;border:0;outline:none;text-decoration:none;width:40px;height:40px;"></td>
+                <td style="vertical-align:middle;padding-left:10px;font-family:${FONT};font-size:17px;font-weight:800;letter-spacing:0.05em;color:${BRAND.ink};text-transform:uppercase;">${escapeHtml(siteSettings.name)}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:${BRAND.black};border-radius:8px 8px 0 0;padding:24px;font-family:${FONT};">
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:${BRAND.orange};">${escapeHtml(i.eyebrow)}</div>
+            <div style="font-size:26px;line-height:1.14;font-weight:900;letter-spacing:-0.01em;color:#ffffff;padding-top:8px;">${escapeHtml(i.heading)}</div>
+            ${i.headingSub ? `<div style="font-size:14px;line-height:1.5;color:rgba(255,255,255,0.7);padding-top:8px;">${escapeHtml(i.headingSub)}</div>` : ""}
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;border:1px solid ${BRAND.hairline};border-top:none;border-radius:0 0 8px 8px;padding:24px;font-family:${FONT};color:${BRAND.ink};">
+            ${i.bodyHtml}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:18px 8px 4px;text-align:center;font-family:${FONT};color:#9a9a9a;font-size:12px;line-height:1.6;">
+            <div style="font-weight:700;color:#7a7a7a;">${escapeHtml(siteSettings.name)}</div>
+            <div style="padding-top:4px;">${escapeHtml(siteSettings.phone)} · ${escapeHtml(siteSettings.address.full)}</div>
+            <div style="padding-top:4px;">${escapeHtml(siteSettings.cslb)} · ${escapeHtml(siteSettings.licenses.join(" · "))}</div>
+          </td>
+        </tr>
+      </table>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </td>
+  </tr>
+</table>
 </body></html>`;
 }
 
-function renderFooter(): string {
-  const s = siteSettings;
-  return `<div style="padding:18px 8px 4px;color:#9a9a9a;font-size:12px;line-height:1.6;text-align:center;">
-    <p style="margin:0;font-weight:700;color:#7a7a7a;">${escapeHtml(s.name)}</p>
-    <p style="margin:4px 0 0;">${escapeHtml(s.phone)} · ${escapeHtml(s.address.full)}</p>
-    <p style="margin:4px 0 0;">${escapeHtml(s.cslb)} · ${escapeHtml(s.licenses.join(" · "))}</p>
-  </div>`;
-}
-
+/**
+ * Bulletproof button. Padding lives on the <td> (Outlook ignores padding on
+ * <a>), and the cell carries the fill/border so it renders everywhere.
+ */
 export function emailButton(
   href: string,
   label: string,
   variant: "primary" | "outline" = "primary"
 ): string {
-  const base =
-    "display:inline-block;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;font-size:13px;padding:14px 22px;border-radius:6px;text-decoration:none;";
-  const style =
+  const cell =
     variant === "primary"
-      ? `${base}background:${BRAND.orange};color:#fff;`
-      : `${base}border:1px solid #999;color:${BRAND.ink};`;
-  return `<a href="${escapeAttr(href)}" style="${style}">${escapeHtml(label)}</a>`;
+      ? `background:${BRAND.orange};border-radius:6px;`
+      : `border:1px solid #999999;border-radius:6px;`;
+  const text = variant === "primary" ? "#ffffff" : BRAND.ink;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block;"><tr><td align="center" style="${cell}padding:13px 22px;font-family:${FONT};">
+    <a href="${escapeAttr(href)}" style="color:${text};text-decoration:none;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;font-family:${FONT};">${escapeHtml(label)}</a>
+  </td></tr></table>`;
 }
 
 export function escapeHtml(s: string): string {
