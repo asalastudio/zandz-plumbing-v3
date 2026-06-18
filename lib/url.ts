@@ -11,7 +11,7 @@ export function siteOrigin(): string {
       ? process.env.VERCEL_URL
       : `https://${process.env.VERCEL_URL}`;
   }
-  return "https://zandzplumbing.com";
+  return "https://www.zandzplumbing.com";
 }
 
 export function reviewClickUrl(token: string): string {

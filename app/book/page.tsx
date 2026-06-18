@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   title: "Book a Plumber | Z and Z Plumbing | East Bay",
   description:
     "Book a licensed East Bay plumber in 60 seconds. Enter your ZIP, pick your issue, and we'll call you back within 15 minutes during business hours.",
-  alternates: { canonical: "https://zandzplumbing.com/book/" },
+  alternates: { canonical: "https://www.zandzplumbing.com/book/" },
   openGraph: {
     title: "Book a Plumber | Z and Z Plumbing",
     description:
       "Same-day East Bay plumbing service. Two licenses, one crew. Call (510) 708-4237 or book online.",
-    url: "https://zandzplumbing.com/book/",
+    url: "https://www.zandzplumbing.com/book/",
     type: "website",
   },
 };

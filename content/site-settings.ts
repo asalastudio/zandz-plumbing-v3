@@ -38,5 +38,5 @@ export const siteSettings: SiteSettings = {
   features: {
     coupons: true,
   },
-  siteUrl: "https://zandzplumbing.com",
+  siteUrl: "https://www.zandzplumbing.com",
 };

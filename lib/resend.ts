@@ -95,7 +95,7 @@ function buildDispatchHtml(i: DispatchEmailInput): string {
   const dashboardLine = i.supabaseJobId
     ? `<p style="margin-top:24px;font-size:13px;color:#666;">
          Job <strong>#${i.supabaseJobId}</strong> · open in
-         <a href="https://zandzplumbing.com/admin/jobs" style="color:#F96302;font-weight:600;">Z and Z OS</a>
+         <a href="https://www.zandzplumbing.com/admin/jobs" style="color:#F96302;font-weight:600;">Z and Z OS</a>
        </p>`
     : "";
 

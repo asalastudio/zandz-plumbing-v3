@@ -22,12 +22,12 @@ export const metadata: Metadata = {
   title: "Z and Z Plumbing | East Bay Plumber | San Leandro, CA",
   description:
     "Licensed East Bay plumber headquartered in San Leandro. C-36 + A General Engineering. Same-day plumbing service. Call (510) 708-4237.",
-  alternates: { canonical: "https://zandzplumbing.com/" },
+  alternates: { canonical: "https://www.zandzplumbing.com/" },
   openGraph: {
     title: "Z and Z Plumbing | East Bay Plumber",
     description:
       "Two licenses. One crew. Same-day service across Oakland, Berkeley, Alameda, and the East Bay.",
-    url: "https://zandzplumbing.com/",
+    url: "https://www.zandzplumbing.com/",
     type: "website",
   },
 };

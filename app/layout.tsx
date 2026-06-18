@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Barlow_Condensed, Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
@@ -89,12 +90,14 @@ const localBusinessSchema = {
   },
   foundingDate: String(siteSettings.foundedYear),
   priceRange: "$$",
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.6",
-    reviewCount: "238",
-    bestRating: "5",
-  },
+  // NOTE: aggregateRating intentionally omitted. Google's structured-data
+  // policy disallows self-serving aggregateRating on your own LocalBusiness
+  // unless it reflects genuine, first-party reviews collected and displayed
+  // on-site. The prior value mixed Google's rating (4.6) with Yelp's count
+  // (238), which is inaccurate and risks a manual action / star suppression.
+  // To surface star ratings legitimately, either (a) rely on third-party
+  // platform stars (Google/Yelp profiles) or (b) implement genuine on-page
+  // Review markup tied to real, displayed customer reviews from one source.
   areaServed: serviceAreas.map((area) => ({
     "@type": area.city.includes("County") ? "AdministrativeArea" : "City",
     name: area.city,
@@ -136,6 +139,13 @@ const localBusinessSchema = {
   ],
 };
 
+// Analytics IDs come from env so we never hardcode tracking IDs and can keep
+// them out of non-production builds. Set in Vercel project settings:
+//   NEXT_PUBLIC_GA_ID       e.g. "G-XXXXXXXXXX"  (GA4 Measurement ID)
+//   NEXT_PUBLIC_CLARITY_ID  e.g. "abcdefghij"    (Microsoft Clarity project ID)
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${barlowCondensed.variable} ${inter.variable}`}>
@@ -150,6 +160,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <StickyMobileCTA />
+
+        {/* Google Analytics 4 — only rendered when NEXT_PUBLIC_GA_ID is set */}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`}
+            </Script>
+          </>
+        )}
+
+        {/* Microsoft Clarity — only rendered when NEXT_PUBLIC_CLARITY_ID is set */}
+        {CLARITY_ID && (
+          <Script id="ms-clarity" strategy="afterInteractive">
+            {`(function(c,l,a,r,i,t,y){
+c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", "${CLARITY_ID}");`}
+          </Script>
+        )}
       </body>
     </html>
   );
