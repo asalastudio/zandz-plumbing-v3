@@ -1,5 +1,27 @@
+/**
+ * Customer-facing invoice email + paid receipt.
+ *
+ *   - sendInvoiceEmail()        — the invoice itself (line items, payment
+ *                                 options, pay/call CTA, view-job link).
+ *   - sendInvoiceReceiptEmail() — confirmation that a payment was received.
+ *
+ * Both use the shared branded layout + Resend wrapper in lib/email, set
+ * Reply-To to the office inbox, and skip cleanly when RESEND_API_KEY is unset.
+ */
+
 import type { InvoiceLineItem } from "@/lib/invoices";
 import { siteSettings } from "@/content/site-settings";
+import {
+  sendEmail,
+  renderEmailLayout,
+  emailButton,
+  escapeHtml,
+  formatMoney,
+  invoiceFromAddress,
+  replyToInbox,
+  BRAND,
+  type EmailResult,
+} from "@/lib/email";
 
 interface SendInvoiceEmailInput {
   to: string;
@@ -13,122 +35,87 @@ interface SendInvoiceEmailInput {
   notes?: string | null;
 }
 
-export async function sendInvoiceEmail(
-  input: SendInvoiceEmailInput
-): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    return { ok: true, skipped: true, error: "RESEND_API_KEY is not set" };
-  }
+export async function sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<EmailResult> {
+  const html = renderEmailLayout({
+    eyebrow: "Invoice from Z and Z Plumbing",
+    heading: formatMoney(input.amountCents),
+    headingSub: `Invoice #${input.invoiceId} · ${input.serviceLabel}`,
+    preheader: `Your Z and Z Plumbing invoice for ${formatMoney(input.amountCents)} is ready.`,
+    bodyHtml: buildInvoiceBody(input),
+  });
 
-  const from =
-    process.env.INVOICE_FROM_EMAIL ??
-    process.env.LEAD_FROM_EMAIL ??
-    "Z and Z Plumbing <leads@zandzplumbing.com>";
-
-  const subject = `Invoice #${input.invoiceId} from Z and Z Plumbing`;
-  const html = buildInvoiceHtml(input);
-  const text = buildInvoiceText(input);
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: [input.to],
-        subject,
-        html,
-        text,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      return { ok: false, error: `Resend ${res.status}: ${err}` };
-    }
-
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: (err as Error).message };
-  }
+  return sendEmail({
+    from: invoiceFromAddress(),
+    to: input.to,
+    subject: `Invoice #${input.invoiceId} from Z and Z Plumbing`,
+    html,
+    text: buildInvoiceText(input),
+    replyTo: replyToInbox(),
+  });
 }
 
-function buildInvoiceHtml(i: SendInvoiceEmailInput): string {
+function buildInvoiceBody(i: SendInvoiceEmailInput): string {
   const paymentButton = i.paymentUrl
-    ? `<a href="${escapeAttr(i.paymentUrl)}" style="display:inline-block;background:#F96302;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;font-size:13px;padding:14px 22px;border-radius:6px;text-decoration:none;">Pay invoice</a>`
-    : `<a href="tel:${escapeAttr(siteSettings.phoneTel)}" style="display:inline-block;background:#F96302;color:#fff;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;font-size:13px;padding:14px 22px;border-radius:6px;text-decoration:none;">Call to arrange payment</a>`;
+    ? emailButton(i.paymentUrl, "Pay invoice")
+    : emailButton(`tel:${siteSettings.phoneTel}`, "Call to arrange payment");
 
-  return `<!doctype html>
-<html><body style="margin:0;background:#F5F5F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;color:#111;">
-  <div style="max-width:620px;margin:0 auto;padding:24px 16px;">
-    <div style="background:#000;color:#fff;padding:24px;border-radius:8px 8px 0 0;">
-      <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#F96302;">Invoice from Z and Z Plumbing</p>
-      <h1 style="margin:8px 0 0;font-size:28px;line-height:1.1;font-weight:900;">${formatMoney(i.amountCents)}</h1>
-      <p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:14px;">Invoice #${i.invoiceId} · ${escapeHtml(i.serviceLabel)}</p>
+  return `
+    <p style="margin:0 0 18px;font-size:16px;line-height:1.55;color:#333;">Hi ${escapeHtml(i.customerName)}, your ${escapeHtml(siteSettings.name)} invoice is ready.</p>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 18px;">
+      <thead>
+        <tr>
+          <th align="left" style="padding:8px 0;border-bottom:1px solid ${BRAND.hairline};font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:${BRAND.muted};">Item</th>
+          <th align="right" style="padding:8px 0;border-bottom:1px solid ${BRAND.hairline};font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:${BRAND.muted};">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${i.lineItems
+          .map(
+            (item) => `<tr>
+              <td style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;line-height:1.4;color:#111;">
+                <strong>${escapeHtml(item.description)}</strong><br />
+                <span style="color:${BRAND.muted};">${item.quantity} x ${formatMoney(item.unit_price_cents)}</span>
+              </td>
+              <td align="right" style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;font-weight:700;color:#111;">${formatMoney(item.total_cents)}</td>
+            </tr>`
+          )
+          .join("")}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td style="padding:14px 0 0;font-size:16px;font-weight:800;">Total</td>
+          <td align="right" style="padding:14px 0 0;font-size:18px;font-weight:900;">${formatMoney(i.amountCents)}</td>
+        </tr>
+      </tfoot>
+    </table>
+    ${
+      i.notes
+        ? `<div style="background:${BRAND.panel};border-left:4px solid ${BRAND.orange};padding:12px 14px;margin:18px 0;color:#333;font-size:14px;line-height:1.5;">${escapeHtml(i.notes)}</div>`
+        : ""
+    }
+    <div style="background:#F8F8F8;border:1px solid ${BRAND.hairline};padding:16px;margin:22px 0 0;border-radius:6px;">
+      <p style="margin:0 0 10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:${BRAND.muted};">Payment options</p>
+      <ul style="margin:0;padding-left:20px;color:#333;font-size:14px;line-height:1.65;">
+        ${
+          i.paymentUrl
+            ? `<li><strong>Card or online payment:</strong> use the Pay invoice button.</li>`
+            : `<li><strong>Card payment:</strong> call ${escapeHtml(siteSettings.phone)} to arrange payment.</li>`
+        }
+        <li><strong>Check:</strong> make checks payable to ${escapeHtml(siteSettings.legalName)}.</li>
+        <li><strong>Cash:</strong> accepted in certain circumstances. Please confirm with Z and Z first and make sure the payment is recorded on your receipt.</li>
+      </ul>
     </div>
-    <div style="background:#fff;border:1px solid #E5E5E5;border-top:none;border-radius:0 0 8px 8px;padding:24px;">
-      <p style="margin:0 0 18px;font-size:16px;line-height:1.55;color:#333;">Hi ${escapeHtml(i.customerName)}, your Z and Z Plumbing invoice is ready.</p>
-      <table style="width:100%;border-collapse:collapse;margin:0 0 18px;">
-        <thead>
-          <tr>
-            <th align="left" style="padding:8px 0;border-bottom:1px solid #E5E5E5;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#666;">Item</th>
-            <th align="right" style="padding:8px 0;border-bottom:1px solid #E5E5E5;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#666;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${i.lineItems
-            .map(
-              (item) => `<tr>
-                <td style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;line-height:1.4;color:#111;">
-                  <strong>${escapeHtml(item.description)}</strong><br />
-                  <span style="color:#666;">${item.quantity} x ${formatMoney(item.unit_price_cents)}</span>
-                </td>
-                <td align="right" style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;font-weight:700;color:#111;">${formatMoney(item.total_cents)}</td>
-              </tr>`
-            )
-            .join("")}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td style="padding:14px 0 0;font-size:16px;font-weight:800;">Total</td>
-            <td align="right" style="padding:14px 0 0;font-size:18px;font-weight:900;">${formatMoney(i.amountCents)}</td>
-          </tr>
-        </tfoot>
-      </table>
-      ${
-        i.notes
-          ? `<div style="background:#F5F5F5;border-left:4px solid #F96302;padding:12px 14px;margin:18px 0;color:#333;font-size:14px;line-height:1.5;">${escapeHtml(i.notes)}</div>`
-          : ""
-      }
-      <div style="background:#F8F8F8;border:1px solid #E5E5E5;padding:16px;margin:22px 0 0;border-radius:6px;">
-        <p style="margin:0 0 10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#666;">Payment options</p>
-        <ul style="margin:0;padding-left:20px;color:#333;font-size:14px;line-height:1.65;">
-          ${
-            i.paymentUrl
-              ? `<li><strong>Card or online payment:</strong> use the Pay invoice button.</li>`
-              : `<li><strong>Card payment:</strong> call ${escapeHtml(siteSettings.phone)} to arrange payment.</li>`
-          }
-          <li><strong>Check:</strong> make checks payable to ${escapeHtml(siteSettings.legalName)}.</li>
-          <li><strong>Cash:</strong> accepted in certain circumstances. Please confirm with Z and Z first and make sure the payment is recorded on your receipt.</li>
-        </ul>
-      </div>
-      <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
-        ${paymentButton}
-        <a href="${escapeAttr(i.trackingUrl)}" style="display:inline-block;border:1px solid #999;color:#111;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;font-size:13px;padding:13px 20px;border-radius:6px;text-decoration:none;">View job</a>
-      </div>
-      <p style="margin:24px 0 0;font-size:13px;color:#666;line-height:1.5;">Questions? Call ${escapeHtml(siteSettings.phone)}.</p>
+    <div style="margin-top:24px;">
+      ${paymentButton}
+      <span style="display:inline-block;width:8px;"></span>
+      ${emailButton(i.trackingUrl, "View job", "outline")}
     </div>
-  </div>
-</body></html>`;
+    <p style="margin:24px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.5;">Questions? Call ${escapeHtml(siteSettings.phone)}.</p>`;
 }
 
 function buildInvoiceText(i: SendInvoiceEmailInput): string {
   return [
-    `Invoice #${i.invoiceId} from Z and Z Plumbing`,
+    `Invoice #${i.invoiceId} from ${siteSettings.name}`,
     `${i.serviceLabel}`,
     ``,
     ...i.lineItems.map(
@@ -146,22 +133,84 @@ function buildInvoiceText(i: SendInvoiceEmailInput): string {
     .join("\n");
 }
 
-function formatMoney(cents: number): string {
-  return (cents / 100).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
+// ── Paid receipt ────────────────────────────────────────────────────────────
+
+interface SendInvoiceReceiptInput {
+  to: string;
+  customerName: string;
+  invoiceId: number;
+  amountCents: number;
+  serviceLabel: string;
+  paymentMethod: string;
+  trackingUrl?: string | null;
+}
+
+export async function sendInvoiceReceiptEmail(
+  input: SendInvoiceReceiptInput
+): Promise<EmailResult> {
+  const to = input.to?.trim();
+  if (!to) {
+    return { ok: true, skipped: true, error: "no customer email — skipped" };
+  }
+
+  const method = prettyMethod(input.paymentMethod);
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#333;">Hi ${escapeHtml(input.customerName)}, thank you. We received your payment.</p>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 8px;">
+      ${receiptRow("Invoice", `#${input.invoiceId}`)}
+      ${receiptRow("Service", escapeHtml(input.serviceLabel))}
+      ${receiptRow("Amount paid", `<strong>${formatMoney(input.amountCents)}</strong>`)}
+      ${receiptRow("Payment method", escapeHtml(method))}
+    </table>
+    ${
+      input.trackingUrl
+        ? `<div style="margin-top:22px;">${emailButton(input.trackingUrl, "View job", "outline")}</div>`
+        : ""
+    }
+    <p style="margin:24px 0 0;font-size:13px;color:${BRAND.muted};line-height:1.5;">Thanks for choosing ${escapeHtml(siteSettings.name)}. Questions about this receipt? Call ${escapeHtml(siteSettings.phone)} or reply to this email.</p>`;
+
+  const html = renderEmailLayout({
+    eyebrow: "Payment received",
+    heading: "Thank you",
+    headingSub: `${formatMoney(input.amountCents)} · Invoice #${input.invoiceId}`,
+    preheader: `We received your payment of ${formatMoney(input.amountCents)}.`,
+    bodyHtml,
+  });
+
+  const text = [
+    `Payment received - thank you, ${input.customerName}.`,
+    ``,
+    `Invoice #${input.invoiceId}`,
+    `Service: ${input.serviceLabel}`,
+    `Amount paid: ${formatMoney(input.amountCents)}`,
+    `Payment method: ${method}`,
+    ``,
+    `Questions? Call ${siteSettings.phone}.`,
+    `${siteSettings.name} · ${siteSettings.cslb}`,
+  ].join("\n");
+
+  return sendEmail({
+    from: invoiceFromAddress(),
+    to,
+    subject: `Payment received for invoice #${input.invoiceId}`,
+    html,
+    text,
+    replyTo: replyToInbox(),
   });
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+function receiptRow(label: string, value: string): string {
+  return `<tr>
+    <td style="padding:8px 0;border-bottom:1px solid #F0F0F0;color:${BRAND.muted};font-size:13px;width:140px;">${escapeHtml(label)}</td>
+    <td align="right" style="padding:8px 0;border-bottom:1px solid #F0F0F0;color:#111;font-size:14px;">${value}</td>
+  </tr>`;
 }
 
-function escapeAttr(s: string): string {
-  return encodeURI(s).replace(/"/g, "%22").replace(/'/g, "%27");
+function prettyMethod(method: string): string {
+  const m = method.trim().toLowerCase();
+  if (m === "card") return "Card";
+  if (m === "cash") return "Cash";
+  if (m === "check" || m === "cheque") return "Check";
+  if (!m) return "Recorded";
+  return method.charAt(0).toUpperCase() + method.slice(1);
 }
