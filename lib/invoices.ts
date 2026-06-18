@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import type { Customer, Job, JobStatus } from "@/lib/db";
 import { randomToken, siteOrigin } from "@/lib/url";
+import { sendInvoiceReceiptEmail } from "@/lib/invoice-email";
 
 export interface InvoiceLineItem {
   description: string;
@@ -267,7 +268,7 @@ export async function markInvoicePaid(invoiceId: number, paymentMethod: string):
   const now = new Date().toISOString();
   const { data: invoice, error: invoiceError } = await sb
     .from("invoices")
-    .select("id, job_id, amount_cents")
+    .select("id, job_id, customer_id, amount_cents")
     .eq("id", invoiceId)
     .maybeSingle();
 
@@ -296,6 +297,56 @@ export async function markInvoicePaid(invoiceId: number, paymentMethod: string):
       .eq("id", invoice.job_id);
 
     if (updateJobError) throw new Error(`markInvoicePaid update job: ${updateJobError.message}`);
+  }
+
+  // Best-effort paid receipt to the customer. Never blocks the paid mutation
+  // (covers both the manual "mark paid" route and the Stripe webhook path).
+  await sendPaidReceipt({
+    invoiceId,
+    customerId: invoice.customer_id,
+    jobId: invoice.job_id,
+    amountCents: invoice.amount_cents,
+    paymentMethod,
+  });
+}
+
+async function sendPaidReceipt(input: {
+  invoiceId: number;
+  customerId: number | null;
+  jobId: number | null;
+  amountCents: number;
+  paymentMethod: string;
+}): Promise<void> {
+  try {
+    if (!input.customerId) return;
+    const sb = supabase();
+    const { data: customer } = await sb
+      .from("customers")
+      .select("name, email")
+      .eq("id", input.customerId)
+      .maybeSingle();
+    if (!customer?.email) return;
+
+    let serviceLabel = "service";
+    if (input.jobId) {
+      const { data: job } = await sb
+        .from("jobs")
+        .select("service_label, service_type")
+        .eq("id", input.jobId)
+        .maybeSingle();
+      serviceLabel = job?.service_label ?? job?.service_type ?? serviceLabel;
+    }
+
+    await sendInvoiceReceiptEmail({
+      to: customer.email,
+      customerName: customer.name ?? "there",
+      invoiceId: input.invoiceId,
+      amountCents: input.amountCents,
+      serviceLabel,
+      paymentMethod: input.paymentMethod,
+    });
+  } catch (err) {
+    console.error("[invoices] paid receipt email failed:", err);
   }
 }
 

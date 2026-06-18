@@ -25,10 +25,14 @@ export const maxDuration = 60;
 const MAX_PER_RUN = 50; // hard cap, prevent runaway sends
 
 function authorize(req: NextRequest): boolean {
-  // Vercel Cron sets this header automatically when CRON_SECRET is configured
+  // Vercel Cron sets this header automatically when CRON_SECRET is configured.
   const auth = req.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // dev mode without secret. allow
+  if (!secret) {
+    // Fail closed in production: a missing secret must block, not allow, so the
+    // endpoint is never anonymously callable once deployed. Allowed only in dev.
+    return process.env.NODE_ENV !== "production";
+  }
   return auth === `Bearer ${secret}`;
 }
 

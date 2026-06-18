@@ -11,7 +11,7 @@
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { submitLead as submitLeadToHubSpotForm, type LeadPayload } from "@/lib/hubspot";
 import { createHubSpotDeal } from "@/lib/hubspot-deals";
-import { sendDispatchEmail } from "@/lib/resend";
+import { sendDispatchEmail, sendCustomerConfirmationEmail } from "@/lib/resend";
 import { sendDispatchSms, sendCustomerReceiptSms } from "@/lib/lead-sms";
 import { lookupServiceAreaBySlug, lookupServiceAreaByZip } from "@/lib/service-area-lookup";
 import { toE164 } from "@/lib/twilio";
@@ -33,6 +33,7 @@ export interface LeadResult {
     dispatchEmail: SideEffect;
     dispatchSms: SideEffect;
     customerSms: SideEffect;
+    customerEmail: SideEffect;
   };
 }
 
@@ -57,6 +58,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
         dispatchEmail: okSkipped("blocked by phone validation"),
         dispatchSms: okSkipped("blocked by phone validation"),
         customerSms: okSkipped("blocked by phone validation"),
+        customerEmail: okSkipped("blocked by phone validation"),
       },
     };
   }
@@ -211,6 +213,23 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     );
   }
 
+  // ── 7. Customer confirmation email (Resend) ──
+  // Reaches every customer who left an email, including those who declined SMS.
+  let customerEmailRes: SideEffect;
+  if (!input.email) {
+    customerEmailRes = okSkipped("no customer email provided");
+  } else {
+    customerEmailRes = await safeAwait(
+      sendCustomerConfirmationEmail({
+        firstName: input.firstName,
+        email: input.email,
+        serviceLabel: input.serviceLabel ?? input.serviceInterest,
+        outOfArea: input.outOfArea ?? false,
+      }),
+      "customer email"
+    );
+  }
+
   return {
     ok: supabaseOutcome.ok,
     supabaseJobId,
@@ -222,6 +241,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       dispatchEmail: dispatchEmailRes,
       dispatchSms: dispatchSmsRes,
       customerSms: customerSmsRes,
+      customerEmail: customerEmailRes,
     },
   };
 }

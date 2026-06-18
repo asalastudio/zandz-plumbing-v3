@@ -1,16 +1,30 @@
 /**
- * Resend email client — dispatch notifications for new leads.
+ * Lead-related transactional email.
  *
- * Implemented as a thin fetch wrapper (no SDK install required) so the build
- * doesn't add another dependency. Reads:
- *   - RESEND_API_KEY  → required
- *   - DISPATCH_EMAIL  → recipient (jay@…, or a comma-separated list)
- *   - LEAD_FROM_EMAIL → from address. Defaults to leads@zandzplumbing.com.
- *                       The sending domain must be verified in Resend.
+ *   - sendDispatchEmail()             — internal alert to the dispatch inbox
+ *                                       (DISPATCH_EMAIL) when a new lead lands.
+ *                                       Reply-To is the customer so Jay can
+ *                                       reply straight to them.
+ *   - sendCustomerConfirmationEmail() — branded receipt to the customer
+ *                                       confirming the request was received.
+ *                                       Reply-To is the office inbox.
  *
- * If RESEND_API_KEY or DISPATCH_EMAIL is missing, the function returns ok:true
- * with skipped=true so the rest of the pipeline can continue uninterrupted.
+ * Both use the shared branded layout + Resend wrapper in lib/email and skip
+ * cleanly when RESEND_API_KEY (or DISPATCH_EMAIL) is unset.
  */
+
+import {
+  sendEmail,
+  renderEmailLayout,
+  emailButton,
+  escapeHtml,
+  escapeAttr,
+  leadFromAddress,
+  replyToInbox,
+  BRAND,
+  type EmailResult,
+} from "@/lib/email";
+import { siteSettings } from "@/content/site-settings";
 
 interface DispatchEmailInput {
   name: string;
@@ -27,56 +41,38 @@ interface DispatchEmailInput {
   supabaseJobId?: number;
 }
 
-export async function sendDispatchEmail(
-  input: DispatchEmailInput
-): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = process.env.RESEND_API_KEY;
+export async function sendDispatchEmail(input: DispatchEmailInput): Promise<EmailResult> {
   const to = process.env.DISPATCH_EMAIL;
-  if (!apiKey || !to) {
-    return { ok: true, error: "Resend env not set — skipped" };
+  if (!to) {
+    return { ok: true, skipped: true, error: "DISPATCH_EMAIL not set — skipped" };
   }
-
-  const from = process.env.LEAD_FROM_EMAIL ?? "Z and Z Leads <leads@zandzplumbing.com>";
   const recipients = to.split(",").map((s) => s.trim()).filter(Boolean);
 
   const subject = input.outOfArea
     ? `⚠️ OUT-OF-AREA lead: ${input.name} — ${input.serviceLabel}`
     : `New lead: ${input.name} — ${input.serviceLabel} (${input.city})`;
 
-  const html = buildDispatchHtml(input);
-  const text = buildDispatchText(input);
+  const html = renderEmailLayout({
+    eyebrow: "New web lead",
+    heading: input.name,
+    headingSub: `${input.serviceLabel} · ${input.city} ${input.zip}`,
+    preheader: `New lead: ${input.name}, ${input.serviceLabel} in ${input.city}`,
+    bodyHtml: buildDispatchBody(input),
+  });
 
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: recipients,
-        subject,
-        html,
-        text,
-        reply_to: input.email,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      return { ok: false, error: `Resend ${res.status}: ${err}` };
-    }
-
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: (err as Error).message };
-  }
+  return sendEmail({
+    from: leadFromAddress(),
+    to: recipients,
+    subject,
+    html,
+    text: buildDispatchText(input),
+    replyTo: input.email,
+  });
 }
 
-function buildDispatchHtml(i: DispatchEmailInput): string {
+function buildDispatchBody(i: DispatchEmailInput): string {
   const banner = i.outOfArea
-    ? `<div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px 16px;margin-bottom:16px;border-radius:4px;">
+    ? `<div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:12px 16px;margin:0 0 18px;border-radius:4px;">
          <strong style="color:#92400E;">⚠️ Out-of-area request.</strong>
          <span style="color:#78350F;"> Verify before dispatch.</span>
        </div>`
@@ -85,58 +81,36 @@ function buildDispatchHtml(i: DispatchEmailInput): string {
   const callbackRow = i.preferredCallbackTime
     ? row("Best time to call", capitalize(i.preferredCallbackTime))
     : "";
-
   const descriptionRow = i.briefDescription
     ? row("Customer notes", escapeHtml(i.briefDescription))
     : "";
-
   const sourceRow = i.sourcePage ? row("Source page", escapeHtml(i.sourcePage)) : "";
 
   const dashboardLine = i.supabaseJobId
-    ? `<p style="margin-top:24px;font-size:13px;color:#666;">
+    ? `<p style="margin-top:24px;font-size:13px;color:${BRAND.muted};">
          Job <strong>#${i.supabaseJobId}</strong> · open in
-         <a href="https://www.zandzplumbing.com/admin/jobs" style="color:#F96302;font-weight:600;">Z and Z OS</a>
+         <a href="https://www.zandzplumbing.com/admin/jobs" style="color:${BRAND.orange};font-weight:700;">Z and Z OS</a>
        </p>`
     : "";
 
-  return `<!doctype html>
-<html><body style="margin:0;background:#F5F5F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;">
-  <div style="max-width:560px;margin:0 auto;padding:24px 16px;">
-    <div style="background:#000;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;">
-      <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#F96302;">
-        New web lead
-      </p>
-      <h1 style="margin:6px 0 0;font-size:24px;font-weight:900;text-transform:uppercase;letter-spacing:-0.01em;">
-        ${escapeHtml(i.name)}
-      </h1>
-      <p style="margin:6px 0 0;font-size:14px;color:rgba(255,255,255,0.7);">
-        ${escapeHtml(i.serviceLabel)} · ${escapeHtml(i.city)} ${escapeHtml(i.zip)}
-      </p>
+  return `${banner}
+    <table style="width:100%;border-collapse:collapse;">
+      ${row("Phone", `<a href="tel:${escapeAttr(i.phoneE164)}" style="color:${BRAND.orange};font-weight:600;text-decoration:none;">${escapeHtml(i.phoneFormatted)}</a>`)}
+      ${row("Email", `<a href="mailto:${escapeAttr(i.email)}" style="color:${BRAND.orange};text-decoration:none;">${escapeHtml(i.email)}</a>`)}
+      ${row("Service", escapeHtml(i.serviceLabel))}
+      ${row("ZIP", `${escapeHtml(i.zip)} · ${escapeHtml(i.city)}`)}
+      ${callbackRow}
+      ${descriptionRow}
+      ${sourceRow}
+    </table>
+    <div style="margin-top:24px;">
+      ${emailButton(`tel:${i.phoneE164}`, `Call ${i.phoneFormatted}`)}
     </div>
-    <div style="background:#fff;padding:24px;border-radius:0 0 8px 8px;border:1px solid #E5E5E5;border-top:none;">
-      ${banner}
-      <table style="width:100%;border-collapse:collapse;">
-        ${row("Phone", `<a href="tel:${escapeAttr(i.phoneE164)}" style="color:#F96302;font-weight:600;text-decoration:none;">${escapeHtml(i.phoneFormatted)}</a>`)}
-        ${row("Email", `<a href="mailto:${escapeAttr(i.email)}" style="color:#F96302;text-decoration:none;">${escapeHtml(i.email)}</a>`)}
-        ${row("Service", escapeHtml(i.serviceLabel))}
-        ${row("ZIP", `${escapeHtml(i.zip)} · ${escapeHtml(i.city)}`)}
-        ${callbackRow}
-        ${descriptionRow}
-        ${sourceRow}
-      </table>
-      <div style="margin-top:24px;display:block;">
-        <a href="tel:${escapeAttr(i.phoneE164)}" style="display:inline-block;background:#F96302;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;font-size:13px;padding:14px 24px;border-radius:8px;text-decoration:none;">
-          Call ${escapeHtml(i.phoneFormatted)}
-        </a>
-      </div>
-      ${dashboardLine}
-    </div>
-  </div>
-</body></html>`;
+    ${dashboardLine}`;
 }
 
 function buildDispatchText(i: DispatchEmailInput): string {
-  const lines = [
+  return [
     i.outOfArea ? "⚠️ OUT-OF-AREA — verify before dispatch.\n" : "",
     `NEW WEB LEAD`,
     `${i.name} — ${i.serviceLabel} — ${i.city} ${i.zip}`,
@@ -147,32 +121,81 @@ function buildDispatchText(i: DispatchEmailInput): string {
     i.briefDescription ? `Notes: ${i.briefDescription}` : "",
     i.sourcePage ? `Source: ${i.sourcePage}` : "",
     i.supabaseJobId ? `Job #${i.supabaseJobId} in Z and Z OS` : "",
-  ];
-  return lines.filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
+
+// ── Customer confirmation ───────────────────────────────────────────────────
+
+interface CustomerConfirmationInput {
+  firstName: string;
+  email: string;
+  serviceLabel: string;
+  outOfArea: boolean;
+}
+
+export async function sendCustomerConfirmationEmail(
+  input: CustomerConfirmationInput
+): Promise<EmailResult> {
+  const to = input.email?.trim();
+  if (!to) {
+    return { ok: true, skipped: true, error: "no customer email — skipped" };
+  }
+
+  const first = input.firstName.split(" ")[0] || "there";
+  const service = input.serviceLabel.toLowerCase();
+
+  const intro = input.outOfArea
+    ? `We received your request for ${escapeHtml(service)}. Your ZIP is outside our regular East Bay service area, but we will review it and reach back out.`
+    : `We received your request for ${escapeHtml(service)} and will call you within about 15 minutes during business hours.`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#333;">Hi ${escapeHtml(first)}, thanks for reaching out to ${escapeHtml(siteSettings.name)}.</p>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#444;">${intro}</p>
+    <div style="margin:0 0 20px;">
+      ${emailButton(`tel:${siteSettings.phoneTel}`, `Call ${siteSettings.phone}`)}
+    </div>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:${BRAND.muted};">Need to reach us first? Call ${escapeHtml(siteSettings.phone)} or just reply to this email and it reaches our office.</p>`;
+
+  const html = renderEmailLayout({
+    eyebrow: "Request received",
+    heading: `Thanks, ${first}.`,
+    headingSub: input.outOfArea
+      ? "We got your request and will be in touch."
+      : "We got your request. A real person will call you shortly.",
+    preheader: "We received your request and will call you shortly.",
+    bodyHtml,
+  });
+
+  const text = [
+    `Hi ${first}, thanks for reaching out to ${siteSettings.name}.`,
+    ``,
+    input.outOfArea
+      ? `We received your request for ${service}. Your ZIP is outside our regular East Bay service area, but we will review it and reach back out.`
+      : `We received your request for ${service} and will call you within about 15 minutes during business hours.`,
+    ``,
+    `Need to reach us first? Call ${siteSettings.phone}.`,
+    `${siteSettings.name} · ${siteSettings.cslb}`,
+  ].join("\n");
+
+  return sendEmail({
+    from: leadFromAddress(),
+    to,
+    subject: "We received your request",
+    html,
+    text,
+    replyTo: replyToInbox(),
+  });
+}
+
+// ── helpers ─────────────────────────────────────────────────────────────────
 
 function row(label: string, value: string): string {
   return `<tr>
-    <td style="padding:8px 0;color:#666;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;width:110px;vertical-align:top;">${escapeHtml(label)}</td>
+    <td style="padding:8px 0;color:${BRAND.muted};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;width:110px;vertical-align:top;">${escapeHtml(label)}</td>
     <td style="padding:8px 0;color:#111;font-size:14px;line-height:1.5;">${value}</td>
   </tr>`;
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-/** Stricter encoder for href/src attribute values — protects against
- *  user input that could break out of the attribute or inject JS schemes. */
-function escapeAttr(s: string): string {
-  // Allow only safe chars; everything else gets URI-encoded.
-  // For tel: and mailto: this preserves +, digits, @, and . — strips quotes/spaces/<>.
-  return encodeURI(s).replace(/"/g, "%22").replace(/'/g, "%27");
 }
 
 function capitalize(s: string): string {
