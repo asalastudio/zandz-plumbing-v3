@@ -82,7 +82,7 @@ export default async function AdminReviewsPage() {
         <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
           Review SMS Pipeline
         </h1>
-        <p className="mt-3 max-w-2xl text-base text-white/70 md:text-lg">
+        <p className="mt-3 max-w-2xl text-base text-muted md:text-lg">
           Customers who said yes to SMS get a review-request text 48 hours after their job is
           marked Won in HubSpot. Pipeline, sends, and opt-outs all live here.
         </p>
@@ -93,7 +93,7 @@ export default async function AdminReviewsPage() {
           <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#F96302]">
             Database not connected
           </p>
-          <p className="mt-2 text-base text-white/80 md:text-lg">
+          <p className="mt-2 text-base text-muted md:text-lg">
             Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in environment, then re-run the
             migrations. WIRING.md has the steps.
           </p>
@@ -154,39 +154,39 @@ function Section({
         <div>
           <h2 className="font-display text-2xl font-black uppercase tracking-tight md:text-3xl">
             {title}
-            <span className="ml-3 text-base font-bold text-white/40">({rows.length})</span>
+            <span className="ml-3 text-base font-bold text-muted">({rows.length})</span>
           </h2>
-          <p className="mt-1 text-sm text-white/60">{description}</p>
+          <p className="mt-1 text-sm text-muted">{description}</p>
         </div>
       </header>
       {rows.length === 0 ? (
-        <div className="border border-white/10 bg-white/5 px-6 py-8 text-base text-white/50">
+        <div className="border border-line bg-card px-6 py-8 text-base text-muted">
           Nothing here yet.
         </div>
       ) : (
-        <div className="overflow-hidden border border-white/10">
+        <div className="overflow-hidden border border-line">
           <table className="w-full text-left">
-            <thead className="bg-white/5">
+            <thead className="bg-card">
               <tr>
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
                   Customer
                 </th>
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
                   Phone
                 </th>
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
                   Service
                 </th>
-                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
                   {renderTimeLabel}
                 </th>
                 {showClicks && (
-                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
                     Clicks
                   </th>
                 )}
                 {showReason && (
-                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
                     Reason
                   </th>
                 )}
@@ -194,24 +194,24 @@ function Section({
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-t border-white/5 text-base">
-                  <td className="px-5 py-4 text-white">{r.customer_name}</td>
-                  <td className="px-5 py-4 text-white/70">{maskPhone(r.customer_phone_e164)}</td>
-                  <td className="px-5 py-4 text-white/70">{r.service_performed ?? "·"}</td>
-                  <td className="px-5 py-4 text-white/70">{renderTime(r)}</td>
+                <tr key={r.id} className="border-t border-line text-base">
+                  <td className="px-5 py-4 text-ink">{r.customer_name}</td>
+                  <td className="px-5 py-4 text-muted">{maskPhone(r.customer_phone_e164)}</td>
+                  <td className="px-5 py-4 text-muted">{r.service_performed ?? "·"}</td>
+                  <td className="px-5 py-4 text-muted">{renderTime(r)}</td>
                   {showClicks && (
-                    <td className="px-5 py-4 text-white/70">
+                    <td className="px-5 py-4 text-muted">
                       {r.link_clicked_at ? (
                         <span className="inline-flex items-center bg-[#F96302]/20 px-2 py-0.5 text-sm font-bold text-[#F96302]">
                           {r.click_count}× clicked
                         </span>
                       ) : (
-                        <span className="text-white/40">·</span>
+                        <span className="text-muted">·</span>
                       )}
                     </td>
                   )}
                   {showReason && (
-                    <td className="px-5 py-4 text-white/60">{r.cancellation_reason ?? "·"}</td>
+                    <td className="px-5 py-4 text-muted">{r.cancellation_reason ?? "·"}</td>
                   )}
                 </tr>
               ))}

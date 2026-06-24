@@ -7,11 +7,23 @@
 
   /* Brand palette */
   --color-brand-orange: #F96302;
+  --color-brand-orange-hover: #E05602;
   --color-brand-black: #000000;
   --color-brand-dark-gray: #333333;
   --color-brand-medium-gray: #666666;
   --color-brand-light-gray: #F5F5F5;
   --color-brand-border: #E5E5E5;
+
+  /* Z and Z OS — light "calm office" surface tokens (admin + field only).
+     The public marketing site keeps its bold dark brand. Off-white page with
+     white cards on top gives low-glare depth; ink/muted text stay WCAG AA+. */
+  --color-surface: #F7F6F3; /* page background (warm off-white) */
+  --color-card: #FFFFFF;    /* raised cards, inputs, top bar */
+  --color-raised: #FAF9F6;  /* table headers, subtle hovers */
+  --color-ink: #1C1A17;     /* primary text (~14:1 on surface) */
+  --color-muted: #6B6862;   /* secondary text (~6:1) */
+  --color-faint: #9A968E;   /* placeholders / disabled hints */
+  --color-line: #E7E4DE;    /* hairline borders */
 
   /* Animations */
   --animate-fade-up: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;

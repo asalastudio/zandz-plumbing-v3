@@ -19,7 +19,7 @@ export default async function EditLearningResourcePage({
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to edit learning content.</p>
+        <p className="text-base text-muted">Connect Supabase to edit learning content.</p>
       </div>
     );
   }
@@ -31,7 +31,7 @@ export default async function EditLearningResourcePage({
     <div className="pb-24 lg:pb-0">
       <Link
         href="/admin/learning"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Back to learning
@@ -53,7 +53,7 @@ export default async function EditLearningResourcePage({
         >
           <button
             type="submit"
-            className="inline-flex items-center gap-2 border border-red-500/40 bg-red-500/10 px-5 py-3 text-sm font-bold uppercase tracking-wide text-red-300 transition-colors duration-150 hover:bg-red-500/20"
+            className="inline-flex items-center gap-2 border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold uppercase tracking-wide text-red-700 transition-colors duration-150 hover:bg-red-100"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Delete

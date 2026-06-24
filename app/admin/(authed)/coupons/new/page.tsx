@@ -9,7 +9,7 @@ export default function NewCouponPage() {
     <div className="pb-24 lg:pb-0">
       <Link
         href="/admin/coupons"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Back to coupons
@@ -20,7 +20,7 @@ export default function NewCouponPage() {
         <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
           Create Special Deal
         </h1>
-        <p className="mt-3 max-w-2xl text-base text-white/70">
+        <p className="mt-3 max-w-2xl text-base text-muted">
           Save as draft to preview, publish when ready. Max 3 coupons go live at once.
         </p>
       </header>

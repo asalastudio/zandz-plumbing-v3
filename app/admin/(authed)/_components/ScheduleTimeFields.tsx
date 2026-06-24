@@ -78,7 +78,7 @@ export function ScheduleTimeFields({
   const scheduledEnd = startTime && endTime > startTime ? toIso(date, endTime) : "";
 
   return (
-    <section className={`border border-white/10 bg-white/[0.03] p-5 md:p-6 ${className}`}>
+    <section className={`border border-line bg-raised p-5 md:p-6 ${className}`}>
       <input type="hidden" name="scheduled_start" value={scheduledStart} />
       <input type="hidden" name="scheduled_end" value={scheduledEnd} />
 
@@ -88,7 +88,7 @@ export function ScheduleTimeFields({
             <CalendarClock className="h-5 w-5" aria-hidden="true" />
             Schedule
           </p>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/60">{description}</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{description}</p>
         </div>
         {startTime && (
           <span className="inline-flex bg-[#F96302]/15 px-3 py-2 text-sm font-semibold text-[#F96302]">
@@ -99,12 +99,12 @@ export function ScheduleTimeFields({
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <label className="block">
-          <span className="mb-2 block text-sm font-semibold text-white/65">Service day</span>
+          <span className="mb-2 block text-sm font-semibold text-muted">Service day</span>
           <input
             type="date"
             value={date}
             onChange={(event) => setDate(event.target.value)}
-            className="h-12 w-full border border-white/15 bg-black px-4 text-base text-white outline-none transition-colors focus:border-[#F96302]"
+            className="h-12 w-full border border-line bg-card px-4 text-base text-ink outline-none transition-colors focus:border-[#F96302]"
           />
         </label>
 
@@ -149,13 +149,13 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-white/65">{label}</span>
+      <span className="mb-2 block text-sm font-semibold text-muted">{label}</span>
       <span className="relative block">
         <select
           value={value}
           onChange={(event) => onChange(event.target.value)}
           disabled={disabled}
-          className="h-12 w-full appearance-none border border-white/15 bg-black px-4 pr-11 text-base text-white outline-none transition-colors focus:border-[#F96302] disabled:cursor-not-allowed disabled:text-white/35"
+          className="h-12 w-full appearance-none border border-line bg-card px-4 pr-11 text-base text-ink outline-none transition-colors focus:border-[#F96302] disabled:cursor-not-allowed disabled:text-muted"
         >
           <option value="">{placeholder}</option>
           {options.map((option) => (

@@ -12,6 +12,7 @@ import {
   formatMoney,
 } from "@/lib/db";
 import { DeleteJobButton } from "../../_components/DeleteJobButton";
+import InvoiceLineItems from "../../_components/InvoiceLineItems";
 import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
 import { listJobPhotos, type JobPhotoWithUrl } from "@/lib/job-photos";
 import { isStripeConfigured } from "@/lib/stripe-checkout";
@@ -34,7 +35,7 @@ export default async function JobDetailPage({
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to view job detail.</p>
+        <p className="text-base text-muted">Connect Supabase to view job detail.</p>
       </div>
     );
   }
@@ -56,7 +57,7 @@ export default async function JobDetailPage({
     <div className="pb-24 lg:pb-0">
       <Link
         href="/admin/jobs"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Back to jobs
@@ -76,28 +77,35 @@ export default async function JobDetailPage({
             </span>
           </p>
         </div>
+        <a
+          href="#invoice"
+          className="inline-flex items-center gap-2 self-start border border-line bg-card px-5 py-3 text-sm font-bold uppercase tracking-wide text-muted transition-colors hover:border-[#F96302] hover:text-[#F96302] md:self-auto"
+        >
+          <CreditCard className="h-4 w-4" aria-hidden="true" />
+          Create invoice
+        </a>
       </header>
 
       {query.error === "has_invoice" && (
-        <div className="mb-8 border border-red-500/30 bg-red-500/10 p-5 text-base text-red-100">
+        <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">
           This job has invoice records attached, so it is protected from deletion.
         </div>
       )}
 
       {query.error && query.error !== "has_invoice" && (
-        <div className="mb-8 border border-red-500/30 bg-red-500/10 p-5 text-base text-red-100">
+        <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">
           We could not complete that job action. Please try again.
         </div>
       )}
 
       {query.photo === "1" && (
-        <div className="mb-8 border border-emerald-500/30 bg-emerald-500/10 p-5 text-base text-emerald-100">
+        <div className="mb-8 border border-emerald-200 bg-emerald-50 p-5 text-base text-emerald-800">
           Photo added.
         </div>
       )}
 
       {(query.photo === "missing" || query.photo === "error") && (
-        <div className="mb-8 border border-red-500/30 bg-red-500/10 p-5 text-base text-red-100">
+        <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">
           We could not add that photo. Use an image under 8MB.
         </div>
       )}
@@ -112,7 +120,7 @@ export default async function JobDetailPage({
                 <AlertTriangle className="h-5 w-5" aria-hidden="true" />
                 New lead waiting
               </p>
-              <p className="mt-2 text-base text-white/75">
+              <p className="mt-2 text-base text-muted">
                 Call the customer, then use the schedule block below once it becomes real work.
               </p>
             </div>
@@ -129,10 +137,35 @@ export default async function JobDetailPage({
         </section>
       )}
 
+      {(job.status === "complete" || job.status === "invoiced") && (
+        <section className="mb-8 border-l-4 border-emerald-500 bg-emerald-50 p-5 md:p-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-emerald-700">
+                <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                {job.status === "complete" ? "Work complete" : "Invoiced"}
+              </p>
+              <p className="mt-2 text-base text-muted">
+                {job.status === "complete"
+                  ? "Send the customer their invoice to collect payment."
+                  : "An invoice has been created. Send a reminder or record payment below."}
+              </p>
+            </div>
+            <a
+              href="#invoice"
+              className="inline-flex items-center justify-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+            >
+              <Send className="h-4 w-4" aria-hidden="true" />
+              Go to invoice
+            </a>
+          </div>
+        </section>
+      )}
+
       {/* Status transitions */}
       {transitions.length > 0 && (
-        <section className="mb-8 border border-white/10 bg-white/5 p-5 md:p-6">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+        <section className="mb-8 border border-line bg-card p-5 md:p-6">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
             Move to
           </p>
           <div className="flex flex-wrap gap-2">
@@ -143,7 +176,7 @@ export default async function JobDetailPage({
                   type="submit"
                   className={`inline-flex items-center px-4 py-2 text-sm font-bold uppercase tracking-wide transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg ${
                     next === "cancelled"
-                      ? "border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                      ? "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                       : "bg-[#F96302] text-white hover:bg-[#e05602]"
                   }`}
                 >
@@ -180,25 +213,25 @@ export default async function JobDetailPage({
       <section className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card icon={User} label="Customer">
           {job.customer ? (
-            <Link href={`/admin/customers/${job.customer.id}`} className="text-white hover:text-[#F96302]">
+            <Link href={`/admin/customers/${job.customer.id}`} className="text-ink hover:text-[#F96302]">
               {job.customer.name}
               {job.customer.phone_e164 && (
-                <span className="block text-sm text-white/60 mt-1">{job.customer.phone_e164}</span>
+                <span className="block text-sm text-muted mt-1">{job.customer.phone_e164}</span>
               )}
             </Link>
           ) : (
-            <span className="text-white/40">·</span>
+            <span className="text-muted">·</span>
           )}
         </Card>
         <Card icon={Calendar} label="Scheduled">
-          <span className="text-white">{formatDateTime(job.scheduled_start)}</span>
+          <span className="text-ink">{formatDateTime(job.scheduled_start)}</span>
           {job.scheduled_end && (
-            <span className="block text-sm text-white/60 mt-1">to {formatDateTime(job.scheduled_end)}</span>
+            <span className="block text-sm text-muted mt-1">to {formatDateTime(job.scheduled_end)}</span>
           )}
         </Card>
         <Card icon={MapPin} label="Address">
           {job.job_address || job.customer?.street_address ? (
-            <span className="text-white">
+            <span className="text-ink">
               {job.job_address ?? job.customer?.street_address}
               {(job.job_city || job.customer?.city) && (
                 <>
@@ -209,21 +242,21 @@ export default async function JobDetailPage({
               )}
             </span>
           ) : (
-            <span className="text-white/40">·</span>
+            <span className="text-muted">·</span>
           )}
         </Card>
       </section>
 
       {/* Assignment */}
-      <section className="mb-8 border border-white/10 bg-white/5 p-5 md:p-6">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+      <section className="mb-8 border border-line bg-card p-5 md:p-6">
+        <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
           Assigned crew
         </p>
         <form action={`/api/admin/jobs/${id}/assign`} method="POST" className="flex flex-wrap items-center gap-3">
           <select
             name="assigned_to"
             defaultValue={job.assigned_to ?? ""}
-            className="border border-white/15 bg-black px-4 py-2.5 text-base text-white outline-none focus:border-[#F96302]"
+            className="border border-line bg-card px-4 py-2.5 text-base text-ink outline-none focus:border-[#F96302]"
           >
             <option value="">Unassigned</option>
             {crew.map((c) => (
@@ -239,8 +272,8 @@ export default async function JobDetailPage({
             Update
           </button>
           {job.assignee && (
-            <span className="text-sm text-white/60">
-              Currently: <span className="text-white">{job.assignee.name}</span>
+            <span className="text-sm text-muted">
+              Currently: <span className="text-ink">{job.assignee.name}</span>
             </span>
           )}
         </form>
@@ -249,12 +282,12 @@ export default async function JobDetailPage({
       {/* Money */}
       <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card label="Estimated">
-          <span className="font-display text-3xl font-black tracking-tight text-white">
+          <span className="font-display text-3xl font-black tracking-tight text-ink">
             {formatMoney(job.estimated_amount_cents)}
           </span>
         </Card>
         <Card label="Final">
-          <span className="font-display text-3xl font-black tracking-tight text-white">
+          <span className="font-display text-3xl font-black tracking-tight text-ink">
             {formatMoney(job.final_amount_cents)}
           </span>
         </Card>
@@ -276,12 +309,12 @@ export default async function JobDetailPage({
 
       <PhotosSection jobId={job.id} photos={photos} />
 
-      <section className="mt-8 border border-red-500/25 bg-red-500/5 p-5 md:p-6">
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-red-300">
+      <section className="mt-8 border border-red-200 bg-red-50 p-5 md:p-6">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-red-700">
           Danger zone
         </p>
         <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <p className="max-w-2xl text-sm leading-relaxed text-white/60">
+          <p className="max-w-2xl text-sm leading-relaxed text-muted">
             Delete test entries or accidental duplicates. Jobs with invoices are protected and will
             not delete from here.
           </p>
@@ -310,8 +343,8 @@ function InvoiceFlash({ status }: { status: string }) {
     <div
       className={`mb-8 border p-5 text-base ${
         isGood
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
-          : "border-red-500/30 bg-red-500/10 text-red-100"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+          : "border-red-200 bg-red-50 text-red-800"
       }`}
     >
       {message[status] ?? message.error}
@@ -336,17 +369,17 @@ function InvoiceSection({
   const stripeReady = isStripeConfigured();
 
   return (
-    <section className="mb-8 border border-white/10 bg-white/5 p-5 md:p-6">
+    <section id="invoice" className="mb-8 scroll-mt-6 border border-line bg-card p-5 md:p-6">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F96302]">
             <CreditCard className="h-5 w-5" aria-hidden="true" />
             Invoices
           </p>
-          <h2 className="mt-2 font-display text-3xl font-black uppercase tracking-tight text-white">
+          <h2 className="mt-2 font-display text-3xl font-black uppercase tracking-tight text-ink">
             Send and collect payment
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/60">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
             Create an invoice from this job. If online payments are connected, the email includes
             a secure pay button. Customers can also pay by check, and cash can be recorded when Z and Z
             approves it.
@@ -354,70 +387,30 @@ function InvoiceSection({
         </div>
         <span
           className={`inline-flex px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${
-            stripeReady ? "bg-emerald-500/15 text-emerald-300" : "bg-white/10 text-white/50"
+            stripeReady ? "bg-emerald-100 text-emerald-700" : "bg-line text-muted"
           }`}
         >
           {stripeReady ? "Online payments ready" : "Online payments not connected"}
         </span>
       </div>
 
-      <form action={`/api/admin/jobs/${jobId}/invoice`} method="POST" className="border border-white/10 bg-black/30 p-4 md:p-5">
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_110px_150px]">
-              <label className="block">
-                <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-white/50">
-                  {index === 0 ? "Description" : "Extra line"}
-                </span>
-                <input
-                  name="description"
-                  defaultValue={index === 0 ? defaultDescription : ""}
-                  placeholder={index === 0 ? "Service performed" : "Optional item"}
-                  className="w-full border border-white/15 bg-black px-3 py-3 text-base text-white outline-none placeholder:text-white/25 focus:border-[#F96302]"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-white/50">
-                  Qty
-                </span>
-                <input
-                  name="quantity"
-                  defaultValue={index === 0 ? "1" : ""}
-                  inputMode="decimal"
-                  placeholder="1"
-                  className="w-full border border-white/15 bg-black px-3 py-3 text-base text-white outline-none placeholder:text-white/25 focus:border-[#F96302]"
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-white/50">
-                  Price
-                </span>
-                <input
-                  name="unit_price"
-                  defaultValue={index === 0 ? defaultPrice : ""}
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  className="w-full border border-white/15 bg-black px-3 py-3 text-base text-white outline-none placeholder:text-white/25 focus:border-[#F96302]"
-                />
-              </label>
-            </div>
-          ))}
-        </div>
+      <form action={`/api/admin/jobs/${jobId}/invoice`} method="POST" className="border border-line bg-surface p-4 md:p-5">
+        <InvoiceLineItems defaultDescription={defaultDescription} defaultPrice={defaultPrice} />
 
         <label className="mt-4 block">
-          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-white/50">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-muted">
             Notes for customer
           </span>
           <textarea
             name="notes"
             rows={3}
             placeholder="Optional payment notes, check instructions, cash approval notes, or warranty details"
-            className="w-full resize-none border border-white/15 bg-black px-3 py-3 text-base text-white outline-none placeholder:text-white/25 focus:border-[#F96302]"
+            className="w-full resize-none border border-line bg-card px-3 py-3 text-base text-ink outline-none placeholder:text-faint focus:border-[#F96302]"
           />
         </label>
 
         <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <label className={`flex items-center gap-3 text-sm ${customerEmail ? "text-white/80" : "text-white/40"}`}>
+          <label className={`flex items-center gap-3 text-sm ${customerEmail ? "text-muted" : "text-muted"}`}>
             <input
               type="checkbox"
               name="send_invoice"
@@ -426,7 +419,7 @@ function InvoiceSection({
               className="h-5 w-5 accent-[#F96302]"
             />
             Email invoice to customer now
-            {customerEmail ? <span className="text-white/45">({customerEmail})</span> : null}
+            {customerEmail ? <span className="text-muted">({customerEmail})</span> : null}
           </label>
           <button
             type="submit"
@@ -437,7 +430,7 @@ function InvoiceSection({
           </button>
         </div>
         {!customerEmail && (
-          <p className="mt-3 text-sm text-white/45">
+          <p className="mt-3 text-sm text-muted">
             Add an email address to the customer profile before sending invoices by email.
           </p>
         )}
@@ -445,21 +438,21 @@ function InvoiceSection({
 
       <div className="mt-5 space-y-3">
         {invoices.length === 0 ? (
-          <div className="border border-dashed border-white/15 bg-black/30 px-6 py-8 text-center text-base text-white/45">
+          <div className="border border-dashed border-line bg-surface px-6 py-8 text-center text-base text-muted">
             No invoices yet.
           </div>
         ) : (
           invoices.map((invoice) => (
-            <article key={invoice.id} className="border border-white/10 bg-black/35 p-4">
+            <article key={invoice.id} className="border border-line bg-surface p-4">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/45">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">
                     Invoice #{invoice.id}
                   </p>
-                  <p className="mt-1 font-display text-3xl font-black tracking-tight text-white">
+                  <p className="mt-1 font-display text-3xl font-black tracking-tight text-ink">
                     {formatMoney(invoice.amount_cents)}
                   </p>
-                  <p className="mt-1 text-sm text-white/50">
+                  <p className="mt-1 text-sm text-muted">
                     {invoice.paid_at
                       ? `Paid ${formatDateTime(invoice.paid_at)}`
                       : invoice.sent_at
@@ -470,7 +463,7 @@ function InvoiceSection({
 
                 <div className="flex flex-wrap gap-2">
                   {invoice.paid_at ? (
-                    <span className="inline-flex items-center gap-2 bg-emerald-500/15 px-4 py-2 text-sm font-bold uppercase tracking-wide text-emerald-300">
+                    <span className="inline-flex items-center gap-2 bg-emerald-100 px-4 py-2 text-sm font-bold uppercase tracking-wide text-emerald-700">
                       <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                       Paid
                     </span>
@@ -479,7 +472,7 @@ function InvoiceSection({
                       <form action={`/api/admin/invoices/${invoice.id}/send`} method="POST">
                         <button
                           type="submit"
-                          className="inline-flex items-center gap-2 border border-white/15 bg-white/5 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:border-[#F96302] hover:text-[#F96302]"
+                          className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
                         >
                           <Send className="h-4 w-4" aria-hidden="true" />
                           Send
@@ -490,7 +483,7 @@ function InvoiceSection({
                           href={invoice.stripe_payment_link_url}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 border border-white/15 bg-white/5 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:border-[#F96302] hover:text-[#F96302]"
+                          className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
                         >
                           <CreditCard className="h-4 w-4" aria-hidden="true" />
                           Pay link
@@ -500,7 +493,7 @@ function InvoiceSection({
                         <select
                           name="payment_method"
                           defaultValue="manual"
-                          className="border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none focus:border-[#F96302]"
+                          className="border border-line bg-card px-3 py-2 text-sm text-ink outline-none focus:border-[#F96302]"
                         >
                           <option value="manual">Manual</option>
                           <option value="card">Card</option>
@@ -521,16 +514,16 @@ function InvoiceSection({
               </div>
 
               {invoice.line_items.length > 0 && (
-                <div className="mt-4 divide-y divide-white/10 border-t border-white/10">
+                <div className="mt-4 divide-y divide-line border-t border-line">
                   {invoice.line_items.map((item, index) => (
                     <div key={`${invoice.id}-${index}`} className="grid grid-cols-[1fr_auto] gap-4 py-3 text-sm">
                       <div>
-                        <p className="font-bold text-white">{item.description}</p>
-                        <p className="text-white/45">
+                        <p className="whitespace-pre-line font-bold text-ink">{item.description}</p>
+                        <p className="text-muted">
                           {item.quantity} x {formatMoney(item.unit_price_cents)}
                         </p>
                       </div>
-                      <p className="font-bold text-white">{formatMoney(item.total_cents)}</p>
+                      <p className="font-bold text-ink">{formatMoney(item.total_cents)}</p>
                     </div>
                   ))}
                 </div>
@@ -545,14 +538,14 @@ function InvoiceSection({
 
 function PhotosSection({ jobId, photos }: { jobId: number; photos: JobPhotoWithUrl[] }) {
   return (
-    <section className="mt-8 border border-white/10 bg-white/5 p-5 md:p-6">
+    <section className="mt-8 border border-line bg-card p-5 md:p-6">
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F96302]">
             <Camera className="h-5 w-5" aria-hidden="true" />
             Job photos
           </p>
-          <h2 className="mt-2 font-display text-3xl font-black uppercase tracking-tight text-white">
+          <h2 className="mt-2 font-display text-3xl font-black uppercase tracking-tight text-ink">
             Photos from the lead and field
           </h2>
         </div>
@@ -567,7 +560,7 @@ function PhotosSection({ jobId, photos }: { jobId: number; photos: JobPhotoWithU
             name="photo"
             type="file"
             accept="image/*"
-            className="w-full border border-white/15 bg-black px-3 py-3 text-sm text-white file:mr-3 file:border-0 file:bg-[#F96302] file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
+            className="w-full border border-line bg-card px-3 py-3 text-sm text-ink file:mr-3 file:border-0 file:bg-[#F96302] file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
           />
           <button
             type="submit"
@@ -579,13 +572,13 @@ function PhotosSection({ jobId, photos }: { jobId: number; photos: JobPhotoWithU
       </div>
 
       {photos.length === 0 ? (
-        <div className="border border-dashed border-white/15 bg-black/30 px-6 py-10 text-center text-base text-white/50">
+        <div className="border border-dashed border-line bg-surface px-6 py-10 text-center text-base text-muted">
           No photos yet.
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {photos.map((photo) => (
-            <figure key={photo.id} className="overflow-hidden border border-white/10 bg-black/40">
+            <figure key={photo.id} className="overflow-hidden border border-line bg-surface">
               {photo.signedUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -594,11 +587,11 @@ function PhotosSection({ jobId, photos }: { jobId: number; photos: JobPhotoWithU
                   className="aspect-square w-full object-cover"
                 />
               ) : (
-                <div className="flex aspect-square items-center justify-center text-sm text-white/40">
+                <div className="flex aspect-square items-center justify-center text-sm text-muted">
                   Preview unavailable
                 </div>
               )}
-              <figcaption className="space-y-1 px-3 py-2 text-xs text-white/55">
+              <figcaption className="space-y-1 px-3 py-2 text-xs text-muted">
                 <span className="block font-bold uppercase tracking-wide text-[#F96302]">
                   {photo.category ?? "other"}
                 </span>
@@ -622,10 +615,10 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-white/10 bg-white/5 p-5 md:p-6">
+    <div className="border border-line bg-card p-5 md:p-6">
       <div className="mb-3 flex items-center gap-3">
         {Icon && <Icon className="h-5 w-5 text-[#F96302]" strokeWidth={1.75} aria-hidden={true} />}
-        <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/60">{label}</span>
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted">{label}</span>
       </div>
       <div className="text-base md:text-lg">{children}</div>
     </div>
@@ -644,15 +637,15 @@ function NotesCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`border ${highlight ? "border-l-4 border-[#F96302]" : "border-white/10"} bg-white/5 p-6 md:p-7`}>
+    <div className={`border ${highlight ? "border-l-4 border-[#F96302]" : "border-line"} bg-card p-6 md:p-7`}>
       <div className="mb-3 flex items-center gap-3">
         <Icon className="h-5 w-5 text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
-        <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/60">{title}</span>
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted">{title}</span>
       </div>
       {body ? (
-        <p className="text-base leading-relaxed text-white/80 md:text-lg whitespace-pre-line">{body}</p>
+        <p className="text-base leading-relaxed text-muted md:text-lg whitespace-pre-line">{body}</p>
       ) : (
-        <p className="text-base text-white/40">No notes yet.</p>
+        <p className="text-base text-muted">No notes yet.</p>
       )}
     </div>
   );

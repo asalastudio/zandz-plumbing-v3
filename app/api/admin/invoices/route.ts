@@ -8,6 +8,7 @@ import {
   invoiceViewUrl,
   markInvoiceSent,
   parseInvoiceLineItems,
+  syncJobAfterInvoice,
   InvoiceInputError,
 } from "@/lib/invoices";
 import { toE164 } from "@/lib/twilio";
@@ -15,9 +16,19 @@ import { toE164 } from "@/lib/twilio";
 export const runtime = "nodejs";
 
 /**
- * Create a standalone (custom) invoice for any customer and, optionally,
- * send it immediately by email and/or text. The customer is upserted by
- * phone then email (so an existing customer is reused, not duplicated).
+ * Create a standalone (custom) invoice and, optionally, send it immediately by
+ * email and/or text.
+ *
+ * Two customer paths:
+ *  - customer_id present → bill that exact existing record (the picker path).
+ *    No name-guessing, no contact upsert, so a typed name can never silently
+ *    overwrite or merge into the wrong customer.
+ *  - new_customer        → create a fresh customer from the typed fields. If the
+ *    phone/email collides with an existing customer we refuse unless the
+ *    operator passed confirm_new, so the old "Janan billed as Eric" merge
+ *    can't happen by accident.
+ *
+ * An optional job_id links the invoice to a job and marks that job invoiced.
  */
 export async function POST(req: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -34,18 +45,17 @@ export async function POST(req: NextRequest) {
     return back(req, "bad_request");
   }
 
+  const customerIdRaw = str(form.get("customer_id"));
+  const jobIdRaw = str(form.get("job_id"));
+  const confirmNew = form.get("confirm_new") === "on";
   const name = str(form.get("customer_name"));
-  const email = str(form.get("customer_email")) || null;
+  const emailInput = str(form.get("customer_email")) || null;
   const phoneRaw = str(form.get("customer_phone"));
-  const phoneE164 = phoneRaw ? toE164(phoneRaw) : null;
+  const phoneInput = phoneRaw ? toE164(phoneRaw) : null;
   const notes = str(form.get("notes")) || null;
   const channelEmail = form.get("channel_email") === "on";
   const channelText = form.get("channel_text") === "on";
   const sendNow = form.get("send_now") === "on";
-
-  if (!name) return back(req, "name_required");
-  if (phoneRaw && !phoneE164) return back(req, "bad_phone");
-  if (!email && !phoneE164) return back(req, "contact_required");
 
   let lineItems;
   try {
@@ -59,37 +69,84 @@ export async function POST(req: NextRequest) {
   try {
     const sb = supabase();
 
-    // Upsert customer (phone first, then email).
-    let customerId: number | undefined;
-    if (phoneE164) {
-      const { data } = await sb
+    // ── Resolve the customer ──
+    let customerId: number;
+    let name_: string;
+    let email: string | null;
+    let phoneE164: string | null;
+
+    const selectedId = customerIdRaw ? parseInt(customerIdRaw, 10) : NaN;
+    if (selectedId && !Number.isNaN(selectedId)) {
+      // Existing customer chosen in the picker — bill them exactly.
+      const { data: customer, error } = await sb
         .from("customers")
-        .select("id")
-        .eq("phone_e164", phoneE164)
-        .limit(1)
+        .select("id, name, email, phone_e164")
+        .eq("id", selectedId)
         .maybeSingle();
-      if (data?.id) customerId = data.id as number;
-    }
-    if (!customerId && email) {
-      const { data } = await sb
-        .from("customers")
-        .select("id")
-        .eq("email", email)
-        .limit(1)
-        .maybeSingle();
-      if (data?.id) customerId = data.id as number;
-    }
-    if (!customerId) {
+      if (error) throw new Error(`customer lookup: ${error.message}`);
+      if (!customer) return back(req, "error");
+      customerId = customer.id as number;
+      name_ = String(customer.name ?? "Customer");
+      email = (customer.email as string | null) ?? null;
+      phoneE164 = (customer.phone_e164 as string | null) ?? null;
+    } else {
+      // New customer from typed fields.
+      if (!name) return back(req, "name_required");
+      if (phoneRaw && !phoneInput) return back(req, "bad_phone");
+      if (!emailInput && !phoneInput) return back(req, "contact_required");
+
+      // Duplicate guard (phone first, then email) — mirror the lookup endpoint.
+      let existingId: number | undefined;
+      if (phoneInput) {
+        const { data } = await sb
+          .from("customers")
+          .select("id")
+          .eq("phone_e164", phoneInput)
+          .limit(1)
+          .maybeSingle();
+        if (data?.id) existingId = data.id as number;
+      }
+      if (!existingId && emailInput) {
+        const { data } = await sb
+          .from("customers")
+          .select("id")
+          .ilike("email", emailInput)
+          .limit(1)
+          .maybeSingle();
+        if (data?.id) existingId = data.id as number;
+      }
+
+      if (existingId && !confirmNew) {
+        // Don't silently merge into a different record — make the operator choose.
+        return back(req, "duplicate_unconfirmed");
+      }
+
       const { data, error } = await sb
         .from("customers")
-        .insert({ name, email, phone_e164: phoneE164 })
+        .insert({ name, email: emailInput, phone_e164: phoneInput })
         .select("id")
         .single();
       if (error) throw new Error(`customer insert: ${error.message}`);
       customerId = data.id as number;
+      name_ = name;
+      email = emailInput;
+      phoneE164 = phoneInput;
     }
 
-    const invoice = await createCustomInvoice({ customerId, lineItems, notes });
+    // ── Optional job link (must belong to the resolved customer) ──
+    let jobId: number | null = null;
+    const selectedJobId = jobIdRaw ? parseInt(jobIdRaw, 10) : NaN;
+    if (selectedJobId && !Number.isNaN(selectedJobId)) {
+      const { data: job } = await sb
+        .from("jobs")
+        .select("id, customer_id")
+        .eq("id", selectedJobId)
+        .maybeSingle();
+      if (job && job.customer_id === customerId) jobId = job.id as number;
+    }
+
+    const invoice = await createCustomInvoice({ customerId, jobId, lineItems, notes });
+    if (jobId) await syncJobAfterInvoice(jobId, invoice.amount_cents);
 
     if (!sendNow || (!channelEmail && !channelText)) {
       return NextResponse.redirect(new URL("/admin/invoices?status=created", req.url), 303);
@@ -102,7 +159,7 @@ export async function POST(req: NextRequest) {
     if (channelEmail && email) {
       const r = await sendInvoiceEmail({
         to: email,
-        customerName: name,
+        customerName: name_,
         invoiceId: invoice.id,
         serviceLabel: label,
         amountCents: invoice.amount_cents,
@@ -119,7 +176,7 @@ export async function POST(req: NextRequest) {
     if (channelText && phoneE164) {
       const r = await sendInvoiceSms({
         toPhoneE164: phoneE164,
-        customerName: name,
+        customerName: name_,
         invoiceId: invoice.id,
         amountCents: invoice.amount_cents,
         viewUrl,

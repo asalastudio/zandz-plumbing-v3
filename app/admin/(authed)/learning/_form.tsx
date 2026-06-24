@@ -16,7 +16,7 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           name="media_type"
           required
           defaultValue={resource?.media_type ?? "video"}
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         >
           <option value="video">Video (YouTube link)</option>
           <option value="image">Image (direct image URL)</option>
@@ -30,7 +30,7 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           required
           defaultValue={resource?.title ?? ""}
           placeholder="e.g. How to spot a sewer lateral failure"
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -39,7 +39,7 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           name="category"
           required
           defaultValue={resource?.category ?? "general"}
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         >
           {categories.map((c) => (
             <option key={c.value} value={c.value}>
@@ -56,9 +56,9 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           required
           defaultValue={resource?.url ?? ""}
           placeholder="https://www.youtube.com/watch?v=... or https://.../image.jpg"
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
-        <p className="mt-2 text-xs text-white/50">
+        <p className="mt-2 text-xs text-muted">
           For videos: paste any YouTube link (watch, share, or embed). For images: use a direct
           image URL ending in .jpg / .png / .webp.
         </p>
@@ -70,7 +70,7 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           type="url"
           defaultValue={resource?.thumbnail_url ?? ""}
           placeholder="https://.../thumbnail.jpg"
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -80,7 +80,7 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           rows={4}
           defaultValue={resource?.description ?? ""}
           placeholder="One or two lines about what the customer will learn."
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -90,12 +90,12 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
           type="number"
           step="1"
           defaultValue={resource?.sort_order ?? 0}
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
       <Field label="Publish now?">
-        <label className="inline-flex items-center gap-3 border border-white/15 bg-black px-4 py-3">
+        <label className="inline-flex items-center gap-3 border border-line bg-card px-4 py-3">
           <input
             type="checkbox"
             name="published"
@@ -103,14 +103,14 @@ export function LearningResourceForm({ action, categories, resource, submitLabel
             defaultChecked={resource?.published ?? false}
             className="h-5 w-5 accent-[#F96302]"
           />
-          <span className="text-base text-white">Show on /videos/</span>
+          <span className="text-base text-ink">Show on /videos/</span>
         </label>
       </Field>
 
       <div className="md:col-span-2 flex justify-end gap-3">
         <Link
           href="/admin/learning"
-          className="inline-flex items-center bg-transparent border border-white/15 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+          className="inline-flex items-center bg-transparent border border-line px-6 py-3 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
         >
           Cancel
         </Link>
@@ -136,7 +136,7 @@ function Field({
 }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-white/60 mb-2">
+      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-muted mb-2">
         {label}
       </label>
       {children}

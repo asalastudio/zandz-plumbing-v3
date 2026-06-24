@@ -26,8 +26,8 @@ export function DeleteJobButton({
         type="submit"
         className={
           compact
-            ? "inline-flex items-center gap-1.5 text-sm font-bold text-red-300 hover:text-red-200"
-            : "inline-flex items-center gap-2 border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-bold text-red-200 transition-colors duration-150 hover:bg-red-500/20"
+            ? "inline-flex items-center gap-1.5 text-sm font-bold text-red-700 hover:text-red-700"
+            : "inline-flex items-center gap-2 border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition-colors duration-150 hover:bg-red-100"
         }
       >
         <Trash2 className={compact ? "h-4 w-4" : "h-5 w-5"} aria-hidden="true" />

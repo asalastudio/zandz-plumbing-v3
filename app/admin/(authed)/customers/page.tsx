@@ -69,7 +69,7 @@ export default async function CustomersPage({
           <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
             Customer Directory
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-white/70">
+          <p className="mt-3 max-w-2xl text-base text-muted">
             {count.toLocaleString()} {filter !== "all" ? "matching " : ""}
             customer{count === 1 ? "" : "s"}. Click a row to see history.
           </p>
@@ -87,7 +87,7 @@ export default async function CustomersPage({
       <form action="/admin/customers" method="GET" className="mb-4">
         <div className="relative">
           <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40"
+            className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted"
             aria-hidden="true"
           />
           <input
@@ -95,7 +95,7 @@ export default async function CustomersPage({
             type="search"
             defaultValue={params.q ?? ""}
             placeholder="Search name, phone, email, address, or city"
-            className="w-full border border-white/15 bg-black py-4 pl-12 pr-4 text-lg text-white outline-none focus:border-[#F96302]"
+            className="w-full border border-line bg-card py-4 pl-12 pr-4 text-lg text-ink outline-none focus:border-[#F96302]"
           />
           {/* Preserve filter + sort across search submits */}
           {filter !== "all" && <input type="hidden" name="filter" value={filter} />}
@@ -114,7 +114,7 @@ export default async function CustomersPage({
               className={`inline-flex items-center px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] transition-colors duration-150 ${
                 active
                   ? "bg-[#F96302] text-white"
-                  : "border border-white/15 bg-white/5 text-white/70 hover:border-[#F96302] hover:text-white"
+                  : "border border-line bg-card text-muted hover:border-[#F96302] hover:text-[#F96302]"
               }`}
             >
               {f.label}
@@ -124,7 +124,7 @@ export default async function CustomersPage({
       </div>
 
       {/* Sort */}
-      <div className="mb-6 flex flex-wrap items-center gap-2 text-xs text-white/50">
+      <div className="mb-6 flex flex-wrap items-center gap-2 text-xs text-muted">
         <span className="font-bold uppercase tracking-[0.12em]">Sort:</span>
         {SORTS.map((s) => {
           const active = sort === s.key;
@@ -134,8 +134,8 @@ export default async function CustomersPage({
               href={baseHref({ sort: s.key === "name" ? undefined : s.key, page: undefined })}
               className={`inline-flex items-center px-2.5 py-1 font-bold uppercase tracking-[0.12em] transition-colors duration-150 ${
                 active
-                  ? "bg-white/15 text-white"
-                  : "text-white/50 hover:text-white"
+                  ? "bg-line text-ink"
+                  : "text-muted hover:text-ink"
               }`}
             >
               {s.label}
@@ -145,7 +145,7 @@ export default async function CustomersPage({
       </div>
 
       {rows.length === 0 ? (
-        <div className="border border-white/10 bg-white/5 px-8 py-16 text-center text-white/60">
+        <div className="border border-line bg-card px-8 py-16 text-center text-muted">
           {params.q ? (
             <p className="text-lg">No customers match &ldquo;{params.q}&rdquo;.</p>
           ) : (
@@ -155,9 +155,9 @@ export default async function CustomersPage({
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto border border-white/10">
+        <div className="overflow-x-auto border border-line">
           <table className="w-full text-left">
-            <thead className="bg-white/5">
+            <thead className="bg-card">
               <tr>
                 <Th>Name</Th>
                 <Th>Phone</Th>
@@ -172,17 +172,17 @@ export default async function CustomersPage({
               {rows.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-t border-white/5 transition-colors duration-150 hover:bg-white/5"
+                  className="border-t border-line transition-colors duration-150 hover:bg-raised"
                 >
                   <td className="px-5 py-4">
                     <Link
                       href={`/admin/customers/${c.id}`}
-                      className="block font-display text-lg font-black uppercase tracking-tight text-white hover:text-[#F96302]"
+                      className="block font-display text-lg font-black uppercase tracking-tight text-ink hover:text-[#F96302]"
                     >
                       {c.name}
                     </Link>
                     {c.customer_type && (
-                      <span className="mt-1 inline-flex items-center text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">
+                      <span className="mt-1 inline-flex items-center text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
                         {c.customer_type}
                       </span>
                     )}
@@ -191,38 +191,38 @@ export default async function CustomersPage({
                     {c.phone_e164 ? (
                       <a
                         href={`tel:${c.phone_e164}`}
-                        className="inline-flex items-center gap-2 text-base text-white/80 hover:text-[#F96302]"
+                        className="inline-flex items-center gap-2 text-base text-muted hover:text-[#F96302]"
                       >
                         <Phone className="h-4 w-4" aria-hidden="true" />
                         {c.phone_e164}
                       </a>
                     ) : (
-                      <span className="text-white/40">·</span>
+                      <span className="text-muted">·</span>
                     )}
                   </td>
-                  <td className="hidden px-5 py-4 text-base text-white/70 sm:table-cell">
+                  <td className="hidden px-5 py-4 text-base text-muted sm:table-cell">
                     {c.city ?? "·"}
                   </td>
-                  <td className="hidden px-5 py-4 text-base font-bold text-white md:table-cell">
+                  <td className="hidden px-5 py-4 text-base font-bold text-ink md:table-cell">
                     {c.lifetime_revenue_cents && c.lifetime_revenue_cents > 0
                       ? formatMoneyShort(c.lifetime_revenue_cents)
-                      : <span className="text-white/30">·</span>}
+                      : <span className="text-faint">·</span>}
                   </td>
-                  <td className="hidden px-5 py-4 text-base text-white/70 md:table-cell">
-                    {c.lifetime_jobs ?? <span className="text-white/30">·</span>}
+                  <td className="hidden px-5 py-4 text-base text-muted md:table-cell">
+                    {c.lifetime_jobs ?? <span className="text-faint">·</span>}
                   </td>
-                  <td className="hidden px-5 py-4 text-sm text-white/60 lg:table-cell">
+                  <td className="hidden px-5 py-4 text-sm text-muted lg:table-cell">
                     {c.last_job_completed_at
                       ? new Date(c.last_job_completed_at).toLocaleDateString("en-US", {
                           month: "short",
                           year: "numeric",
                         })
-                      : <span className="text-white/30">·</span>}
+                      : <span className="text-faint">·</span>}
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link
                       href={`/admin/customers/${c.id}`}
-                      className="text-white/40 hover:text-[#F96302]"
+                      className="text-muted hover:text-[#F96302]"
                     >
                       <ChevronRight className="h-5 w-5" aria-hidden="true" />
                     </Link>
@@ -236,7 +236,7 @@ export default async function CustomersPage({
 
       {/* Pagination */}
       {count > pageSize && (
-        <div className="mt-6 flex items-center justify-between text-sm text-white/60">
+        <div className="mt-6 flex items-center justify-between text-sm text-muted">
           <p>
             Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, count)} of {count}
           </p>
@@ -244,7 +244,7 @@ export default async function CustomersPage({
             {page > 0 && (
               <Link
                 href={baseHref({ page: String(page - 1) })}
-                className="border border-white/15 px-4 py-2 font-bold uppercase tracking-wide hover:border-[#F96302] hover:text-[#F96302]"
+                className="border border-line px-4 py-2 font-bold uppercase tracking-wide hover:border-[#F96302] hover:text-[#F96302]"
               >
                 Previous
               </Link>
@@ -252,7 +252,7 @@ export default async function CustomersPage({
             {(page + 1) * pageSize < count && (
               <Link
                 href={baseHref({ page: String(page + 1) })}
-                className="border border-white/15 px-4 py-2 font-bold uppercase tracking-wide hover:border-[#F96302] hover:text-[#F96302]"
+                className="border border-line px-4 py-2 font-bold uppercase tracking-wide hover:border-[#F96302] hover:text-[#F96302]"
               >
                 Next
               </Link>
@@ -267,7 +267,7 @@ export default async function CustomersPage({
 function Th({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
   return (
     <th
-      className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60 ${className}`}
+      className={`px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted ${className}`}
     >
       {children}
     </th>
@@ -285,7 +285,7 @@ function NotConfigured() {
       </header>
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
         <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#F96302]">Setup needed</p>
-        <p className="mt-2 text-base text-white/80 md:text-lg">
+        <p className="mt-2 text-base text-muted md:text-lg">
           Connect Supabase via WIRING.md, then this list populates automatically.
         </p>
       </div>
