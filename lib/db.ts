@@ -1,4 +1,12 @@
 import { supabase } from "@/lib/supabase";
+import {
+  PACIFIC_TZ,
+  startOfPacificDay,
+  endOfPacificDay,
+  startOfPacificWeek,
+  startOfPacificMonth,
+  pacificMonthsAgo,
+} from "@/lib/time";
 
 /**
  * Typed query helpers for Z and Z OS.
@@ -294,12 +302,12 @@ export interface DashboardKpis {
 export async function getDashboardKpis(): Promise<DashboardKpis> {
   const sb = supabase();
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  const startOfWeek = new Date(now);
-  startOfWeek.setHours(0, 0, 0, 0);
-  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
-  const twelveMoAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString();
-  const twentyFourMoAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate()).toISOString();
+  // Anchor all boundaries to Pacific so a California business sees correct
+  // "this month / this week / last 12 months" buckets on the UTC runtime.
+  const startOfMonth = startOfPacificMonth(now).toISOString();
+  const startOfWeek = startOfPacificWeek(now);
+  const twelveMoAgo = pacificMonthsAgo(12, now).toISOString();
+  const twentyFourMoAgo = pacificMonthsAgo(24, now).toISOString();
 
   // Pull every invoice in one shot, paginating since Supabase caps each
   // request at 1000 rows. Aggregates are done in JS.
@@ -722,10 +730,9 @@ export async function getJob(id: number): Promise<JobWithRelations | null> {
 
 export async function getJobsForDay(day: Date): Promise<JobWithRelations[]> {
   const sb = supabase();
-  const start = new Date(day);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(day);
-  end.setHours(23, 59, 59, 999);
+  // Bucket by the Pacific calendar day, not the UTC day.
+  const start = startOfPacificDay(day);
+  const end = endOfPacificDay(day);
 
   const { data, error } = await sb
     .from("jobs")
@@ -788,6 +795,7 @@ export function formatMoney(cents: number | null): string {
 export function formatDateTime(iso: string | null): string {
   if (!iso) return "·";
   return new Date(iso).toLocaleString("en-US", {
+    timeZone: PACIFIC_TZ,
     month: "short",
     day: "numeric",
     hour: "numeric",
@@ -798,6 +806,7 @@ export function formatDateTime(iso: string | null): string {
 export function formatDate(iso: string | null): string {
   if (!iso) return "·";
   return new Date(iso).toLocaleDateString("en-US", {
+    timeZone: PACIFIC_TZ,
     month: "short",
     day: "numeric",
     year: "numeric",
