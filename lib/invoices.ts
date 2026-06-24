@@ -366,6 +366,46 @@ export async function markInvoicePaidByCheckoutSession(
   await markInvoicePaid(data.id, paymentMethod);
 }
 
+/**
+ * Delete an invoice. If it was tied to a job and no invoices remain on that
+ * job, revert an "invoiced" job back to "complete" (and clear the final
+ * amount) so the job's state stays truthful. A "paid" job is left as-is.
+ * Returns the affected job_id (if any) so the caller can redirect sensibly.
+ */
+export async function deleteInvoice(invoiceId: number): Promise<{ jobId: number | null }> {
+  const sb = supabase();
+  const { data: invoice, error: lookupError } = await sb
+    .from("invoices")
+    .select("id, job_id")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (lookupError) throw new Error(`deleteInvoice lookup: ${lookupError.message}`);
+  if (!invoice) return { jobId: null };
+
+  const jobId = invoice.job_id == null ? null : Number(invoice.job_id);
+
+  const { error: deleteError } = await sb.from("invoices").delete().eq("id", invoiceId);
+  if (deleteError) throw new Error(`deleteInvoice: ${deleteError.message}`);
+
+  if (jobId) {
+    const { count } = await sb
+      .from("invoices")
+      .select("id", { count: "exact", head: true })
+      .eq("job_id", jobId);
+    if ((count ?? 0) === 0) {
+      const { data: job } = await sb.from("jobs").select("status").eq("id", jobId).maybeSingle();
+      if (job?.status === "invoiced") {
+        await sb
+          .from("jobs")
+          .update({ status: "complete", final_amount_cents: null, updated_at: new Date().toISOString() })
+          .eq("id", jobId);
+      }
+    }
+  }
+
+  return { jobId };
+}
+
 // ── Standalone (custom) invoices ────────────────────────────────────────────
 
 /**

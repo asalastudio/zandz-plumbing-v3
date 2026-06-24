@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, ExternalLink } from "lucide-react";
 import { listInvoices, invoiceViewUrl, type InvoiceListItem } from "@/lib/invoices";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { DeleteInvoiceButton } from "../_components/DeleteInvoiceButton";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Invoices · Z and Z OS" };
@@ -29,6 +30,9 @@ function statusOf(inv: InvoiceListItem): { label: string; cls: string } {
 function banner(status: string | undefined): string | null {
   if (!status) return null;
   if (status === "created") return "Invoice created.";
+  if (status === "deleted") return "Invoice deleted.";
+  if (status === "delete_failed") return "Could not delete that invoice. Try again.";
+  if (status === "bad_id") return "That invoice could not be found.";
   const parts = status.split(",").map((p) => {
     if (p === "email_sent") return "Emailed to the customer.";
     if (p === "text_sent") return "Texted to the customer.";
@@ -100,7 +104,7 @@ export default async function InvoicesPage({
                 <th className="px-4 py-3 text-right font-bold">Amount</th>
                 <th className="px-4 py-3 font-bold">Status</th>
                 <th className="px-4 py-3 font-bold">Created</th>
-                <th className="px-4 py-3 font-bold">View</th>
+                <th className="px-4 py-3 text-right font-bold">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -122,14 +126,17 @@ export default async function InvoicesPage({
                     </td>
                     <td className="px-4 py-3 text-muted">{fmtDate(inv.created_at)}</td>
                     <td className="px-4 py-3">
-                      <a
-                        href={invoiceViewUrl(inv.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[#F96302] hover:underline"
-                      >
-                        Open <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                      </a>
+                      <div className="flex items-center justify-end gap-4">
+                        <a
+                          href={invoiceViewUrl(inv.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-[#F96302] hover:underline"
+                        >
+                          Open <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                        </a>
+                        <DeleteInvoiceButton invoiceId={inv.id} compact label="Delete" />
+                      </div>
                     </td>
                   </tr>
                 );

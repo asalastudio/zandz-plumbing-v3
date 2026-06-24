@@ -12,6 +12,7 @@ import {
   formatMoney,
 } from "@/lib/db";
 import { DeleteJobButton } from "../../_components/DeleteJobButton";
+import { DeleteInvoiceButton } from "../../_components/DeleteInvoiceButton";
 import InvoiceLineItems from "../../_components/InvoiceLineItems";
 import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
 import { listJobPhotos, type JobPhotoWithUrl } from "@/lib/job-photos";
@@ -327,11 +328,12 @@ export default async function JobDetailPage({
 }
 
 function InvoiceFlash({ status }: { status: string }) {
-  const isGood = ["created", "sent", "paid"].includes(status);
+  const isGood = ["created", "sent", "paid", "deleted"].includes(status);
   const message: Record<string, string> = {
     created: "Invoice created. You can send it when the customer is ready.",
     sent: "Invoice sent to the customer.",
     paid: "Invoice marked paid.",
+    deleted: "Invoice deleted.",
     invalid: "Add at least one invoice line with a description, quantity, and price.",
     no_customer: "This job needs a customer before an invoice can be created.",
     not_complete: "Mark this job Complete before invoicing it.",
@@ -520,6 +522,7 @@ function InvoiceSection({
                       </form>
                     </>
                   )}
+                  <DeleteInvoiceButton invoiceId={invoice.id} next={`/admin/jobs/${jobId}`} compact />
                 </div>
               </div>
 
