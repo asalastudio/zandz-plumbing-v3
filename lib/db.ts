@@ -296,6 +296,7 @@ export interface DashboardKpis {
   customerCount: number;
   activeCustomerCount: number;
   jobsThisWeek: number;
+  jobsReadyToInvoice: number;
   topJobTypeThisMonth: { type: string; count: number; revenueCents: number } | null;
 }
 
@@ -362,18 +363,23 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     }
   }
 
-  const [{ count: customerCount }, { count: activeCustomerCount }, { count: jobsThisWeek }] =
-    await Promise.all([
-      sb.from("customers").select("id", { count: "exact", head: true }),
-      sb
-        .from("customers")
-        .select("id", { count: "exact", head: true })
-        .gte("last_job_completed_at", twelveMoAgo),
-      sb
-        .from("jobs")
-        .select("id", { count: "exact", head: true })
-        .gte("scheduled_start", startOfWeek.toISOString()),
-    ]);
+  const [
+    { count: customerCount },
+    { count: activeCustomerCount },
+    { count: jobsThisWeek },
+    { count: jobsReadyToInvoice },
+  ] = await Promise.all([
+    sb.from("customers").select("id", { count: "exact", head: true }),
+    sb
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .gte("last_job_completed_at", twelveMoAgo),
+    sb
+      .from("jobs")
+      .select("id", { count: "exact", head: true })
+      .gte("scheduled_start", startOfWeek.toISOString()),
+    sb.from("jobs").select("id", { count: "exact", head: true }).eq("status", "complete"),
+  ]);
 
   const topJobType =
     [...jobTypesThisMonth.entries()].sort((a, b) => b[1].revenueCents - a[1].revenueCents)[0] ?? null;
@@ -388,6 +394,7 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
     customerCount: customerCount ?? 0,
     activeCustomerCount: activeCustomerCount ?? 0,
     jobsThisWeek: jobsThisWeek ?? 0,
+    jobsReadyToInvoice: jobsReadyToInvoice ?? 0,
     topJobTypeThisMonth: topJobType
       ? { type: topJobType[0], count: topJobType[1].count, revenueCents: topJobType[1].revenueCents }
       : null,
