@@ -33,7 +33,7 @@ export default async function AdminLoginPage({
             : null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-surface text-ink flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-10">
           <Image
@@ -44,7 +44,7 @@ export default async function AdminLoginPage({
             priority
             className="h-20 w-20"
           />
-          <h1 className="mt-6 font-display text-3xl font-black uppercase tracking-tight text-white">
+          <h1 className="mt-6 font-display text-3xl font-black uppercase tracking-tight text-ink">
             Z and Z OS
           </h1>
           <p className="mt-2 text-sm font-bold uppercase tracking-[0.18em] text-[#F96302]">
@@ -55,15 +55,15 @@ export default async function AdminLoginPage({
         <form
           action="/api/admin/login"
           method="POST"
-          className="rounded-2xl border border-white/10 bg-white/5 p-8"
+          className="rounded-2xl border border-line bg-card p-8"
         >
           {errorMessage && (
-            <div className="mb-6 border-l-4 border-[#F96302] bg-[#F96302]/10 px-4 py-3 text-sm text-white">
+            <div className="mb-6 border-l-4 border-[#F96302] bg-[#F96302]/10 px-4 py-3 text-sm text-ink">
               {errorMessage}
             </div>
           )}
 
-          <label className="block text-sm font-bold uppercase tracking-[0.12em] text-white/60 mb-3">
+          <label className="block text-sm font-bold uppercase tracking-[0.12em] text-muted mb-3">
             Password
           </label>
           <input
@@ -71,7 +71,7 @@ export default async function AdminLoginPage({
             type="password"
             autoFocus
             required
-            className="w-full border border-white/15 bg-black px-4 py-4 text-lg text-white outline-none focus:border-[#F96302]"
+            className="w-full border border-line bg-card px-4 py-4 text-lg text-ink outline-none focus:border-[#F96302]"
           />
 
           <input type="hidden" name="next" value={safeNext} />
@@ -84,7 +84,7 @@ export default async function AdminLoginPage({
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-white/40">
+        <p className="mt-6 text-center text-xs text-muted">
           Authorized crew only. All access logged.
         </p>
       </div>

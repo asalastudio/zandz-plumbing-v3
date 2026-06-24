@@ -47,20 +47,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-surface text-ink">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-line bg-card backdrop-blur">
         <div className="mx-auto flex max-w-[1800px] items-center justify-between px-6 py-4">
           <Link href="/admin" className="flex items-center gap-4">
-            <Logo linkWrapper={false} className="h-10 w-auto md:h-12" />
-            <span className="hidden border-l border-white/15 pl-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#F96302] sm:inline-block">
+            <Logo variant="dark" linkWrapper={false} className="h-10 w-auto md:h-12" />
+            <span className="hidden border-l border-line pl-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[#F96302] sm:inline-block">
               Admin
             </span>
           </Link>
           <form action="/api/admin/logout" method="POST">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 border border-white/15 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white/80 transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302]"
+              className="inline-flex items-center gap-2 border border-line px-4 py-2 text-sm font-semibold uppercase tracking-wide text-muted transition-colors duration-150 hover:border-[#F96302] hover:text-[#F96302]"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
               Sign out
@@ -81,9 +81,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group flex items-center gap-3 border border-transparent px-4 py-3 text-base font-semibold text-white/70 transition-colors duration-150 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                  className="group flex items-center gap-3 border border-transparent px-4 py-3 text-base font-semibold text-muted transition-colors duration-150 hover:border-line hover:bg-raised hover:text-ink"
                 >
-                  <Icon className="h-5 w-5 flex-shrink-0 text-white/40 group-hover:text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
+                  <Icon className="h-5 w-5 flex-shrink-0 text-muted group-hover:text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
                   {item.label}
                 </Link>
               );
@@ -97,7 +97,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Mobile bottom nav. Five most-used items. Full nav lives in sidebar on lg+ */}
       <nav
         aria-label="Admin"
-        className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-white/10 bg-black lg:hidden"
+        className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-line bg-card lg:hidden"
       >
         {nav
           .filter((n) => ["Dashboard", "Leads", "Dispatch", "Field", "Jobs"].includes(n.label))
@@ -107,7 +107,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold uppercase tracking-wide text-white/60 transition-colors duration-150 hover:text-[#F96302]"
+              className="flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-bold uppercase tracking-wide text-muted transition-colors duration-150 hover:text-[#F96302]"
             >
               <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
               {item.label}

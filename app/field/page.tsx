@@ -38,7 +38,7 @@ export default async function FieldPage({
   if (!isSupabaseConfigured()) {
     return (
       <FieldShell>
-        <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-5 text-white">
+        <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-5 text-ink">
           Connect Supabase to use field mode.
         </div>
       </FieldShell>
@@ -54,36 +54,36 @@ export default async function FieldPage({
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#F96302]">
           Field mode
         </p>
-        <h1 className="mt-2 font-display text-4xl font-black uppercase leading-none tracking-tight text-white">
+        <h1 className="mt-2 font-display text-4xl font-black uppercase leading-none tracking-tight text-ink">
           Today&apos;s work
         </h1>
-        <p className="mt-3 text-base leading-relaxed text-white/65">
+        <p className="mt-3 text-base leading-relaxed text-muted">
           Big buttons only. Start the job, pause it if needed, mark it complete when done.
         </p>
       </header>
 
       {params.updated === "1" && (
-        <div className="mb-4 border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold uppercase tracking-wide text-emerald-200">
+        <div className="mb-4 border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold uppercase tracking-wide text-emerald-700">
           Job updated.
         </div>
       )}
 
       {params.photo === "1" && (
-        <div className="mb-4 border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-bold uppercase tracking-wide text-emerald-200">
+        <div className="mb-4 border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold uppercase tracking-wide text-emerald-700">
           Photo saved.
         </div>
       )}
 
       {(params.photo === "missing" || params.photo === "error") && (
-        <div className="mb-4 border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-bold uppercase tracking-wide text-red-200">
+        <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold uppercase tracking-wide text-red-700">
           Photo did not save. Use an image under 8MB.
         </div>
       )}
 
       {jobs.length === 0 ? (
-        <div className="border border-dashed border-white/15 bg-white/[0.03] px-6 py-14 text-center">
-          <Wrench className="mx-auto h-8 w-8 text-white/30" aria-hidden="true" />
-          <p className="mt-3 text-base text-white/60">No active field jobs right now.</p>
+        <div className="border border-dashed border-line bg-raised px-6 py-14 text-center">
+          <Wrench className="mx-auto h-8 w-8 text-faint" aria-hidden="true" />
+          <p className="mt-3 text-base text-muted">No active field jobs right now.</p>
           <Link href="/admin/leads" className="mt-5 inline-flex bg-[#F96302] px-5 py-3 text-sm font-bold text-white">
             View leads
           </Link>
@@ -101,12 +101,12 @@ export default async function FieldPage({
 
 function FieldShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] pb-8 text-white">
+    <div className="min-h-screen bg-surface pb-8 text-ink">
       <RegisterServiceWorker />
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-black/95 px-4 py-3 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-line bg-card px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-xl items-center justify-between">
-          <Logo linkWrapper={false} className="h-9" />
-          <Link href="/admin" className="text-xs font-bold uppercase tracking-wide text-white/55 hover:text-[#F96302]">
+          <Logo variant="dark" linkWrapper={false} className="h-9" />
+          <Link href="/admin" className="text-xs font-bold uppercase tracking-wide text-muted hover:text-[#F96302]">
             Admin
           </Link>
         </div>
@@ -121,16 +121,16 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
   const secondary = secondaryAction(job.status);
 
   return (
-    <article className="border border-white/10 bg-white/[0.04] p-4 shadow-xl shadow-black/20">
+    <article className="border border-line bg-raised p-4 shadow-xl shadow-black/20">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F96302]">
             {formatDateTime(job.scheduled_start)}
           </p>
-          <h2 className="mt-2 font-display text-3xl font-black uppercase leading-none tracking-tight text-white">
+          <h2 className="mt-2 font-display text-3xl font-black uppercase leading-none tracking-tight text-ink">
             {job.service_label ?? job.service_type}
           </h2>
-          <p className="mt-2 text-base text-white/70">
+          <p className="mt-2 text-base text-muted">
             {job.customer?.name ?? "Customer"}
           </p>
         </div>
@@ -142,7 +142,7 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
       {job.customer?.phone_e164 && (
         <a
           href={`tel:${job.customer.phone_e164}`}
-          className="mb-3 flex w-full items-center justify-center gap-2 border border-white/15 bg-black px-4 py-4 text-base font-bold text-white"
+          className="mb-3 flex w-full items-center justify-center gap-2 border border-line bg-card px-4 py-4 text-base font-bold text-ink"
         >
           <Phone className="h-5 w-5 text-[#F96302]" aria-hidden="true" />
           Call customer
@@ -159,7 +159,7 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
         )}
         <Link
           href={`/admin/jobs/${job.id}`}
-          className="inline-flex items-center justify-center gap-2 border border-white/15 px-4 py-4 text-sm font-bold text-white/70"
+          className="inline-flex items-center justify-center gap-2 border border-line px-4 py-4 text-sm font-bold text-muted"
         >
           Details
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -170,29 +170,29 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
         action={`/api/admin/jobs/${job.id}/photos`}
         method="POST"
         encType="multipart/form-data"
-        className="mt-4 border-t border-white/10 pt-4"
+        className="mt-4 border-t border-line pt-4"
       >
         <fieldset className="mb-3">
-          <legend className="mb-2 text-sm font-bold uppercase tracking-wide text-white/60">
+          <legend className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
             Photo type
           </legend>
           <div className="grid grid-cols-2 gap-2">
             <label className="cursor-pointer">
               <input type="radio" name="category" value="before" defaultChecked className="peer sr-only" />
-              <span className="block border border-white/15 bg-black py-3 text-center text-sm font-bold uppercase tracking-wide text-white/60 peer-checked:border-[#F96302] peer-checked:bg-[#F96302]/15 peer-checked:text-[#F96302]">
+              <span className="block border border-line bg-card py-3 text-center text-sm font-bold uppercase tracking-wide text-muted peer-checked:border-[#F96302] peer-checked:bg-[#F96302]/15 peer-checked:text-[#F96302]">
                 Before
               </span>
             </label>
             <label className="cursor-pointer">
               <input type="radio" name="category" value="after" className="peer sr-only" />
-              <span className="block border border-white/15 bg-black py-3 text-center text-sm font-bold uppercase tracking-wide text-white/60 peer-checked:border-[#F96302] peer-checked:bg-[#F96302]/15 peer-checked:text-[#F96302]">
+              <span className="block border border-line bg-card py-3 text-center text-sm font-bold uppercase tracking-wide text-muted peer-checked:border-[#F96302] peer-checked:bg-[#F96302]/15 peer-checked:text-[#F96302]">
                 After
               </span>
             </label>
           </div>
         </fieldset>
         <label className="block">
-          <span className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60">
+          <span className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted">
             <Camera className="h-4 w-4 text-[#F96302]" aria-hidden="true" />
             Job photo or upload
           </span>
@@ -200,7 +200,7 @@ function FieldJobCard({ job }: { job: JobWithRelations }) {
             name="photo"
             type="file"
             accept="image/*"
-            className="w-full border border-white/15 bg-black px-3 py-3 text-sm text-white file:mr-3 file:border-0 file:bg-[#F96302] file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
+            className="w-full border border-line bg-card px-3 py-3 text-sm text-ink file:mr-3 file:border-0 file:bg-[#F96302] file:px-3 file:py-2 file:text-sm file:font-bold file:text-white"
           />
         </label>
         <button
@@ -236,7 +236,7 @@ function StatusButton({
           "inline-flex w-full items-center justify-center gap-2 px-4 font-bold",
           primary
             ? "bg-[#F96302] py-5 text-lg text-white"
-            : "border border-white/15 bg-black py-4 text-sm text-white/75",
+            : "border border-line bg-card py-4 text-sm text-muted",
         ].join(" ")}
       >
         <Icon className={primary ? "h-6 w-6" : "h-4 w-4"} aria-hidden={true} />

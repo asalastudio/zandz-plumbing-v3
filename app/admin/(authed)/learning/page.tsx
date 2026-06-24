@@ -20,7 +20,7 @@ export default async function LearningAdminPage({
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to manage learning content.</p>
+        <p className="text-base text-muted">Connect Supabase to manage learning content.</p>
       </div>
     );
   }
@@ -36,7 +36,7 @@ export default async function LearningAdminPage({
           <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
             Videos & Images
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-white/70">
+          <p className="mt-3 max-w-2xl text-base text-muted">
             Pushes to <Link href="/videos/" className="text-[#F96302] underline">zandzplumbing.com/videos</Link>.
             {publishedCount} published · {resources.length - publishedCount} draft.
           </p>
@@ -51,16 +51,16 @@ export default async function LearningAdminPage({
       </header>
 
       {(params.saved || params.deleted) && (
-        <div className="mb-6 border-l-4 border-emerald-500 bg-emerald-500/10 p-4 text-sm font-bold uppercase tracking-wide text-emerald-300">
+        <div className="mb-6 border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm font-bold uppercase tracking-wide text-emerald-700">
           {params.saved && "Saved."}
           {params.deleted && "Deleted."}
         </div>
       )}
 
       {resources.length === 0 ? (
-        <div className="border border-dashed border-white/15 bg-white/[0.02] px-8 py-16 text-center">
-          <Video className="mx-auto h-8 w-8 text-white/30" aria-hidden="true" />
-          <p className="mt-3 text-base text-white/60">No learning content yet.</p>
+        <div className="border border-dashed border-line bg-raised px-8 py-16 text-center">
+          <Video className="mx-auto h-8 w-8 text-faint" aria-hidden="true" />
+          <p className="mt-3 text-base text-muted">No learning content yet.</p>
           <Link
             href="/admin/learning/new"
             className="mt-4 inline-flex items-center gap-2 bg-[#F96302] px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
@@ -80,12 +80,12 @@ export default async function LearningAdminPage({
             return (
               <article
                 key={r.id}
-                className={`group flex flex-col overflow-hidden border bg-white/5 transition-all duration-200 hover:-translate-y-1 hover:border-[#F96302] ${
-                  r.published ? "border-white/10" : "border-white/5 opacity-70"
+                className={`group flex flex-col overflow-hidden border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-[#F96302] ${
+                  r.published ? "border-line" : "border-line opacity-70"
                 }`}
               >
                 <Link href={`/admin/learning/${r.id}`} className="block">
-                  <div className="relative aspect-video bg-black">
+                  <div className="relative aspect-video bg-ink">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -96,9 +96,9 @@ export default async function LearningAdminPage({
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         {r.media_type === "video" ? (
-                          <Video className="h-12 w-12 text-white/30" aria-hidden="true" />
+                          <Video className="h-12 w-12 text-faint" aria-hidden="true" />
                         ) : (
-                          <ImageIcon className="h-12 w-12 text-white/30" aria-hidden="true" />
+                          <ImageIcon className="h-12 w-12 text-faint" aria-hidden="true" />
                         )}
                       </div>
                     )}
@@ -117,14 +117,14 @@ export default async function LearningAdminPage({
                 </Link>
                 <div className="flex flex-1 flex-col p-5">
                   <Link href={`/admin/learning/${r.id}`} className="block">
-                    <h3 className="font-display text-lg font-black uppercase leading-tight tracking-tight text-white md:text-xl">
+                    <h3 className="font-display text-lg font-black uppercase leading-tight tracking-tight text-ink md:text-xl">
                       {r.title}
                     </h3>
                   </Link>
                   {r.description && (
-                    <p className="mt-2 line-clamp-2 text-sm text-white/60">{r.description}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted">{r.description}</p>
                   )}
-                  <footer className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
+                  <footer className="mt-auto flex items-center justify-between border-t border-line pt-4">
                     <form
                       action={`/api/admin/learning/${r.id}/toggle`}
                       method="POST"
@@ -133,8 +133,8 @@ export default async function LearningAdminPage({
                         type="submit"
                         className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide transition-colors duration-150 ${
                           r.published
-                            ? "text-emerald-300 hover:text-emerald-200"
-                            : "text-white/40 hover:text-[#F96302]"
+                            ? "text-emerald-700 hover:text-emerald-700"
+                            : "text-muted hover:text-[#F96302]"
                         }`}
                       >
                         {r.published ? (
@@ -152,7 +152,7 @@ export default async function LearningAdminPage({
                     </form>
                     <Link
                       href={`/admin/learning/${r.id}`}
-                      className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+                      className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
                     >
                       Edit
                       <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />

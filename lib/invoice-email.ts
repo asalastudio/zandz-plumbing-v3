@@ -54,6 +54,18 @@ export async function sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<Em
   });
 }
 
+/**
+ * Render a (possibly multiline) line-item description for HTML email: the first
+ * line is the bold summary, the rest (e.g. the pricebook scope-of-work bullets)
+ * follow on their own lines instead of collapsing into one run-on string.
+ */
+function descriptionHtml(description: string): string {
+  const [first = "", ...rest] = description.split("\n");
+  const head = `<strong>${escapeHtml(first)}</strong>`;
+  if (rest.length === 0) return head;
+  return `${head}<br />${rest.map((line) => escapeHtml(line)).join("<br />")}`;
+}
+
 function buildInvoiceBody(i: SendInvoiceEmailInput): string {
   const paymentButton = i.paymentUrl
     ? emailButton(i.paymentUrl, "Pay invoice")
@@ -72,8 +84,8 @@ function buildInvoiceBody(i: SendInvoiceEmailInput): string {
         ${i.lineItems
           .map(
             (item) => `<tr>
-              <td style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;line-height:1.4;color:#111;">
-                <strong>${escapeHtml(item.description)}</strong><br />
+              <td style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;line-height:1.5;color:#111;">
+                ${descriptionHtml(item.description)}<br />
                 <span style="color:${BRAND.muted};">${item.quantity} x ${formatMoney(item.unit_price_cents)}</span>
               </td>
               <td align="right" style="padding:12px 0;border-bottom:1px solid #F0F0F0;font-size:14px;font-weight:700;color:#111;">${formatMoney(item.total_cents)}</td>

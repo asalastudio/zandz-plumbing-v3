@@ -90,7 +90,7 @@ export default async function PublicInvoicePage({
                 {invoice.line_items.map((item, idx) => (
                   <tr key={idx} className="border-b border-[#F0F0F0]">
                     <td className="py-3 pr-3 align-top">
-                      <span className="font-semibold text-[#111]">{item.description}</span>
+                      <span className="block whitespace-pre-line font-semibold text-[#111]">{item.description}</span>
                       <br />
                       <span className="text-[#888]">
                         {item.quantity} x {formatMoney(item.unit_price_cents)}

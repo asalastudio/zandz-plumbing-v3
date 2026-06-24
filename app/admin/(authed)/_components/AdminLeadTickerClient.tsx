@@ -69,7 +69,7 @@ export function AdminLeadTickerClient({
           <Inbox className="h-5 w-5" strokeWidth={2.25} aria-hidden="true" />
           {leads.count} new {leads.count === 1 ? "lead" : "leads"}
         </span>
-        <span className="hidden h-5 w-px shrink-0 bg-black/25 sm:block" />
+        <span className="hidden h-5 w-px shrink-0 bg-surface sm:block" />
         <span className="flex min-w-0 flex-1 items-center gap-2 text-black/80">
           <PhoneCall className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden="true" />
           <span className="truncate">{latestLabel}</span>

@@ -53,7 +53,7 @@ export default async function AdminDashboardPage() {
         <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
           Z and Z OS
         </h1>
-        <p className="mt-3 max-w-2xl text-base text-white/70 md:text-lg">
+        <p className="mt-3 max-w-2xl text-base text-muted md:text-lg">
           Your business at a glance. Numbers refresh every page load.
         </p>
       </header>
@@ -64,7 +64,7 @@ export default async function AdminDashboardPage() {
           className={`group block border p-5 transition-colors duration-150 md:p-6 ${
             newLeads.count > 0
               ? "border-[#F96302] bg-[#F96302]/10 hover:bg-[#F96302]/15"
-              : "border-white/10 bg-white/5 hover:bg-white/10"
+              : "border-line bg-card hover:bg-line"
           }`}
         >
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
@@ -78,11 +78,11 @@ export default async function AdminDashboardPage() {
                   ? `${newLeads.count} new ${newLeads.count === 1 ? "lead" : "leads"}`
                   : "No new leads"}
               </h2>
-              <p className="mt-2 text-base text-white/70">
+              <p className="mt-2 text-base text-muted">
                 New website submissions land here before they become scheduled jobs.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 text-sm font-bold text-white group-hover:text-[#F96302]">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-ink group-hover:text-[#F96302]">
               Review leads
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </span>
@@ -91,11 +91,11 @@ export default async function AdminDashboardPage() {
           {newLeads.rows.length > 0 && (
             <ul className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-2">
               {newLeads.rows.map((lead) => (
-                <li key={lead.id} className="border border-white/10 bg-black/25 px-4 py-3">
-                  <p className="truncate text-base font-bold text-white">
+                <li key={lead.id} className="border border-line bg-surface px-4 py-3">
+                  <p className="truncate text-base font-bold text-ink">
                     {lead.customer?.name ?? "New lead"}
                   </p>
-                  <p className="mt-1 flex items-center gap-2 truncate text-sm text-white/60">
+                  <p className="mt-1 flex items-center gap-2 truncate text-sm text-muted">
                     <PhoneCall className="h-4 w-4 shrink-0 text-[#F96302]" aria-hidden="true" />
                     {lead.service_label ?? lead.service_type}
                     {lead.job_zip ? ` · ${lead.job_zip}` : ""}
@@ -109,7 +109,7 @@ export default async function AdminDashboardPage() {
 
       {/* Primary KPIs · revenue */}
       <section className="mb-6">
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-muted">
           Revenue
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -124,12 +124,12 @@ export default async function AdminDashboardPage() {
             value={formatMoneyShort(kpis.revenueLast12MoCents)}
             sub={
               yoyDelta != null ? (
-                <span className={yoyDelta >= 0 ? "text-emerald-300" : "text-red-300"}>
+                <span className={yoyDelta >= 0 ? "text-emerald-700" : "text-red-700"}>
                   {yoyDelta >= 0 ? "+" : ""}
                   {yoyDelta}% vs prior year
                 </span>
               ) : (
-                <span className="text-white/40">·</span>
+                <span className="text-muted">·</span>
               )
             }
             icon={TrendingUp}
@@ -149,7 +149,7 @@ export default async function AdminDashboardPage() {
 
       {/* Outstanding A/R + customers */}
       <section className="mb-10">
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-muted">
           Receivables and customers
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -177,7 +177,7 @@ export default async function AdminDashboardPage() {
 
       {/* Quick links */}
       <section>
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-muted">
           Quick links
         </h2>
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -187,7 +187,7 @@ export default async function AdminDashboardPage() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="group flex items-center justify-between border border-white/10 bg-white/5 px-6 py-5 transition-colors duration-150 hover:border-[#F96302] hover:bg-white/10"
+                  className="group flex items-center justify-between border border-line bg-card px-6 py-5 transition-colors duration-150 hover:border-[#F96302] hover:bg-line"
                 >
                   <span className="flex items-center gap-4">
                     <Icon
@@ -200,7 +200,7 @@ export default async function AdminDashboardPage() {
                     </span>
                   </span>
                   <ChevronRight
-                    className="h-5 w-5 text-white/40 group-hover:text-[#F96302]"
+                    className="h-5 w-5 text-muted group-hover:text-[#F96302]"
                     aria-hidden="true"
                   />
                 </Link>
@@ -226,11 +226,11 @@ function KpiCard({
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   tone?: "default" | "warn";
 }) {
-  const accent = tone === "warn" ? "text-red-400" : "text-[#F96302]";
+  const accent = tone === "warn" ? "text-red-700" : "text-[#F96302]";
   return (
-    <div className="border border-white/10 bg-white/5 p-5 md:p-6">
+    <div className="border border-line bg-card p-5 md:p-6">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted">
           {label}
         </span>
         <Icon className={`h-5 w-5 ${accent}`} strokeWidth={1.75} aria-hidden={true} />
@@ -238,7 +238,7 @@ function KpiCard({
       <p className="font-display text-4xl font-black uppercase leading-none tracking-tight md:text-5xl">
         {value}
       </p>
-      <p className="mt-3 text-sm text-white/60">{sub}</p>
+      <p className="mt-3 text-sm text-muted">{sub}</p>
     </div>
   );
 }
@@ -254,9 +254,9 @@ function NotConfigured() {
       </header>
       <div className="mb-8 border-l-4 border-[#F96302] bg-[#F96302]/10 p-6 md:p-7">
         <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#F96302]">Setup needed</p>
-        <p className="mt-2 text-base text-white/80 md:text-lg">
+        <p className="mt-2 text-base text-muted md:text-lg">
           Supabase env vars are not set. Open{" "}
-          <code className="rounded bg-black/50 px-2 py-0.5 text-sm">WIRING.md</code> for the
+          <code className="rounded bg-surface px-2 py-0.5 text-sm">WIRING.md</code> for the
           step-by-step. Stats will populate once the database is connected.
         </p>
       </div>

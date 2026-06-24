@@ -8,7 +8,7 @@ export default function NewCustomerPage() {
     <div className="pb-24 lg:pb-0">
       <Link
         href="/admin/customers"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Back to customers
@@ -19,7 +19,7 @@ export default function NewCustomerPage() {
         <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
           Add Customer
         </h1>
-        <p className="mt-3 max-w-2xl text-base text-white/70">
+        <p className="mt-3 max-w-2xl text-base text-muted">
           Manually create a customer record. Booking-form submissions create these automatically.
         </p>
       </header>
@@ -39,19 +39,19 @@ export default function NewCustomerPage() {
         <Field label="Neighborhood" name="neighborhood" />
         <Field label="State" name="state" defaultValue="CA" />
         <div className="md:col-span-2">
-          <label className="block text-sm font-bold uppercase tracking-[0.12em] text-white/60 mb-2">
+          <label className="block text-sm font-bold uppercase tracking-[0.12em] text-muted mb-2">
             Notes
           </label>
           <textarea
             name="notes"
             rows={4}
-            className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+            className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
           />
         </div>
         <div className="md:col-span-2 flex justify-end gap-3">
           <Link
             href="/admin/customers"
-            className="inline-flex items-center bg-transparent border border-white/15 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+            className="inline-flex items-center bg-transparent border border-line px-6 py-3 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
           >
             Cancel
           </Link>
@@ -84,7 +84,7 @@ function Field({
 }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-white/60 mb-2">
+      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-muted mb-2">
         {label}
       </label>
       <input
@@ -92,7 +92,7 @@ function Field({
         name={name}
         defaultValue={defaultValue}
         required={required}
-        className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+        className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
       />
     </div>
   );
