@@ -29,7 +29,7 @@ export default async function NewJobPage({
     <div className="pb-24 lg:pb-0">
       <Link
         href="/admin/jobs"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Back to jobs
@@ -41,15 +41,15 @@ export default async function NewJobPage({
           Schedule Work
         </h1>
         {presetCustomer && (
-          <p className="mt-3 text-base text-white/70 md:text-lg">
-            For <span className="text-white">{presetCustomer.name}</span>
+          <p className="mt-3 text-base text-muted md:text-lg">
+            For <span className="text-ink">{presetCustomer.name}</span>
           </p>
         )}
       </header>
 
       {!configured ? (
         <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-          <p className="text-base text-white/80">Connect Supabase to create jobs.</p>
+          <p className="text-base text-muted">Connect Supabase to create jobs.</p>
         </div>
       ) : (
         <form action="/api/admin/jobs" method="POST" className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -57,7 +57,7 @@ export default async function NewJobPage({
             <select
               name="service_type"
               required
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             >
               {services.map((s) => (
                 <option key={s.slug} value={s.slug}>
@@ -72,7 +72,7 @@ export default async function NewJobPage({
               name="service_label"
               type="text"
               placeholder="e.g. Sewer lateral EBMUD compliance"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
@@ -81,7 +81,7 @@ export default async function NewJobPage({
               name="customer_id"
               required
               defaultValue={presetCustomerId ?? ""}
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             >
               <option value="">· Select customer ·</option>
               {customers.rows.map((c) => (
@@ -92,7 +92,7 @@ export default async function NewJobPage({
                 </option>
               ))}
             </select>
-            <p className="mt-2 text-xs text-white/50">
+            <p className="mt-2 text-xs text-muted">
               Don&apos;t see them?{" "}
               <Link href="/admin/customers/new" className="text-[#F96302] underline">
                 Create a new customer
@@ -106,7 +106,7 @@ export default async function NewJobPage({
           <Field label="Assign to crew">
             <select
               name="assigned_to"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             >
               <option value="">· Unassigned ·</option>
               {crew.map((c) => (
@@ -124,7 +124,7 @@ export default async function NewJobPage({
               step="0.01"
               min="0"
               placeholder="0.00"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
@@ -133,7 +133,7 @@ export default async function NewJobPage({
               name="job_address"
               type="text"
               placeholder="Street address"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
@@ -142,7 +142,7 @@ export default async function NewJobPage({
               name="job_city"
               type="text"
               defaultValue="Oakland"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
@@ -150,7 +150,7 @@ export default async function NewJobPage({
             <input
               name="job_zip"
               type="text"
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
@@ -158,7 +158,7 @@ export default async function NewJobPage({
             <textarea
               name="customer_notes"
               rows={3}
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
@@ -166,14 +166,14 @@ export default async function NewJobPage({
             <textarea
               name="internal_notes"
               rows={3}
-              className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
             />
           </Field>
 
           <div className="md:col-span-2 flex justify-end gap-3">
             <Link
               href="/admin/jobs"
-              className="inline-flex items-center bg-transparent border border-white/15 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+              className="inline-flex items-center bg-transparent border border-line px-6 py-3 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
             >
               Cancel
             </Link>
@@ -202,7 +202,7 @@ function Field({
 }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-white/60 mb-2">
+      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-muted mb-2">
         {label}
       </label>
       {children}

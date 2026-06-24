@@ -37,7 +37,7 @@ export default async function JobsPage({
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to view jobs.</p>
+        <p className="text-base text-muted">Connect Supabase to view jobs.</p>
       </div>
     );
   }
@@ -55,7 +55,7 @@ export default async function JobsPage({
           <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
             {status === "new" ? "Lead Inbox" : "All Jobs"}
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-white/70">
+          <p className="mt-3 max-w-2xl text-base text-muted">
             {status === "new"
               ? `${count.toLocaleString()} new ${count === 1 ? "lead" : "leads"} waiting for follow-up.`
               : `${count.toLocaleString()} ${
@@ -77,13 +77,13 @@ export default async function JobsPage({
       </header>
 
       {params.deleted === "1" && (
-        <div className="mb-6 border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-sm font-bold uppercase tracking-wide text-emerald-200">
+        <div className="mb-6 border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-bold uppercase tracking-wide text-emerald-700">
           Job deleted.
         </div>
       )}
 
       {params.error && (
-        <div className="mb-6 border border-red-500/30 bg-red-500/10 px-5 py-4 text-sm font-bold uppercase tracking-wide text-red-200">
+        <div className="mb-6 border border-red-200 bg-red-50 px-5 py-4 text-sm font-bold uppercase tracking-wide text-red-700">
           We could not complete that job action.
         </div>
       )}
@@ -99,7 +99,7 @@ export default async function JobsPage({
               className={`inline-flex items-center border px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors duration-150 ${
                 active
                   ? "border-[#F96302] bg-[#F96302] text-white"
-                  : "border-white/15 text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+                  : "border-line text-muted hover:border-[#F96302] hover:text-[#F96302]"
               }`}
             >
               {f.label}
@@ -109,13 +109,13 @@ export default async function JobsPage({
       </nav>
 
       {rows.length === 0 ? (
-        <div className="border border-dashed border-white/15 bg-white/[0.02] px-8 py-16 text-center">
-          <p className="text-base text-white/60">No jobs in this view.</p>
+        <div className="border border-dashed border-line bg-raised px-8 py-16 text-center">
+          <p className="text-base text-muted">No jobs in this view.</p>
         </div>
       ) : (
-        <div className="overflow-hidden border border-white/10">
+        <div className="overflow-hidden border border-line">
           <table className="w-full text-left">
-            <thead className="bg-white/5">
+            <thead className="bg-card">
               <tr>
                 <Th>Service</Th>
                 <Th>Customer</Th>
@@ -128,31 +128,31 @@ export default async function JobsPage({
             </thead>
             <tbody>
               {rows.map((j) => (
-                <tr key={j.id} className="border-t border-white/5 transition-colors duration-150 hover:bg-white/5">
+                <tr key={j.id} className="border-t border-line transition-colors duration-150 hover:bg-raised">
                   <td className="px-5 py-4">
-                    <Link href={`/admin/jobs/${j.id}`} className="font-display text-lg font-black uppercase tracking-tight text-white hover:text-[#F96302]">
+                    <Link href={`/admin/jobs/${j.id}`} className="font-display text-lg font-black uppercase tracking-tight text-ink hover:text-[#F96302]">
                       {j.service_label ?? j.service_type}
                     </Link>
                   </td>
-                  <td className="px-5 py-4 text-base text-white/80">
-                    {j.customer?.name ?? <span className="text-white/40">·</span>}
+                  <td className="px-5 py-4 text-base text-muted">
+                    {j.customer?.name ?? <span className="text-muted">·</span>}
                   </td>
-                  <td className="px-5 py-4 text-base text-white/70">{formatDateTime(j.scheduled_start)}</td>
-                  <td className="px-5 py-4 text-base text-white/70">
-                    {j.assignee?.name ?? <span className="text-white/40">·</span>}
+                  <td className="px-5 py-4 text-base text-muted">{formatDateTime(j.scheduled_start)}</td>
+                  <td className="px-5 py-4 text-base text-muted">
+                    {j.assignee?.name ?? <span className="text-muted">·</span>}
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${STATUS_COLOR[j.status]}`}>
                       {STATUS_LABEL[j.status]}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-base text-white/70">
+                  <td className="px-5 py-4 text-base text-muted">
                     {formatMoney(j.final_amount_cents ?? j.estimated_amount_cents)}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-4">
                       <DeleteJobButton jobId={j.id} label="Delete" compact />
-                      <Link href={`/admin/jobs/${j.id}`} className="text-white/40 hover:text-[#F96302]">
+                      <Link href={`/admin/jobs/${j.id}`} className="text-muted hover:text-[#F96302]">
                         <ChevronRight className="h-5 w-5" aria-hidden="true" />
                       </Link>
                     </div>
@@ -169,7 +169,7 @@ export default async function JobsPage({
 
 function Th({ children }: { children?: React.ReactNode }) {
   return (
-    <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white/60">
+    <th className="px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-muted">
       {children}
     </th>
   );

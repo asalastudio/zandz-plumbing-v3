@@ -26,9 +26,9 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           required
           defaultValue={coupon?.headline ?? ""}
           placeholder='e.g. "$50 OFF Any Drain Cleaning"'
-          className="w-full border border-white/15 bg-black px-4 py-3 text-lg font-display font-black uppercase tracking-tight text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-lg font-display font-black uppercase tracking-tight text-ink outline-none focus:border-[#F96302]"
         />
-        <p className="mt-2 text-xs text-white/50">
+        <p className="mt-2 text-xs text-muted">
           The big text on the card. Keep it short and punchy.
         </p>
       </Field>
@@ -39,7 +39,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           type="text"
           defaultValue={coupon?.subheadline ?? ""}
           placeholder="e.g. Drain cleaning, sewer lateral, or hydrojetting"
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -49,9 +49,9 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           type="text"
           defaultValue={coupon?.code ?? ""}
           placeholder="e.g. SAVE50"
-          className="w-full border border-white/15 bg-black px-4 py-3 font-mono text-base uppercase tracking-wider text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 font-mono text-base uppercase tracking-wider text-ink outline-none focus:border-[#F96302]"
         />
-        <p className="mt-2 text-xs text-white/50">
+        <p className="mt-2 text-xs text-muted">
           If set, customers can mention this code on the phone.
         </p>
       </Field>
@@ -62,7 +62,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           type="number"
           step="1"
           defaultValue={coupon?.display_order ?? 0}
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -71,7 +71,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           name="valid_from"
           type="date"
           defaultValue={toDateInput(coupon?.valid_from)}
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -80,7 +80,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           name="valid_until"
           type="date"
           defaultValue={toDateInput(coupon?.valid_until)}
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -90,7 +90,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           type="url"
           defaultValue={coupon?.image_url ?? ""}
           placeholder="https://.../coupon-image.jpg"
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
@@ -100,12 +100,12 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
           rows={4}
           defaultValue={coupon?.terms ?? ""}
           placeholder="e.g. One per household. Cannot be combined with other offers. Mention at time of booking."
-          className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none focus:border-[#F96302]"
+          className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
         />
       </Field>
 
       <Field label="Publish?" full>
-        <label className="inline-flex items-center gap-3 border border-white/15 bg-black px-4 py-3">
+        <label className="inline-flex items-center gap-3 border border-line bg-card px-4 py-3">
           <input
             type="checkbox"
             name="published"
@@ -113,7 +113,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
             defaultChecked={coupon?.published ?? false}
             className="h-5 w-5 accent-[#F96302]"
           />
-          <span className="text-base text-white">
+          <span className="text-base text-ink">
             Show on /coupons/ (max 3 live at once)
           </span>
         </label>
@@ -122,7 +122,7 @@ export function CouponForm({ action, coupon, submitLabel }: Props) {
       <div className="md:col-span-2 flex justify-end gap-3">
         <Link
           href="/admin/coupons"
-          className="inline-flex items-center bg-transparent border border-white/15 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+          className="inline-flex items-center bg-transparent border border-line px-6 py-3 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
         >
           Cancel
         </Link>
@@ -148,7 +148,7 @@ function Field({
 }) {
   return (
     <div className={full ? "md:col-span-2" : ""}>
-      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-white/60 mb-2">
+      <label className="block text-sm font-bold uppercase tracking-[0.12em] text-muted mb-2">
         {label}
       </label>
       {children}

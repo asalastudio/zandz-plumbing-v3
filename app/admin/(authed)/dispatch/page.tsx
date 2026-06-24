@@ -25,7 +25,7 @@ export default async function DispatchPage({
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to view dispatch.</p>
+        <p className="text-base text-muted">Connect Supabase to view dispatch.</p>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export default async function DispatchPage({
           <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
             {dayLabel}
           </h1>
-          <p className="mt-2 text-base text-white/70">
+          <p className="mt-2 text-base text-muted">
             {jobs.length} job{jobs.length === 1 ? "" : "s"} on the board.
             {unassigned.length > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 text-[#F96302]">
@@ -78,19 +78,19 @@ export default async function DispatchPage({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/admin/dispatch?date=${yesterday.toISOString().slice(0, 10)}`}
-            className="inline-flex items-center border border-white/15 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+            className="inline-flex items-center border border-line px-4 py-2 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
           >
             Yesterday
           </Link>
           <Link
             href={`/admin/dispatch?date=${todayIso}`}
-            className="inline-flex items-center border border-white/15 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+            className="inline-flex items-center border border-line px-4 py-2 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
           >
             Today
           </Link>
           <Link
             href={`/admin/dispatch?date=${tomorrow.toISOString().slice(0, 10)}`}
-            className="inline-flex items-center border border-white/15 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white/70 hover:border-[#F96302] hover:text-[#F96302]"
+            className="inline-flex items-center border border-line px-4 py-2 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
           >
             Tomorrow
           </Link>
@@ -108,7 +108,7 @@ export default async function DispatchPage({
       {unassigned.length > 0 && (
         <section className="mb-8 border-2 border-[#F96302]/40 bg-[#F96302]/5 p-5 md:p-6">
           <header className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl font-black uppercase tracking-tight text-white md:text-2xl">
+            <h2 className="font-display text-xl font-black uppercase tracking-tight text-ink md:text-2xl">
               Unassigned
               <span className="ml-3 text-base font-bold text-[#F96302]">({unassigned.length})</span>
             </h2>
@@ -127,9 +127,9 @@ export default async function DispatchPage({
           <CrewColumn key={c.id} crew={c} jobs={byCrew.get(c.id) ?? []} />
         ))}
         {crew.length === 0 && (
-          <div className="md:col-span-2 lg:col-span-3 border border-dashed border-white/15 bg-white/[0.02] px-8 py-12 text-center">
-            <User className="mx-auto h-8 w-8 text-white/30" aria-hidden="true" />
-            <p className="mt-3 text-base text-white/60">No active crew yet.</p>
+          <div className="md:col-span-2 lg:col-span-3 border border-dashed border-line bg-raised px-8 py-12 text-center">
+            <User className="mx-auto h-8 w-8 text-faint" aria-hidden="true" />
+            <p className="mt-3 text-base text-muted">No active crew yet.</p>
             <Link
               href="/admin/crew"
               className="mt-4 inline-flex items-center gap-2 bg-[#F96302] px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
@@ -146,17 +146,17 @@ export default async function DispatchPage({
 
 function CrewColumn({ crew, jobs }: { crew: Crew; jobs: JobWithRelations[] }) {
   return (
-    <section className="border border-white/10 bg-white/[0.03] p-5 md:p-6">
-      <header className="mb-4 border-b border-white/10 pb-3">
-        <h2 className="font-display text-xl font-black uppercase tracking-tight text-white md:text-2xl">
+    <section className="border border-line bg-raised p-5 md:p-6">
+      <header className="mb-4 border-b border-line pb-3">
+        <h2 className="font-display text-xl font-black uppercase tracking-tight text-ink md:text-2xl">
           {crew.name}
         </h2>
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/50">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">
           {crew.role.replace(/_/g, " ")} · {jobs.length} job{jobs.length === 1 ? "" : "s"}
         </p>
       </header>
       {jobs.length === 0 ? (
-        <p className="py-6 text-center text-sm text-white/40">No jobs scheduled.</p>
+        <p className="py-6 text-center text-sm text-muted">No jobs scheduled.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {jobs.map((j) => (
@@ -172,14 +172,14 @@ function JobCard({ job, compact = false }: { job: JobWithRelations; compact?: bo
   return (
     <Link
       href={`/admin/jobs/${job.id}`}
-      className="block border border-white/10 bg-black/40 p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-[#F96302] hover:bg-white/5"
+      className="block border border-line bg-surface p-4 transition-all duration-150 hover:-translate-y-0.5 hover:border-[#F96302] hover:bg-raised"
     >
       <header className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/50">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted">
             {formatDateTime(job.scheduled_start)}
           </p>
-          <h3 className={`mt-1 font-display ${compact ? "text-lg" : "text-xl"} font-black uppercase tracking-tight text-white`}>
+          <h3 className={`mt-1 font-display ${compact ? "text-lg" : "text-xl"} font-black uppercase tracking-tight text-ink`}>
             {job.service_label ?? job.service_type}
           </h3>
         </div>
@@ -188,24 +188,24 @@ function JobCard({ job, compact = false }: { job: JobWithRelations; compact?: bo
         </span>
       </header>
       {job.customer && (
-        <p className="mb-2 flex items-center gap-2 text-sm text-white/80">
-          <User className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+        <p className="mb-2 flex items-center gap-2 text-sm text-muted">
+          <User className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
           {job.customer.name}
         </p>
       )}
       {job.customer?.phone_e164 && (
-        <p className="mb-2 flex items-center gap-2 text-sm text-white/70">
-          <Phone className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+        <p className="mb-2 flex items-center gap-2 text-sm text-muted">
+          <Phone className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
           {job.customer.phone_e164}
         </p>
       )}
       {(job.job_address || job.customer?.street_address) && (
-        <p className="flex items-start gap-2 text-sm text-white/60">
-          <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-white/40 mt-0.5" aria-hidden="true" />
+        <p className="flex items-start gap-2 text-sm text-muted">
+          <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-muted mt-0.5" aria-hidden="true" />
           <span>
             {job.job_address ?? job.customer?.street_address}
             {(job.job_city || job.customer?.city) && (
-              <span className="text-white/40">, {job.job_city ?? job.customer?.city}</span>
+              <span className="text-muted">, {job.job_city ?? job.customer?.city}</span>
             )}
           </span>
         </p>

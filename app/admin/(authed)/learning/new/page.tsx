@@ -10,7 +10,7 @@ export default function NewLearningResourcePage() {
     <div className="pb-24 lg:pb-0">
       <Link
         href="/admin/learning"
-        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
       >
         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         Back to learning
@@ -21,7 +21,7 @@ export default function NewLearningResourcePage() {
         <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
           Add Video or Image
         </h1>
-        <p className="mt-3 max-w-2xl text-base text-white/70">
+        <p className="mt-3 max-w-2xl text-base text-muted">
           Paste a YouTube link for videos or a direct image URL. Save as draft to preview, publish
           when ready.
         </p>

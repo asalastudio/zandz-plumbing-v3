@@ -50,7 +50,7 @@ export default async function LeadsPage() {
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to view leads.</p>
+        <p className="text-base text-muted">Connect Supabase to view leads.</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default async function LeadsPage() {
           <h1 className="mt-2 font-display text-4xl font-black tracking-tight md:text-5xl">
             New leads and follow-up
           </h1>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-white/70 md:text-lg">
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-muted md:text-lg">
             This is the simple sales view for Jay: new website leads first, then scheduled jobs,
             then active work. It reads from the same jobs table, so there is no second system to manage.
           </p>
@@ -103,17 +103,17 @@ export default async function LeadsPage() {
           const Icon = column.icon;
           const jobs = rows.filter((job) => column.statuses.includes(job.status));
           return (
-            <div key={column.title} className="border border-white/10 bg-white/[0.03]">
-              <div className="border-b border-white/10 p-5">
+            <div key={column.title} className="border border-line bg-raised">
+              <div className="border-b border-line p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-bold text-[#F96302]">
                       <Icon className="h-5 w-5" aria-hidden={true} />
                       {column.title}
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-white/60">{column.description}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{column.description}</p>
                   </div>
-                  <span className="inline-flex min-w-9 items-center justify-center bg-black px-3 py-1 text-sm font-bold text-white">
+                  <span className="inline-flex min-w-9 items-center justify-center bg-ink px-3 py-1 text-sm font-bold text-card">
                     {jobs.length}
                   </span>
                 </div>
@@ -121,7 +121,7 @@ export default async function LeadsPage() {
 
               <div className="space-y-3 p-3">
                 {jobs.length === 0 ? (
-                  <div className="border border-dashed border-white/10 p-6 text-center text-sm text-white/45">
+                  <div className="border border-dashed border-line p-6 text-center text-sm text-muted">
                     Nothing here right now.
                   </div>
                 ) : (
@@ -133,21 +133,21 @@ export default async function LeadsPage() {
         })}
       </section>
 
-      <section className="mt-8 border border-white/10 bg-white/5 p-5 md:p-6">
+      <section className="mt-8 border border-line bg-card p-5 md:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="flex items-center gap-2 text-sm font-bold text-[#F96302]">
               <Camera className="h-5 w-5" aria-hidden="true" />
               Next upgrade
             </p>
-            <p className="mt-2 max-w-3xl text-base leading-relaxed text-white/70">
+            <p className="mt-2 max-w-3xl text-base leading-relaxed text-muted">
               Photo upload should come next for leaks, drains, and water heaters. That needs storage,
               file previews, and a safe admin view, so it should be built as its own focused step.
             </p>
           </div>
           <Link
             href="/admin/jobs?status=new"
-            className="inline-flex items-center justify-center gap-2 border border-white/15 px-4 py-3 text-sm font-bold text-white/80 hover:border-[#F96302] hover:text-[#F96302]"
+            className="inline-flex items-center justify-center gap-2 border border-line px-4 py-3 text-sm font-bold text-muted hover:border-[#F96302] hover:text-[#F96302]"
           >
             Table view
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
@@ -164,16 +164,16 @@ function LeadCard({ job }: { job: JobWithRelations }) {
   const location = [job.job_address, job.job_city, job.job_zip].filter(Boolean).join(", ");
 
   return (
-    <article className="border border-white/10 bg-black/35 p-4 transition-colors duration-150 hover:border-[#F96302]/60">
+    <article className="border border-line bg-surface p-4 transition-colors duration-150 hover:border-[#F96302]/60">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
             href={`/admin/jobs/${job.id}`}
-            className="block truncate font-display text-2xl font-black leading-tight tracking-tight text-white hover:text-[#F96302]"
+            className="block truncate font-display text-2xl font-black leading-tight tracking-tight text-ink hover:text-[#F96302]"
           >
             {customer?.name ?? "New lead"}
           </Link>
-          <p className="mt-1 text-sm leading-relaxed text-white/65">
+          <p className="mt-1 text-sm leading-relaxed text-muted">
             {job.service_label ?? job.service_type}
           </p>
         </div>
@@ -182,13 +182,13 @@ function LeadCard({ job }: { job: JobWithRelations }) {
         </span>
       </div>
 
-      <div className="mt-4 space-y-2 text-sm text-white/65">
+      <div className="mt-4 space-y-2 text-sm text-muted">
         <p>
-          Created <span className="text-white">{formatDateTime(job.created_at)}</span>
+          Created <span className="text-ink">{formatDateTime(job.created_at)}</span>
         </p>
         {job.scheduled_start && (
           <p>
-            Scheduled <span className="text-white">{formatDateTime(job.scheduled_start)}</span>
+            Scheduled <span className="text-ink">{formatDateTime(job.scheduled_start)}</span>
           </p>
         )}
         {location && (
@@ -198,7 +198,7 @@ function LeadCard({ job }: { job: JobWithRelations }) {
           </p>
         )}
         {job.customer_notes && (
-          <p className="rounded bg-white/[0.04] p-3 text-white/75">{job.customer_notes}</p>
+          <p className="rounded bg-raised p-3 text-muted">{job.customer_notes}</p>
         )}
       </div>
 
@@ -214,7 +214,7 @@ function LeadCard({ job }: { job: JobWithRelations }) {
         )}
         <Link
           href={`/admin/jobs/${job.id}`}
-          className="inline-flex items-center gap-2 border border-white/15 px-3 py-2 text-sm font-bold text-white/80 hover:border-[#F96302] hover:text-[#F96302]"
+          className="inline-flex items-center gap-2 border border-line px-3 py-2 text-sm font-bold text-muted hover:border-[#F96302] hover:text-[#F96302]"
         >
           Open
           <ChevronRight className="h-4 w-4" aria-hidden="true" />
@@ -226,12 +226,12 @@ function LeadCard({ job }: { job: JobWithRelations }) {
 
 function SummaryCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <div className="border border-white/10 bg-white/5 p-5">
-      <p className="text-sm font-semibold text-white/60">{label}</p>
-      <p className="mt-2 font-display text-4xl font-black uppercase leading-none tracking-tight text-white">
+    <div className="border border-line bg-card p-5">
+      <p className="text-sm font-semibold text-muted">{label}</p>
+      <p className="mt-2 font-display text-4xl font-black uppercase leading-none tracking-tight text-ink">
         {value}
       </p>
-      <p className="mt-2 text-sm text-white/50">{detail}</p>
+      <p className="mt-2 text-sm text-muted">{detail}</p>
     </div>
   );
 }

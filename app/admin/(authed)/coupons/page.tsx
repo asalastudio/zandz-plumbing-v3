@@ -15,7 +15,7 @@ export default async function CouponsAdminPage({
   if (!isSupabaseConfigured()) {
     return (
       <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
-        <p className="text-base text-white/80">Connect Supabase to manage coupons.</p>
+        <p className="text-base text-muted">Connect Supabase to manage coupons.</p>
       </div>
     );
   }
@@ -31,10 +31,10 @@ export default async function CouponsAdminPage({
           <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
             Special Deals
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-white/70">
+          <p className="mt-3 max-w-2xl text-base text-muted">
             Pushes to <Link href="/coupons/" className="text-[#F96302] underline">zandzplumbing.com/coupons</Link>.
-            Max <span className="text-white">{MAX_PUBLISHED_COUPONS}</span> can be published at once.
-            Currently <span className={published.length >= MAX_PUBLISHED_COUPONS ? "text-[#F96302]" : "text-white"}>
+            Max <span className="text-ink">{MAX_PUBLISHED_COUPONS}</span> can be published at once.
+            Currently <span className={published.length >= MAX_PUBLISHED_COUPONS ? "text-[#F96302]" : "text-ink"}>
               {published.length}/{MAX_PUBLISHED_COUPONS}
             </span> live.
           </p>
@@ -49,7 +49,7 @@ export default async function CouponsAdminPage({
       </header>
 
       {(params.saved || params.deleted) && (
-        <div className="mb-6 border-l-4 border-emerald-500 bg-emerald-500/10 p-4 text-sm font-bold uppercase tracking-wide text-emerald-300">
+        <div className="mb-6 border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm font-bold uppercase tracking-wide text-emerald-700">
           {params.saved && "Saved."}
           {params.deleted && "Deleted."}
         </div>
@@ -62,7 +62,7 @@ export default async function CouponsAdminPage({
             <p className="text-sm font-bold uppercase tracking-wide text-[#F96302]">
               Max {MAX_PUBLISHED_COUPONS} coupons can be live at once.
             </p>
-            <p className="mt-1 text-sm text-white/70">
+            <p className="mt-1 text-sm text-muted">
               Unpublish one to make room for another.
             </p>
           </div>
@@ -70,9 +70,9 @@ export default async function CouponsAdminPage({
       )}
 
       {all.length === 0 ? (
-        <div className="border border-dashed border-white/15 bg-white/[0.02] px-8 py-16 text-center">
-          <Tag className="mx-auto h-8 w-8 text-white/30" aria-hidden="true" />
-          <p className="mt-3 text-base text-white/60">No coupons yet.</p>
+        <div className="border border-dashed border-line bg-raised px-8 py-16 text-center">
+          <Tag className="mx-auto h-8 w-8 text-faint" aria-hidden="true" />
+          <p className="mt-3 text-base text-muted">No coupons yet.</p>
           <Link
             href="/admin/coupons/new"
             className="mt-4 inline-flex items-center gap-2 bg-[#F96302] px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
@@ -86,45 +86,45 @@ export default async function CouponsAdminPage({
           {all.map((c) => (
             <article
               key={c.id}
-              className={`flex flex-col border bg-white/5 transition-all duration-200 hover:-translate-y-1 hover:border-[#F96302] ${
-                c.published ? "border-white/10" : "border-white/5 opacity-70"
+              className={`flex flex-col border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-[#F96302] ${
+                c.published ? "border-line" : "border-line opacity-70"
               }`}
             >
               <Link href={`/admin/coupons/${c.id}`} className="block flex-1 p-6 md:p-7">
                 <div className="mb-3 flex items-center justify-between">
                   <Tag className="h-5 w-5 text-[#F96302]" aria-hidden="true" />
                   {c.published && (
-                    <span className="inline-flex items-center bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+                    <span className="inline-flex items-center bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
                       Live
                     </span>
                   )}
                 </div>
-                <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-white md:text-3xl">
+                <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-ink md:text-3xl">
                   {c.headline}
                 </h3>
                 {c.subheadline && (
-                  <p className="mt-2 text-sm text-white/70">{c.subheadline}</p>
+                  <p className="mt-2 text-sm text-muted">{c.subheadline}</p>
                 )}
                 {c.code && (
-                  <p className="mt-4 inline-flex items-center bg-white/10 px-3 py-1.5 font-mono text-sm font-bold uppercase tracking-wider text-white">
+                  <p className="mt-4 inline-flex items-center bg-line px-3 py-1.5 font-mono text-sm font-bold uppercase tracking-wider text-ink">
                     {c.code}
                   </p>
                 )}
                 {(c.valid_from || c.valid_until) && (
-                  <p className="mt-3 text-xs text-white/50">
+                  <p className="mt-3 text-xs text-muted">
                     {c.valid_from ? formatDate(c.valid_from) : "Now"} →{" "}
                     {c.valid_until ? formatDate(c.valid_until) : "no end date"}
                   </p>
                 )}
               </Link>
-              <footer className="flex items-center justify-between border-t border-white/5 px-6 py-4">
+              <footer className="flex items-center justify-between border-t border-line px-6 py-4">
                 <form action={`/api/admin/coupons/${c.id}/toggle`} method="POST">
                   <button
                     type="submit"
                     className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide transition-colors duration-150 ${
                       c.published
-                        ? "text-emerald-300 hover:text-emerald-200"
-                        : "text-white/40 hover:text-[#F96302]"
+                        ? "text-emerald-700 hover:text-emerald-700"
+                        : "text-muted hover:text-[#F96302]"
                     }`}
                   >
                     {c.published ? (
@@ -142,7 +142,7 @@ export default async function CouponsAdminPage({
                 </form>
                 <Link
                   href={`/admin/coupons/${c.id}`}
-                  className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-white/60 hover:text-[#F96302]"
+                  className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
                 >
                   Edit
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />

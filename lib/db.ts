@@ -757,15 +757,15 @@ export const STATUS_LABEL: Record<JobStatus, string> = {
 };
 
 export const STATUS_COLOR: Record<JobStatus, string> = {
-  new: "bg-white/10 text-white",
-  scheduled: "bg-blue-500/20 text-blue-300",
-  en_route: "bg-yellow-500/20 text-yellow-300",
-  on_site: "bg-[#F96302]/20 text-[#F96302]",
-  paused: "bg-amber-700/30 text-amber-300",
-  complete: "bg-emerald-500/20 text-emerald-300",
-  invoiced: "bg-purple-500/20 text-purple-300",
-  paid: "bg-emerald-600/30 text-emerald-200",
-  cancelled: "bg-red-500/20 text-red-300",
+  new: "bg-line text-ink",
+  scheduled: "bg-blue-100 text-blue-700",
+  en_route: "bg-amber-100 text-amber-700",
+  on_site: "bg-[#F96302]/15 text-[#B24400]",
+  paused: "bg-amber-100 text-amber-800",
+  complete: "bg-emerald-100 text-emerald-700",
+  invoiced: "bg-purple-100 text-purple-700",
+  paid: "bg-emerald-100 text-emerald-800",
+  cancelled: "bg-red-100 text-red-700",
 };
 
 export const STATUS_TRANSITIONS: Record<JobStatus, JobStatus[]> = {
