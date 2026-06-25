@@ -115,3 +115,77 @@ for (let i = 0; i < records.length; i += BATCH) {
 }
 
 console.log(`Done. ${upserted} services in service_catalog.`);
+
+// ── Materials (parts) ──
+const materialsSheet = sheets.find((s) => s.sheet === "Materials");
+if (materialsSheet && materialsSheet.data.length > 1) {
+  const [mh, ...mrows] = materialsSheet.data;
+  const mi = (n) => mh.indexOf(n);
+  const M = {
+    code: mi("Code"), id: mi("Id"), name: mi("Name"), description: mi("Description"),
+    category: mi("Category.Name"), price: mi("Price"), cost: mi("Cost"),
+    unit: mi("UnitOfMeasure"), active: mi("Active"),
+  };
+  const matByCode = new Map();
+  for (const row of mrows) {
+    const code = str(row[M.code]);
+    const name = str(row[M.name]);
+    if (!code || !name) continue;
+    matByCode.set(code, {
+      code,
+      servicetitan_sku_id: str(row[M.id]),
+      name,
+      description: str(row[M.description]),
+      category: str(row[M.category]),
+      price_cents: toCents(row[M.price]),
+      cost_cents: toCents(row[M.cost]),
+      unit: str(row[M.unit]) || null,
+      active: toBool(row[M.active], true),
+    });
+  }
+  const mats = [...matByCode.values()];
+  for (let i = 0; i < mats.length; i += BATCH) {
+    const batch = mats.slice(i, i + BATCH).map((r) => ({ ...r, updated_at: new Date().toISOString() }));
+    const { error } = await sb.from("materials").upsert(batch, { onConflict: "code" });
+    if (error) {
+      console.error("materials upsert failed:", error.message);
+      process.exit(1);
+    }
+  }
+  console.log(`Done. ${mats.length} materials in materials.`);
+
+  // ── Service → material links ──
+  const linksSheet = sheets.find((s) => s.sheet === "ServiceMaterialLinks");
+  if (linksSheet && linksSheet.data.length > 1) {
+    const [lh, ...lrows] = linksSheet.data;
+    const li = (n) => lh.indexOf(n);
+    const L = { svc: li("Service.Code"), mat: li("Material.Code"), qty: li("Quantity"), active: li("Active") };
+    const linkByKey = new Map();
+    for (const row of lrows) {
+      const service_code = str(row[L.svc]);
+      const material_code = str(row[L.mat]);
+      if (!service_code || !material_code) continue;
+      if (!matByCode.has(material_code)) continue; // FK safety: skip links to unknown materials
+      linkByKey.set(`${service_code}|${material_code}`, {
+        service_code,
+        material_code,
+        quantity: Number.isFinite(Number(row[L.qty])) ? Number(row[L.qty]) : 1,
+        active: toBool(row[L.active], true),
+      });
+    }
+    const links = [...linkByKey.values()];
+    for (let i = 0; i < links.length; i += BATCH) {
+      const batch = links.slice(i, i + BATCH);
+      const { error } = await sb
+        .from("service_materials")
+        .upsert(batch, { onConflict: "service_code,material_code" });
+      if (error) {
+        console.error("service_materials upsert failed:", error.message);
+        process.exit(1);
+      }
+    }
+    console.log(`Done. ${links.length} service→material links in service_materials.`);
+  }
+} else {
+  console.log('No "Materials" sheet found — skipping materials import.');
+}
