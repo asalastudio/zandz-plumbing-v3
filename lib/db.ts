@@ -231,6 +231,74 @@ export async function getCustomerJobs(customerId: number, limit = 20): Promise<J
   return (data ?? []) as Job[];
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Service catalog (pricebook) search — shared by the invoice line-item picker
+// and the AI assistant.
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface ServiceCatalogItem {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  price_cents: number;
+  cost_cents: number;
+  hours: number | null;
+}
+
+/**
+ * Case-insensitive search over active pricebook services by code / name /
+ * category. The term is stripped of PostgREST `.or()` metacharacters before
+ * interpolation so a stray comma or paren can't corrupt the filter.
+ */
+export async function searchServiceCatalog(term: string, limit = 8): Promise<ServiceCatalogItem[]> {
+  const safe = term.replace(/[,()*:%\\]/g, " ").trim();
+  if (!safe) return [];
+  const like = `%${safe}%`;
+  const { data, error } = await supabase()
+    .from("service_catalog")
+    .select("id, code, name, description, category, price_cents, cost_cents, hours")
+    .eq("active", true)
+    .or(`code.ilike.${like},name.ilike.${like},category.ilike.${like}`)
+    .order("name", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(`searchServiceCatalog: ${error.message}`);
+  return (data ?? []) as ServiceCatalogItem[];
+}
+
+export interface ServiceMaterial {
+  code: string;
+  name: string;
+  quantity: number;
+  unit: string | null;
+  price: string;
+}
+
+/**
+ * Materials/parts linked to a pricebook service code. Returns [] gracefully if
+ * the materials data hasn't been imported yet (the table may not exist).
+ */
+export async function getServiceMaterials(serviceCode: string): Promise<ServiceMaterial[]> {
+  const { data, error } = await supabase()
+    .from("service_materials")
+    .select("quantity, material:materials(code, name, unit, price_cents)")
+    .eq("service_code", serviceCode);
+  if (error || !data) return [];
+  return data.map((row: Record<string, unknown>) => {
+    const m = (Array.isArray(row.material) ? row.material[0] : row.material) as
+      | { code?: string; name?: string; unit?: string | null; price_cents?: number }
+      | null;
+    return {
+      code: String(m?.code ?? ""),
+      name: String(m?.name ?? "Material"),
+      quantity: Number(row.quantity ?? 1),
+      unit: (m?.unit as string | null) ?? null,
+      price: formatMoney(Number(m?.price_cents ?? 0)),
+    };
+  });
+}
+
 export async function getCustomerInvoiceHistory(
   customerId: number,
   limit = 100

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
-import { getCustomerJobs, listCustomers, STATUS_LABEL, type JobStatus } from "@/lib/db";
+import {
+  getCustomerJobs,
+  listCustomers,
+  searchServiceCatalog,
+  STATUS_LABEL,
+  type JobStatus,
+} from "@/lib/db";
 import { toE164 } from "@/lib/twilio";
 
 export const runtime = "nodejs";
@@ -34,18 +40,8 @@ export async function GET(req: NextRequest) {
   try {
     // Pricebook service search (the line-item description picker).
     if (serviceQ != null) {
-      const term = serviceQ.trim();
-      if (term.length < 1) return NextResponse.json({ services: [] });
-      const like = `%${term}%`;
-      const { data, error } = await supabase()
-        .from("service_catalog")
-        .select("id, code, name, description, category, price_cents")
-        .eq("active", true)
-        .or(`code.ilike.${like},name.ilike.${like},category.ilike.${like}`)
-        .order("name", { ascending: true })
-        .limit(12);
-      if (error) throw new Error(error.message);
-      return NextResponse.json({ services: data ?? [] });
+      const services = await searchServiceCatalog(serviceQ, 12);
+      return NextResponse.json({ services });
     }
 
     // Jobs for a chosen customer (the optional "link to a job" dropdown).
