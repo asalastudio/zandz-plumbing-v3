@@ -15,6 +15,7 @@ import {
   BarChart3,
   Wrench,
   FileText,
+  Sparkles,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/assistant", label: "Assistant", icon: Sparkles },
   { href: "/admin/leads", label: "Leads", icon: Inbox },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
