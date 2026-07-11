@@ -14,6 +14,7 @@ import {
 import { DeleteJobButton } from "../../_components/DeleteJobButton";
 import { DeleteInvoiceButton } from "../../_components/DeleteInvoiceButton";
 import InvoiceLineItems from "../../_components/InvoiceLineItems";
+import { InvoiceNotesField } from "../../_components/InvoiceNotesField";
 import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
 import { listJobPhotos, type JobPhotoWithUrl } from "@/lib/job-photos";
 import { isStripeConfigured } from "@/lib/stripe-checkout";
@@ -301,6 +302,8 @@ export default async function JobDetailPage({
         defaultAmountCents={job.final_amount_cents ?? job.estimated_amount_cents}
         customerEmail={job.customer?.email ?? null}
         canInvoice={["complete", "invoiced", "paid"].includes(job.status)}
+        serviceLabel={job.service_label ?? job.service_type}
+        customerName={job.customer?.name ?? null}
       />
 
       {/* Notes */}
@@ -363,6 +366,8 @@ function InvoiceSection({
   defaultAmountCents,
   customerEmail,
   canInvoice,
+  serviceLabel,
+  customerName,
 }: {
   jobId: number;
   invoices: InvoiceRecord[];
@@ -370,6 +375,8 @@ function InvoiceSection({
   defaultAmountCents: number | null;
   customerEmail: string | null;
   canInvoice: boolean;
+  serviceLabel: string;
+  customerName: string | null;
 }) {
   const defaultPrice = defaultAmountCents ? (defaultAmountCents / 100).toFixed(2) : "";
   const stripeReady = isStripeConfigured();
@@ -404,17 +411,7 @@ function InvoiceSection({
       <form action={`/api/admin/jobs/${jobId}/invoice`} method="POST" className="border border-line bg-surface p-4 md:p-5">
         <InvoiceLineItems defaultDescription={defaultDescription} defaultPrice={defaultPrice} />
 
-        <label className="mt-4 block">
-          <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-muted">
-            Notes for customer
-          </span>
-          <textarea
-            name="notes"
-            rows={3}
-            placeholder="Optional payment notes, check instructions, cash approval notes, or warranty details"
-            className="w-full resize-none border border-line bg-card px-3 py-3 text-base text-ink outline-none placeholder:text-faint focus:border-[#F96302]"
-          />
-        </label>
+        <InvoiceNotesField serviceLabel={serviceLabel} customerName={customerName} />
 
         <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <label className={`flex items-center gap-3 text-sm ${customerEmail ? "text-muted" : "text-muted"}`}>

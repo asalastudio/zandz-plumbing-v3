@@ -7,6 +7,7 @@ import InvoiceCustomerField, {
   type PickedCustomer,
 } from "./InvoiceCustomerField";
 import InvoiceLineItems from "../../_components/InvoiceLineItems";
+import { InvoiceNotesField } from "../../_components/InvoiceNotesField";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "New Invoice · Z and Z OS" };
@@ -77,10 +78,6 @@ export default async function NewInvoicePage({
     }
   }
 
-  const inputCls =
-    "w-full border border-line bg-card px-3 py-3 text-base text-ink outline-none placeholder:text-faint focus:border-[#F96302]";
-  const labelCls = "mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-muted";
-
   return (
     <div className="pb-24 lg:pb-0">
       <Link
@@ -128,15 +125,7 @@ export default async function NewInvoicePage({
           </h2>
           <InvoiceLineItems defaultDescription={defaultDescription} />
 
-          <label className="mt-4 block">
-            <span className={labelCls}>Notes for customer</span>
-            <textarea
-              name="notes"
-              rows={3}
-              placeholder="Optional payment notes, warranty details, or thank-you message"
-              className={`${inputCls} resize-none`}
-            />
-          </label>
+          <InvoiceNotesField customerName={presetCustomer?.name ?? null} />
         </section>
 
         {/* Delivery */}
