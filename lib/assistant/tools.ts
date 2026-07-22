@@ -22,6 +22,27 @@ function safe<T>(fn: () => Promise<T>): Promise<T | { error: string }> {
 }
 
 /**
+ * Argument schemas, exported separately so the voice bridge can validate what
+ * the speech model transcribed before it reaches a tool. Defined once here and
+ * referenced by the tool definitions below so the two cannot diverge.
+ */
+export const assistantToolSchemas = {
+  searchPricebook: z.object({
+    query: z
+      .string()
+      .describe("Service to search, e.g. 'water heater', 'main line stoppage', or a code like 'H6110'"),
+  }),
+  findCustomer: z.object({ query: z.string() }),
+  // Coerce the numeric ids: the voice path can transcribe a job number as the
+  // string "42", and a strict z.number() would reject it. Coercion accepts both
+  // a real number (the text assistant) and a numeric string (Lisa).
+  getCustomerContext: z.object({ customerId: z.coerce.number() }),
+  getJobContext: z.object({ jobId: z.coerce.number() }),
+  getJobMaterials: z.object({ serviceCode: z.string() }),
+  businessKpis: z.object({}),
+} as const;
+
+/**
  * Read-only tools the assistant uses to ground every answer in Z and Z's live
  * data. All run server-side under the service-role client. None can write.
  */
@@ -29,11 +50,7 @@ export const assistantTools = {
   searchPricebook: tool({
     description:
       "Search the company pricebook for a plumbing service to get its price, estimated labor hours, and scope of work. Use for ANY pricing, duration, or 'what's involved' question.",
-    inputSchema: z.object({
-      query: z
-        .string()
-        .describe("Service to search, e.g. 'water heater', 'main line stoppage', or a code like 'H6110'"),
-    }),
+    inputSchema: assistantToolSchemas.searchPricebook,
     execute: ({ query }) =>
       safe(async () => {
         const rows = await searchServiceCatalog(query, 8);
@@ -43,8 +60,18 @@ export const assistantTools = {
             code: r.code,
             name: r.name,
             category: r.category,
-            price: formatMoney(r.price_cents),
-            estimated_hours: r.hours,
+            // A missing price must never render as "$0.00". Roughly a third of
+            // the imported catalog has no price loaded, and formatMoney(0) reads
+            // as "this job is free" to both the model and the operator.
+            ...(r.price_cents
+              ? { price: formatMoney(r.price_cents), price_status: "loaded" }
+              : {
+                  price: null,
+                  price_status: "not_loaded",
+                  price_note:
+                    "No price in the pricebook for this code. Do not quote a number. Tell the operator to check with Jay.",
+                }),
+            estimated_hours: r.hours || null,
             scope_of_work: r.description,
           })),
         };
@@ -54,7 +81,7 @@ export const assistantTools = {
   findCustomer: tool({
     description:
       "Find a customer by name, phone, email, or address. Returns matches so you can confirm which one before pulling full context.",
-    inputSchema: z.object({ query: z.string() }),
+    inputSchema: assistantToolSchemas.findCustomer,
     execute: ({ query }) =>
       safe(async () => {
         const { rows } = await listCustomers({ search: query, limit: 8, sort: "name" });
@@ -74,7 +101,7 @@ export const assistantTools = {
   getCustomerContext: tool({
     description:
       "Get full context on one customer by id: profile, recent jobs, invoice history, and lifetime stats. Call findCustomer first to get the id.",
-    inputSchema: z.object({ customerId: z.number() }),
+    inputSchema: assistantToolSchemas.getCustomerContext,
     execute: ({ customerId }) =>
       safe(async () => {
         const [customer, jobs, history, stats] = await Promise.all([
@@ -121,7 +148,7 @@ export const assistantTools = {
   getJobContext: tool({
     description:
       "Get details on a specific job by its id: service, current status, schedule, assigned crew, amounts, address, and the customer.",
-    inputSchema: z.object({ jobId: z.number() }),
+    inputSchema: assistantToolSchemas.getJobContext,
     execute: ({ jobId }) =>
       safe(async () => {
         const j = await getJob(jobId);
@@ -146,7 +173,7 @@ export const assistantTools = {
   getJobMaterials: tool({
     description:
       "List the parts/materials a pricebook service typically needs, by service code (e.g. 'H6110'). Use after searchPricebook to answer 'what parts/materials does this job need'.",
-    inputSchema: z.object({ serviceCode: z.string() }),
+    inputSchema: assistantToolSchemas.getJobMaterials,
     execute: ({ serviceCode }) =>
       safe(async () => {
         const materials = await getServiceMaterials(serviceCode);
@@ -160,7 +187,7 @@ export const assistantTools = {
   businessKpis: tool({
     description:
       "Get top-line business numbers: revenue this month / last 12 months / lifetime, unpaid balance, customer count, jobs this week, and jobs ready to invoice.",
-    inputSchema: z.object({}),
+    inputSchema: assistantToolSchemas.businessKpis,
     execute: () =>
       safe(async () => {
         const k = await getDashboardKpis();

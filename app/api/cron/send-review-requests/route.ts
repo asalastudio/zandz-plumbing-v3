@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { sendSms, buildReviewRequestBody, isTwilioConfigured } from "@/lib/twilio";
 import { reviewClickUrl, siteOrigin } from "@/lib/url";
+import {
+  scheduleReviewRequestForJob,
+  REVIEW_TRIGGER_STATUSES,
+} from "@/lib/review-requests";
 
 /**
  * Cron: send any review_requests where scheduled_send_at <= now and not yet sent.
@@ -51,6 +55,15 @@ export async function GET(req: NextRequest) {
   const sb = supabase();
   const now = new Date().toISOString();
 
+  // Sweep for completed jobs that never got queued.
+  //
+  // The status route queues a review request the moment a dispatcher marks a
+  // job done, but job status is also written directly from lib/invoices.ts
+  // (mark-paid, invoice sync) and from the field PWA. Rather than scatter
+  // scheduling calls across every mutation site, this sweep self-heals: any
+  // finished job with no review_request gets picked up within the hour.
+  const swept = await sweepUnqueuedJobs(sb);
+
   // Pull due requests
   const { data: due, error } = await sb
     .from("review_requests")
@@ -67,7 +80,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   if (!due || due.length === 0) {
-    return NextResponse.json({ ok: true, sent: 0, message: "No due requests" });
+    return NextResponse.json({ ok: true, sent: 0, swept, message: "No due requests" });
   }
 
   const results: Array<{ id: number; ok: boolean; reason?: string }> = [];
@@ -140,7 +153,46 @@ export async function GET(req: NextRequest) {
   }
 
   const sent = results.filter((r) => r.ok).length;
-  return NextResponse.json({ ok: true, sent, total: results.length, results });
+  return NextResponse.json({ ok: true, sent, swept, total: results.length, results });
+}
+
+/**
+ * Queue review requests for finished jobs that don't have one yet.
+ *
+ * Bounded to jobs finished in the last 7 days so a backlog of historical work
+ * can never suddenly text a few hundred old customers on first run.
+ */
+async function sweepUnqueuedJobs(
+  sb: ReturnType<typeof supabase>
+): Promise<{ queued: number; considered: number }> {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: finished, error } = await sb
+    .from("jobs")
+    .select("id, updated_at")
+    .in("status", REVIEW_TRIGGER_STATUSES as unknown as string[])
+    .gte("updated_at", since)
+    .limit(MAX_PER_RUN);
+
+  if (error || !finished?.length) {
+    if (error) console.error("[cron] sweep fetch error:", error);
+    return { queued: 0, considered: 0 };
+  }
+
+  let queued = 0;
+  for (const job of finished) {
+    try {
+      const res = await scheduleReviewRequestForJob(
+        job.id as number,
+        job.updated_at ? new Date(job.updated_at as string) : new Date()
+      );
+      if (res.ok && "scheduled" in res && res.scheduled) queued++;
+    } catch (err) {
+      console.error("[cron] sweep failed for job", job.id, err);
+    }
+  }
+
+  return { queued, considered: finished.length };
 }
 
 // Allow POST too in case we want manual trigger from admin UI

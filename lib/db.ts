@@ -470,6 +470,106 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// Speed to lead
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface SlaBreachJob {
+  id: number;
+  customerName: string | null;
+  serviceLabel: string | null;
+  createdAt: string;
+  waitingMinutes: number;
+}
+
+export interface ResponseTimeStats {
+  /** Median seconds from lead arriving to first contact. Null until there's data. */
+  medianSeconds: number | null;
+  /** 90th percentile — the tail is what loses jobs, so show it next to the median. */
+  p90Seconds: number | null;
+  sampleSize: number;
+  /** Leads sitting in 'new' that have already blown through the escalation ladder. */
+  breaches: SlaBreachJob[];
+}
+
+/**
+ * How fast leads actually get worked.
+ *
+ * Reads jobs.first_response_seconds, stamped by the stamp_job_first_contact
+ * trigger (migration 012) the moment a job leaves 'new'. Before that migration
+ * there is no history, so early numbers will be based on a small sample —
+ * sampleSize is returned so callers can say so rather than implying precision.
+ */
+export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats> {
+  const sb = supabase();
+  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  const [{ data: responded }, { data: waiting }] = await Promise.all([
+    sb
+      .from("jobs")
+      .select("first_response_seconds")
+      .not("first_response_seconds", "is", null)
+      .gte("first_contact_at", cutoff),
+    sb
+      .from("jobs")
+      .select("id, created_at, service_label, service_type, customers(name)")
+      .eq("status", "new")
+      .is("first_contact_at", null)
+      .gte("sla_alert_level", 3)
+      .order("created_at", { ascending: true })
+      .limit(20),
+  ]);
+
+  const samples = (responded ?? [])
+    .map((r) => r.first_response_seconds as number)
+    .filter((n) => Number.isFinite(n))
+    .sort((a, b) => a - b);
+
+  const now = Date.now();
+  const breaches: SlaBreachJob[] = (waiting ?? []).map((j) => {
+    const customer = Array.isArray(j.customers) ? j.customers[0] : j.customers;
+    return {
+      id: j.id as number,
+      customerName: customer?.name ?? null,
+      serviceLabel: (j.service_label ?? j.service_type) as string | null,
+      createdAt: j.created_at as string,
+      waitingMinutes: Math.floor(
+        (now - new Date(j.created_at as string).getTime()) / 60000
+      ),
+    };
+  });
+
+  return {
+    medianSeconds: percentile(samples, 0.5),
+    p90Seconds: percentile(samples, 0.9),
+    sampleSize: samples.length,
+    breaches,
+  };
+}
+
+/** Nearest-rank percentile over a pre-sorted ascending array. */
+function percentile(sorted: number[], p: number): number | null {
+  if (sorted.length === 0) return null;
+  const rank = Math.ceil(p * sorted.length);
+  return sorted[Math.min(Math.max(rank, 1), sorted.length) - 1];
+}
+
+/** "4m 12s" / "48s" / "2h 5m". For response times, which span three orders of magnitude. */
+export function formatDuration(seconds: number | null): string {
+  if (seconds === null || !Number.isFinite(seconds)) return "—";
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) {
+    const rem = Math.round(seconds % 60);
+    return rem ? `${mins}m ${rem}s` : `${mins}m`;
+  }
+
+  const hours = Math.floor(mins / 60);
+  const remMins = mins % 60;
+  return remMins ? `${hours}h ${remMins}m` : `${hours}h`;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // Analytics queries
 // ──────────────────────────────────────────────────────────────────────────
 

@@ -44,7 +44,8 @@ Z&Zplumbing-v3/
 │   ├── brand-package/           # 9 brand docs (colors, type, voice, design system, design reference)
 │   ├── seo/                     # GSC baseline, keyword priority, URL migration map, redirects, citation audit
 │   ├── content-drafts/          # Page copy drafts (Plumber Oakland, Sewer Lateral Oakland, etc.)
-│   ├── integrations/            # HubSpot Starter setup + ServiceTitan Path B spec
+│   ├── integrations/            # ServiceTitan Path B spec (HubSpot checklist superseded)
+│   ├── os-buildout/             # OS build plan + speed-to-lead / comms plan
 │   ├── strategy/                # Business truth, roadmap, credentials, transition plan
 │   └── design-reference/        # The locked homepage mockup (visual source of truth)
 └── (Next.js app folders ship here as the IDE agent builds them)
@@ -66,8 +67,11 @@ When the IDE agent starts the build, it will create `app/`, `components/`, `cont
 - **GSC baseline:** `_docs/seo/gsc-baseline-summary.md`
 - **URL migration map:** `_docs/seo/url-migration-map-v4-FINAL.csv`
 - **Redirects (drop into `next.config.ts`):** `_docs/seo/next-config-redirects.js`
-- **HubSpot setup:** `_docs/integrations/hubspot-setup-checklist.md`
-- **ServiceTitan Path B spec:** `_docs/integrations/servicetitan-integration-spec.md`
+- **Wiring guide (credentials, Twilio, crons):** `WIRING.md`
+- **Speed-to-lead + comms plan:** `_docs/os-buildout/speed-to-lead-plan.md`
+- **OS build plan:** `_docs/os-buildout/build-plan.md`
+- **ServiceTitan Path B spec:** `_docs/integrations/servicetitan-integration-spec.md` (historical)
+- ~~`_docs/integrations/hubspot-setup-checklist.md`~~ — superseded, HubSpot was dropped
 
 ---
 
@@ -85,8 +89,11 @@ When the IDE agent starts the build, it will create `app/`, `components/`, `cont
 | Founded | 2003 |
 | Sole owner | Seifullah Zaki Zareef |
 | CMS | TypeScript constants in `/content/` plus MDX for blog. Sanity DEFERRED to Phase 2. |
-| CRM | HubSpot Starter ($20/mo) |
-| FSM | ServiceTitan Essentials, Path B (manual workflow) |
+| CRM | None. Z and Z OS (Supabase) is the system of record. HubSpot dropped 2026-06-17. |
+| FSM | ServiceTitan Essentials runs in parallel while the OS grows to parity on invoicing + dispatch. |
+| Comms | Resend for email (live). Twilio for SMS (built, pending A2P 10DLC). See `WIRING.md`. |
+| Payments | Deferred. Invoices send by email/text; pay by call, check, or cash. |
+| Hours | Mon-Fri 7:00am-5:00pm Pacific, 24/7 emergency. |
 | Font | Inter (only) |
 | Icons | lucide-react |
 | DNS | Vercel |
@@ -110,7 +117,7 @@ When the IDE agent starts the build, it will create `app/`, `components/`, `cont
 - About, Contact, Reviews, Financing, Privacy, Terms
 - Blog index plus one starter MDX post (EBMUD compliance)
 - 79 redirects from `_docs/seo/url-migration-map-v4-FINAL.csv`
-- HubSpot Forms API integration (graceful degradation if env vars missing)
+- Lead capture straight into Supabase, with email and SMS notification (each channel degrades gracefully if its env vars are missing)
 - LocalBusiness + FAQPage + Service JSON-LD schema
 - Sitemap, robots, OG image
 - Lighthouse Mobile Performance >= 75, Accessibility >= 95, Best Practices >= 95, SEO 100
@@ -125,7 +132,7 @@ See `_docs/prd/prd.md` Step 11 for the full acceptance criteria.
 cd "Z&Zplumbing-v3"
 npm install
 cp .env.example .env.local
-# Fill in HUBSPOT_PORTAL_ID and HUBSPOT_FORM_ID once HubSpot is set up
+# Fill in SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY at minimum. See WIRING.md.
 npm run dev
 ```
 

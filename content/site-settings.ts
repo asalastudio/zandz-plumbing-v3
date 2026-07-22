@@ -20,7 +20,10 @@ export const siteSettings: SiteSettings = {
   licenses: ["C-36 Plumbing (2007)", "A General Engineering (2012)"],
   foundedYear: 2003,
   owner: "Seifullah Zaki Zareef",
-  hours: "24/7 Emergency Service",
+  // Office hours are Mon-Fri 7-5 Pacific. The 24/7 is emergency dispatch, not
+  // the office. Keep the two distinct anywhere this is rendered — the schema in
+  // app/layout.tsx publishes the staffed hours only.
+  hours: "Mon-Fri 7:00 AM - 5:00 PM · 24/7 Emergency Service",
   social: {
     facebook: "https://www.facebook.com/zandzplumbing",
     instagram: "https://www.instagram.com/z_and_z_plumbing_bay_area",

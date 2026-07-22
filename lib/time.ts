@@ -68,13 +68,40 @@ export function pacificWeekday(instant: Date = new Date()): number {
   return map[wd] ?? 0;
 }
 
-/** The UTC instant of Pacific wall-clock midnight for a given Y/M/D. */
-export function pacificMidnight(year: number, month: number, day: number): Date {
-  const guessUTC = Date.UTC(year, month - 1, day, 0, 0, 0);
+/** Hour of day (0-23) on the Pacific wall clock for an instant. */
+export function pacificHour(instant: Date = new Date()): number {
+  const h = new Intl.DateTimeFormat("en-US", {
+    timeZone: PACIFIC_TZ,
+    hour12: false,
+    hour: "2-digit",
+  }).format(instant);
+  return Number(h) % 24;
+}
+
+/**
+ * The UTC instant of a given Pacific wall-clock time.
+ *
+ * Don't build these by adding hours onto pacificMidnight — on the two DST
+ * transition days a day is 23 or 25 hours long, so midnight + 11h lands at
+ * 10am or noon rather than 11am.
+ */
+export function pacificWallClock(
+  year: number,
+  month: number,
+  day: number,
+  hour = 0,
+  minute = 0
+): Date {
+  const guessUTC = Date.UTC(year, month - 1, day, hour, minute, 0);
   // Two passes converge even across DST boundaries.
   let result = guessUTC - offsetMs(new Date(guessUTC));
   result = guessUTC - offsetMs(new Date(result));
   return new Date(result);
+}
+
+/** The UTC instant of Pacific wall-clock midnight for a given Y/M/D. */
+export function pacificMidnight(year: number, month: number, day: number): Date {
+  return pacificWallClock(year, month, day, 0, 0);
 }
 
 /** Start of the Pacific day containing `instant`. */
@@ -112,6 +139,32 @@ export function pacificMonthsAgo(months: number, instant: Date = new Date()): Da
   const { year, month, day } = pacificYmd(instant);
   const cal = new Date(Date.UTC(year, month - 1 - months, day));
   return pacificMidnight(cal.getUTCFullYear(), cal.getUTCMonth() + 1, cal.getUTCDate());
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Business hours
+//
+// Z and Z staff the office Mon-Fri 7:00am-5:00pm Pacific, and advertise 24/7
+// emergency service on top of that. The distinction matters for escalation:
+// an emergency call should chase someone at 3am, a routine drain quote should
+// not.
+// ──────────────────────────────────────────────────────────────────────────
+
+export const BUSINESS_OPEN_HOUR = 7;
+export const BUSINESS_CLOSE_HOUR = 17;
+
+/** Is `instant` inside staffed office hours (Mon-Fri 7am-5pm Pacific)? */
+export function isBusinessHours(instant: Date = new Date()): boolean {
+  const weekday = pacificWeekday(instant);
+  if (weekday === 0 || weekday === 6) return false;
+  const hour = pacificHour(instant);
+  return hour >= BUSINESS_OPEN_HOUR && hour < BUSINESS_CLOSE_HOUR;
+}
+
+/** Pacific 7:00am on the calendar day containing `instant`. */
+export function businessOpeningFor(instant: Date = new Date()): Date {
+  const { year, month, day } = pacificYmd(instant);
+  return pacificWallClock(year, month, day, BUSINESS_OPEN_HOUR);
 }
 
 /** Parse a "YYYY-MM-DD" string as a Pacific date → its midnight instant. Null if malformed. */

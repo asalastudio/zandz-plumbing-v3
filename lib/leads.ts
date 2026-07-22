@@ -2,21 +2,35 @@
  * Lead intake orchestration.
  *
  * Single entry point called from the public /api/lead route.
- * Each side-effect (Supabase insert, HubSpot post, email, SMS) runs
+ * Each side-effect (Supabase insert, consent ledger, email, SMS) runs
  * independently and reports back its own ok/error — one failure should NOT
  * block the others. The form caller only learns "did we record the lead"
  * (Supabase ok). Everything else is reported to logs.
+ *
+ * The OS is the system of record for leads and customer data. There is no CRM
+ * behind this — Supabase is the destination, not a staging area.
  */
 
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { submitLead as submitLeadToHubSpotForm, type LeadPayload } from "@/lib/hubspot";
-import { createHubSpotDeal } from "@/lib/hubspot-deals";
 import { sendDispatchEmail, sendCustomerConfirmationEmail } from "@/lib/resend";
 import { sendDispatchSms, sendCustomerReceiptSms } from "@/lib/lead-sms";
+import { recordSmsConsent } from "@/lib/sms-consent";
 import { lookupServiceAreaBySlug, lookupServiceAreaByZip } from "@/lib/service-area-lookup";
 import { toE164 } from "@/lib/twilio";
 
-export interface LeadInput extends LeadPayload {
+export interface LeadInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  zip?: string;
+  jobAddress?: string;
+  jobCity?: string;
+  serviceInterest: string;
+  preferredCallbackTime?: string;
+  briefDescription?: string;
+  sourcePage?: string;
+  smsConsent?: boolean;
   serviceLabel?: string;
   outOfArea?: boolean;
   serviceAreaSlug?: string;
@@ -28,8 +42,7 @@ export interface LeadResult {
   supabaseCustomerId?: number;
   outcomes: {
     supabase: SideEffect;
-    hubspotForm: SideEffect;
-    hubspotDeal: SideEffect;
+    smsConsent: SideEffect;
     dispatchEmail: SideEffect;
     dispatchSms: SideEffect;
     customerSms: SideEffect;
@@ -53,8 +66,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       ok: false,
       outcomes: {
         supabase: failed(`Could not normalize phone to E.164: ${input.phone}`),
-        hubspotForm: okSkipped("blocked by phone validation"),
-        hubspotDeal: okSkipped("blocked by phone validation"),
+        smsConsent: okSkipped("blocked by phone validation"),
         dispatchEmail: okSkipped("blocked by phone validation"),
         dispatchSms: okSkipped("blocked by phone validation"),
         customerSms: okSkipped("blocked by phone validation"),
@@ -144,29 +156,22 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     }
   }
 
-  // ── 2. HubSpot Forms API (top-of-funnel intake) ──
-  const hubspotFormRes = await safeAwait(
-    submitLeadToHubSpotForm(input),
-    "hubspot form submit"
-  );
-
-  // ── 3. HubSpot CRM Deal (sales pipeline) ──
-  const hubspotDealRes = await safeAwait(
-    createHubSpotDeal({
-      firstName: input.firstName,
-      lastName: input.lastName,
-      email: input.email,
-      phone: phoneE164,
-      zip,
-      serviceLabel: input.serviceLabel ?? input.serviceInterest,
-      briefDescription: input.briefDescription,
-      sourcePage: input.sourcePage,
-      outOfArea: input.outOfArea ?? false,
+  // ── 2. SMS consent ledger (A2P 10DLC evidence) ──
+  // Recorded either way. Proving someone declined matters as much as proving
+  // someone agreed, and it is the only consent record we keep now.
+  const smsConsentRes = await safeAwait(
+    recordSmsConsent({
+      phoneE164,
+      customerName: fullName,
+      consented: input.smsConsent === true,
+      source: "web_form",
+      customerId: supabaseCustomerId,
+      jobId: supabaseJobId,
     }),
-    "hubspot deal create"
+    "sms consent ledger"
   );
 
-  // ── 4. Dispatch email (Resend) ──
+  // ── 3. Dispatch email (Resend) ──
   const dispatchEmailRes = await safeAwait(
     sendDispatchEmail({
       name: fullName,
@@ -185,7 +190,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     "dispatch email"
   );
 
-  // ── 5. Dispatch SMS (Twilio) ──
+  // ── 4. Dispatch SMS (Twilio) ──
   const dispatchSmsRes = await safeAwait(
     sendDispatchSms({
       name: fullName,
@@ -198,7 +203,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     "dispatch sms"
   );
 
-  // ── 6. Customer SMS receipt (Twilio) ──
+  // ── 5. Customer SMS receipt (Twilio) ──
   let customerSmsRes: SideEffect;
   if (!input.smsConsent) {
     customerSmsRes = okSkipped("customer declined SMS consent");
@@ -213,7 +218,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     );
   }
 
-  // ── 7. Customer confirmation email (Resend) ──
+  // ── 6. Customer confirmation email (Resend) ──
   // Reaches every customer who left an email, including those who declined SMS.
   let customerEmailRes: SideEffect;
   if (!input.email) {
@@ -236,8 +241,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
     supabaseCustomerId,
     outcomes: {
       supabase: supabaseOutcome,
-      hubspotForm: hubspotFormRes,
-      hubspotDeal: hubspotDealRes,
+      smsConsent: smsConsentRes,
       dispatchEmail: dispatchEmailRes,
       dispatchSms: dispatchSmsRes,
       customerSms: customerSmsRes,

@@ -1,7 +1,13 @@
 import Link from "next/link";
-import { Phone, MapPin, TrendingUp, Users, Wrench, Clock, BarChart3 } from "lucide-react";
+import { Phone, MapPin, TrendingUp, Users, Wrench, Clock, BarChart3, Timer } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { getAnalytics, formatMoney, formatMoneyShort } from "@/lib/db";
+import {
+  getAnalytics,
+  getResponseTimeStats,
+  formatMoney,
+  formatMoneyShort,
+  formatDuration,
+} from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +16,7 @@ export default async function AnalyticsPage() {
     return <NotConfigured />;
   }
 
-  const data = await getAnalytics();
+  const [data, responseTime] = await Promise.all([getAnalytics(), getResponseTimeStats(90)]);
 
   // For the monthly revenue bar chart — find the max value to normalize bar heights
   const monthlyMax = Math.max(1, ...data.monthlyRevenue.map((m) => m.revenueCents));
@@ -28,6 +34,45 @@ export default async function AnalyticsPage() {
           actually booked a job.
         </p>
       </header>
+
+      {/* Speed to lead — the one number that decides how many leads convert. */}
+      <section className="mb-12">
+        <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted">
+          <Timer className="h-4 w-4" aria-hidden="true" />
+          Speed to lead · last 90 days
+        </h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <SummaryStat
+            label="Median callback"
+            value={formatDuration(responseTime.medianSeconds)}
+            sub="Half of leads beat this"
+            icon={Timer}
+          />
+          <SummaryStat
+            label="Slowest 10%"
+            value={formatDuration(responseTime.p90Seconds)}
+            sub="90th percentile"
+            icon={Clock}
+          />
+          <SummaryStat
+            label="Leads measured"
+            value={responseTime.sampleSize.toLocaleString()}
+            sub="Contacted in window"
+            icon={Users}
+          />
+          <SummaryStat
+            label="Uncontacted now"
+            value={responseTime.breaches.length.toLocaleString()}
+            sub="Past the escalation ladder"
+            icon={Phone}
+          />
+        </div>
+        <p className="mt-2 text-xs text-faint">
+          Measured from lead arrival to the moment the job leaves the New status. Tracking
+          began with the speed-to-lead release, so this only covers leads handled since
+          then. Do not publish a callback-time claim until the sample is meaningful.
+        </p>
+      </section>
 
       {/* Summary stats strip */}
       <section className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-4">

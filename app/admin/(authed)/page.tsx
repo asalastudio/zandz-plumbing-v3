@@ -10,12 +10,16 @@ import {
   ReceiptText,
   UserPlus,
   FileText,
+  Timer,
+  TriangleAlert,
 } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getDashboardKpis,
+  getResponseTimeStats,
   listNewLeadNotifications,
   formatMoneyShort,
+  formatDuration,
 } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +29,10 @@ export default async function AdminDashboardPage() {
     return <NotConfigured />;
   }
 
-  const [kpis, newLeads] = await Promise.all([
+  const [kpis, newLeads, responseTime] = await Promise.all([
     getDashboardKpis(),
     listNewLeadNotifications(4),
+    getResponseTimeStats(30),
   ]);
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -129,6 +134,76 @@ export default async function AdminDashboardPage() {
             </p>
           )}
         </div>
+      </section>
+
+      {/* Speed to lead — how fast leads actually get called back, plus anything
+          that has already blown through the escalation ladder. */}
+      <section className="mb-8">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-muted">
+          Speed to lead
+        </h2>
+
+        {responseTime.breaches.length > 0 && (
+          <div className="mb-3 border border-red-300 bg-red-50 p-5">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-red-700">
+              <TriangleAlert className="h-5 w-5" aria-hidden="true" />
+              {responseTime.breaches.length} lead
+              {responseTime.breaches.length === 1 ? "" : "s"} still not contacted
+            </p>
+            <ul className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+              {responseTime.breaches.slice(0, 4).map((b) => (
+                <li key={b.id}>
+                  <Link
+                    href={`/admin/jobs/${b.id}`}
+                    className="group flex items-center justify-between gap-3 border border-red-200 bg-card px-4 py-3"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-base font-bold text-ink group-hover:text-[#F96302]">
+                        {b.customerName ?? `Job ${b.id}`}
+                      </span>
+                      <span className="mt-0.5 block truncate text-sm text-muted">
+                        {b.serviceLabel ?? "Service request"}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-sm font-bold text-red-700">
+                      {formatDuration(b.waitingMinutes * 60)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatTile
+            href="/admin/leads"
+            label="Median callback"
+            value={formatDuration(responseTime.medianSeconds)}
+            sub="Last 30 days"
+            icon={Timer}
+          />
+          <StatTile
+            href="/admin/leads"
+            label="Slowest 10%"
+            value={formatDuration(responseTime.p90Seconds)}
+            sub="90th percentile"
+            icon={Timer}
+            highlight={
+              responseTime.p90Seconds !== null && responseTime.p90Seconds > 3600
+                ? "red"
+                : undefined
+            }
+          />
+        </div>
+
+        <p className="mt-2 text-xs text-faint">
+          {responseTime.sampleSize === 0
+            ? "No contacted leads yet. Timing starts once leads are worked out of the New status."
+            : `Based on ${responseTime.sampleSize} lead${
+                responseTime.sampleSize === 1 ? "" : "s"
+              } contacted in the last 30 days.`}
+        </p>
       </section>
 
       {/* At a glance — every tile navigates; attention states highlight */}

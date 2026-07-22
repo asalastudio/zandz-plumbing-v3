@@ -485,6 +485,102 @@ export async function getInvoiceForView(invoiceId: number): Promise<InvoiceView 
   return { invoice, customer, jobServiceLabel };
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Document rendering (PDF)
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface PostalAddress {
+  name: string | null;
+  street: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+}
+
+export interface InvoiceDocumentData {
+  invoice: InvoiceRecord;
+  /** BILL TO — the customer's own address on file. */
+  billTo: PostalAddress;
+  /** JOB ADDRESS — where the work happened. Falls back to billTo when the job
+   *  has no address of its own, which is the case for web leads (ZIP only). */
+  jobAddress: PostalAddress;
+  serviceLabel: string | null;
+  jobStatus: string | null;
+  completedOn: string | null;
+}
+
+/**
+ * Everything the invoice PDF needs, in one round trip.
+ *
+ * getInvoiceForView deliberately returns a thin shape for the public token
+ * page; the document needs postal addresses on both sides, which that query
+ * does not select.
+ */
+export async function getInvoiceForDocument(
+  invoiceId: number
+): Promise<InvoiceDocumentData | null> {
+  const sb = supabase();
+
+  const { data: invoiceData, error } = await sb
+    .from("invoices").select("*").eq("id", invoiceId).maybeSingle();
+  if (error) throw new Error(`getInvoiceForDocument: ${error.message}`);
+  if (!invoiceData) return null;
+
+  const invoice = normalizeInvoice(invoiceData);
+
+  const [customerRes, jobRes] = await Promise.all([
+    invoice.customer_id
+      ? sb.from("customers")
+          .select("name, street_address, city, state, zip")
+          .eq("id", invoice.customer_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    invoice.job_id
+      ? sb.from("jobs")
+          .select("service_label, service_type, job_address, job_city, job_zip, status, updated_at")
+          .eq("id", invoice.job_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const c = customerRes.data;
+  const j = jobRes.data;
+
+  const billTo: PostalAddress = {
+    name: nullableString(c?.name),
+    street: nullableString(c?.street_address),
+    city: nullableString(c?.city),
+    // customers.state defaults to CA at the DB level, but older rows may be
+    // null. The document should never print a bare city with no state.
+    state: nullableString(c?.state) ?? "CA",
+    zip: nullableString(c?.zip),
+  };
+
+  const hasJobAddress = Boolean(nullableString(j?.job_address));
+  const jobAddress: PostalAddress = hasJobAddress
+    ? {
+        name: billTo.name,
+        street: nullableString(j?.job_address),
+        city: nullableString(j?.job_city),
+        state: "CA",
+        zip: nullableString(j?.job_zip),
+      }
+    : billTo;
+
+  return {
+    invoice,
+    billTo,
+    jobAddress,
+    serviceLabel:
+      nullableString(j?.service_label) ?? nullableString(j?.service_type),
+    jobStatus: nullableString(j?.status),
+    // The job's last touch is the closest thing to a completion timestamp
+    // until a dedicated column exists.
+    completedOn:
+      j?.status === "complete" || j?.status === "invoiced" || j?.status === "paid"
+        ? nullableString(j?.updated_at)
+        : null,
+  };
+}
+
 export interface InvoiceListItem {
   id: number;
   amount_cents: number;
