@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { isAuthenticated } from "@/lib/auth";
 import { STATUS_TRANSITIONS, type JobStatus } from "@/lib/db";
+import {
+  scheduleReviewRequestForJob,
+  REVIEW_TRIGGER_STATUSES,
+} from "@/lib/review-requests";
 
 export const runtime = "nodejs";
 
@@ -59,6 +63,22 @@ export async function POST(
   const { error: updateErr } = await sb.from("jobs").update({ status: next }).eq("id", id);
   if (updateErr) {
     return redirectBack(req, id, "error=db");
+  }
+
+  // Queue the review-request text once the work is done. This is the trigger
+  // that used to live in the HubSpot "Closed won" workflow webhook.
+  //
+  // Deliberately not awaited into the response path beyond logging: a review
+  // ask must never be the reason a dispatcher cannot mark a job complete.
+  // scheduleReviewRequestForJob is idempotent per job, so complete -> invoiced
+  // -> paid queues exactly one.
+  if ((REVIEW_TRIGGER_STATUSES as readonly string[]).includes(next)) {
+    try {
+      const result = await scheduleReviewRequestForJob(id);
+      console.log("[review-request] job", id, result);
+    } catch (err) {
+      console.error("[review-request] scheduling threw for job", id, err);
+    }
   }
 
   return redirectBack(req, id, "updated=1");

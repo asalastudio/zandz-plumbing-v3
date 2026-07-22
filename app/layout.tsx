@@ -83,11 +83,16 @@ const localBusinessSchema = {
     latitude: siteSettings.geo.lat,
     longitude: siteSettings.geo.lng,
   },
+  // Staffed office hours only. The previous value claimed 00:00-23:59 seven
+  // days a week, which misrepresents the business: 24/7 refers to emergency
+  // dispatch, not to the office being open. Google surfaces these hours
+  // directly, so an inflated value reads as "open now" at 2am on a Sunday.
+  // The 24/7 emergency capability is communicated in copy instead.
   openingHoursSpecification: {
     "@type": "OpeningHoursSpecification",
-    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-    opens: "00:00",
-    closes: "23:59",
+    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "07:00",
+    closes: "17:00",
   },
   foundingDate: String(siteSettings.foundedYear),
   priceRange: "$$",

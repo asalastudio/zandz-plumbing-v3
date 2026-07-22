@@ -2,9 +2,10 @@
  * SMS notifications for the lead intake flow.
  *
  * Two distinct messages:
- *   1. Dispatch alert — goes to Jay's phone (DISPATCH_PHONE). Internal only,
- *      so the STOP-opt-out copy is not strictly required, but we include a
- *      compact alert with the key facts.
+ *   1. Dispatch alert — goes to the dispatch phones (DISPATCH_PHONE, which
+ *      accepts a comma-separated list so Jay and Seif both get pinged).
+ *      Internal only, so the STOP-opt-out copy is not strictly required, but
+ *      we include a compact alert with the key facts.
  *   2. Customer receipt — confirmation to the customer that the lead landed,
  *      with the office number and an opt-out instruction (A2P 10DLC rules).
  *
@@ -13,6 +14,30 @@
 
 import { sendSms, toE164, isTwilioConfigured } from "@/lib/twilio";
 import { siteSettings } from "@/content/site-settings";
+
+/**
+ * Parse DISPATCH_PHONE into a list of E.164 numbers.
+ *
+ * Mirrors how DISPATCH_EMAIL is split in lib/resend.ts. Invalid entries are
+ * reported rather than silently dropped — a typo'd dispatch number is the kind
+ * of thing that hides for weeks otherwise.
+ */
+export function dispatchPhones(): { valid: string[]; invalid: string[] } {
+  const raw = process.env.DISPATCH_PHONE ?? "";
+  const valid: string[] = [];
+  const invalid: string[] = [];
+
+  for (const entry of raw.split(",").map((s) => s.trim()).filter(Boolean)) {
+    const e164 = toE164(entry);
+    if (e164) {
+      if (!valid.includes(e164)) valid.push(e164);
+    } else {
+      invalid.push(entry);
+    }
+  }
+
+  return { valid, invalid };
+}
 
 interface DispatchSmsInput {
   name: string;
@@ -29,13 +54,16 @@ export async function sendDispatchSms(
   if (!isTwilioConfigured()) {
     return { ok: true, error: "Twilio env not set — skipped" };
   }
-  const rawDispatchPhone = process.env.DISPATCH_PHONE;
-  if (!rawDispatchPhone) {
+  if (!process.env.DISPATCH_PHONE) {
     return { ok: true, error: "DISPATCH_PHONE not set — skipped" };
   }
-  const to = toE164(rawDispatchPhone);
-  if (!to) {
-    return { ok: false, error: `DISPATCH_PHONE is not a valid US number: ${rawDispatchPhone}` };
+
+  const { valid, invalid } = dispatchPhones();
+  if (valid.length === 0) {
+    return {
+      ok: false,
+      error: `DISPATCH_PHONE has no valid US numbers (rejected: ${invalid.join(", ")})`,
+    };
   }
 
   const prefix = input.outOfArea ? "⚠️ OUT-OF-AREA " : "";
@@ -43,8 +71,23 @@ export async function sendDispatchSms(
     `${prefix}New Z&Z lead: ${input.name} — ${input.serviceLabel} — ` +
     `${input.city} ${input.zip}. Call ${input.phoneFormatted}.`;
 
-  const res = await sendSms({ to, body });
-  return { ok: res.ok, error: res.errorMessage };
+  // Send to every dispatcher independently. One bad number must not stop the
+  // others from being alerted.
+  const results = await Promise.all(
+    valid.map(async (to) => ({ to, res: await sendSms({ to, body }) }))
+  );
+
+  const failures = results.filter((r) => !r.res.ok);
+  const problems = [
+    ...failures.map((f) => `${f.to}: ${f.res.errorMessage ?? "unknown error"}`),
+    ...invalid.map((i) => `${i}: not a valid US number`),
+  ];
+
+  // Succeed if at least one dispatcher was reached; surface the rest in logs.
+  return {
+    ok: failures.length < valid.length,
+    error: problems.length ? problems.join("; ") : undefined,
+  };
 }
 
 interface CustomerReceiptInput {

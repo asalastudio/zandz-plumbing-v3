@@ -3,8 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { Send, Mic, Square, Sparkles, Loader2 } from "lucide-react";
+import { ConversationProvider } from "@elevenlabs/react";
+import { Send, Mic, Square, Sparkles, Loader2, PhoneCall, PhoneOff, AudioLines } from "lucide-react";
 import { useSpeechRecognition } from "./useSpeechRecognition";
+import { useVoiceAssistant, type VoiceTurn } from "./useVoiceAssistant";
+import { RichText } from "./RichText";
 
 const TOOL_LABEL: Record<string, string> = {
   "tool-searchPricebook": "Checked the pricebook",
@@ -15,7 +18,17 @@ const TOOL_LABEL: Record<string, string> = {
   "tool-businessKpis": "Pulled the numbers",
 };
 
+// The voice hook (useConversation) must run inside a ConversationProvider, so
+// the exported component provides it and the real UI lives in ChatBoxInner.
 export default function ChatBox({ suggestions }: { suggestions: string[] }) {
+  return (
+    <ConversationProvider>
+      <ChatBoxInner suggestions={suggestions} />
+    </ConversationProvider>
+  );
+}
+
+function ChatBoxInner({ suggestions }: { suggestions: string[] }) {
   const { messages, sendMessage, status, stop, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/admin/assistant/chat" }),
   });
@@ -26,6 +39,11 @@ export default function ChatBox({ suggestions }: { suggestions: string[] }) {
   const { supported, listening, start, stop: stopMic } = useSpeechRecognition((text) =>
     setInput((prev) => (prev ? `${prev} ${text}` : text))
   );
+
+  // Spoken turns land in the same transcript as typed ones, so the operator can
+  // start a question by voice and finish it by typing without losing the thread.
+  const [voiceTurns, setVoiceTurns] = useState<VoiceTurn[]>([]);
+  const voice = useVoiceAssistant((turn) => setVoiceTurns((prev) => [...prev, turn]));
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -40,12 +58,68 @@ export default function ChatBox({ suggestions }: { suggestions: string[] }) {
 
   return (
     <div className="flex h-[calc(100vh-13rem)] min-h-[440px] flex-col">
+      {/* Live voice session with Lisa. Stays open until stopped — no clicking
+          between turns, and she can be interrupted mid-sentence. */}
+      <div className="mb-3 flex items-center justify-between gap-3 border border-line bg-card px-4 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center ${
+              voice.status === "live" ? "bg-[#F96302] text-white" : "bg-raised text-muted"
+            }`}
+          >
+            {voice.status === "live" ? (
+              <AudioLines className={`h-5 w-5 ${voice.speaking ? "animate-pulse" : ""}`} aria-hidden="true" />
+            ) : (
+              <PhoneCall className="h-5 w-5" aria-hidden="true" />
+            )}
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-ink">Talk to Lisa</p>
+            <p className="truncate text-xs text-muted">
+              {voice.status === "live"
+                ? voice.speaking
+                  ? "Lisa is speaking. Just talk to cut in."
+                  : "Listening…"
+                : voice.status === "connecting"
+                  ? "Connecting…"
+                  : voice.error
+                    ? voice.error
+                    : "Hands-free lookups while you're on a call."}
+            </p>
+          </div>
+        </div>
+
+        {voice.status === "live" || voice.status === "connecting" ? (
+          <button
+            type="button"
+            onClick={voice.stop}
+            className="inline-flex shrink-0 items-center gap-2 border border-line px-3 py-2 text-xs font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
+          >
+            <PhoneOff className="h-4 w-4" aria-hidden="true" />
+            End
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={voice.start}
+            className="inline-flex shrink-0 items-center gap-2 bg-[#F96302] px-3 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+          >
+            <PhoneCall className="h-4 w-4" aria-hidden="true" />
+            Start
+          </button>
+        )}
+      </div>
+
       <div ref={scrollRef} className="flex-1 space-y-5 overflow-y-auto pb-4">
-        {messages.length === 0 ? (
+        {messages.length === 0 && voiceTurns.length === 0 ? (
           <EmptyState suggestions={suggestions} onPick={submit} />
         ) : (
           messages.map((m) => <Message key={m.id} message={m} />)
         )}
+
+        {voiceTurns.map((turn, i) => (
+          <VoiceMessage key={`voice-${i}`} turn={turn} />
+        ))}
         {busy && messages[messages.length - 1]?.role === "user" && (
           <div className="flex items-center gap-2 text-sm text-muted">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Thinking…
@@ -146,9 +220,37 @@ function Message({ message }: { message: UIMessage }) {
             ))}
           </div>
         )}
-        {text && (
-          <div className="whitespace-pre-wrap text-base leading-relaxed text-ink">{text}</div>
-        )}
+        {text &&
+          (isUser ? (
+            // The operator's own words go through verbatim — no reason to
+            // reinterpret asterisks they typed.
+            <div className="whitespace-pre-wrap text-base leading-relaxed text-ink">{text}</div>
+          ) : (
+            <RichText text={text} />
+          ))}
+      </div>
+    </div>
+  );
+}
+
+/** A spoken turn. Marked so the operator can tell it came from the call. */
+function VoiceMessage({ turn }: { turn: VoiceTurn }) {
+  const isOperator = turn.role === "operator";
+
+  return (
+    <div className={isOperator ? "flex justify-end" : ""}>
+      <div
+        className={
+          isOperator
+            ? "max-w-[85%] border border-[#F96302]/30 bg-[#F96302]/5 px-4 py-2.5"
+            : "max-w-[92%]"
+        }
+      >
+        <p className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-faint">
+          <AudioLines className="h-3 w-3" aria-hidden="true" />
+          {isOperator ? "You · spoken" : "Lisa · spoken"}
+        </p>
+        <div className="text-base leading-relaxed text-ink">{turn.text}</div>
       </div>
     </div>
   );

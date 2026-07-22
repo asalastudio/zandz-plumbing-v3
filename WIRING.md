@@ -1,408 +1,273 @@
 # Z and Z OS · Wiring Guide
 
-Everything in this codebase is built. This doc is the step-by-step for setting
-up the third-party accounts and pasting credentials so it all comes alive.
+**Updated: 2026-07-22.** Everything in this codebase is built. This doc is the
+step-by-step for setting up the third-party accounts and pasting credentials so
+it all comes alive.
 
-**Time to complete: ~90 minutes of focused setup, then 1-2 weeks of waiting
-on Twilio's A2P 10DLC carrier review.**
+**Time to complete: ~60 minutes of focused setup, then 1-2 weeks of waiting on
+Twilio's A2P 10DLC carrier review.**
 
-Anything not in this guide is already done in code. The order below matters
-because some steps produce keys that the next step needs.
+Start the A2P registration first. It is the only thing here with a multi-week
+lead time and it gates every customer-facing text.
 
 ---
 
-## Quick reference — every env var
+## Architecture, so nothing gets re-litigated
 
-Set every one of these in:
+- **No CRM.** HubSpot was dropped. The OS (Supabase, with the Leads → Scheduled
+  → Active pipeline) is the single source of truth for leads and customer data.
+  There is no HubSpot code left in the repo.
+- **ServiceTitan runs in parallel.** The OS is being built to replicate
+  ServiceTitan's invoicing and dispatch and take over over time. ServiceTitan is
+  not being switched off on any particular date, and nothing here depends on it.
+- **Stripe is deferred, not dropped.** Invoices send by email and text with
+  pay-by-call, check, or cash. `lib/stripe-checkout.ts` exists and can be
+  switched on later without rework.
+- **Email is live.** Resend, sending from the verified subdomain
+  `notifications.zandzplumbing.com`. DNS is at GoDaddy.
+- **SMS is the gap.** Every Twilio path is written and dormant.
 
-1. `.env.local` for local dev (copy from `.env.example`)
-2. Vercel project → Settings → Environment Variables (for production)
+---
+
+## What is already set in production
+
+The Vercel project `asala/zandz-plumbing-v3` currently has these 11 vars:
+
+```
+ADMIN_PASSWORD_HASH   SESSION_SECRET        SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY                   RESEND_API_KEY
+DISPATCH_EMAIL        LEAD_FROM_EMAIL       INVOICE_FROM_EMAIL
+NEXT_PUBLIC_SITE_URL  NEXT_PUBLIC_GA_ID     ASSISTANT_MODEL
+```
+
+So today: a web lead writes to Supabase, emails the dispatch inbox, and emails
+the customer a confirmation. Nothing texts. The review engine has never fired.
+
+Everything below is what is still missing.
+
+---
+
+## Quick reference — what is still needed
 
 | Var | Step | Source |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | done | Hardcoded `https://zandzplumbing.com` |
-| `ADMIN_PASSWORD_HASH` | Step 1 | bcrypt hash, generate locally |
-| `SESSION_SECRET` | Step 1 | `openssl rand -base64 48` |
-| `SUPABASE_URL` | Step 2 | Supabase project → Settings → API |
-| `SUPABASE_SERVICE_ROLE_KEY` | Step 2 | Same screen, the `service_role` key |
-| `HUBSPOT_PORTAL_ID` | Step 3 | HubSpot → Settings → Account |
-| `HUBSPOT_FORM_ID` | Step 3 | HubSpot → Marketing → Forms (after creating) |
-| `HUBSPOT_PRIVATE_APP_TOKEN` | Step 3 | HubSpot → Integrations → Private Apps |
-| `HUBSPOT_WEBHOOK_SECRET` | Step 4 | Generated when creating the Workflow action |
-| `TWILIO_ACCOUNT_SID` | Step 5 | console.twilio.com home page |
-| `TWILIO_AUTH_TOKEN` | Step 5 | Same page |
-| `TWILIO_MESSAGING_SERVICE_SID` | Step 6 | Twilio → Messaging → Services |
-| `TWILIO_PHONE_NUMBER` | Step 5 | The number you bought, E.164 |
-| `GOOGLE_REVIEW_URL` | Step 7 | GBP → Reviews → Share review form |
-| `CRON_SECRET` | Step 8 | `openssl rand -base64 32` |
+| `TWILIO_ACCOUNT_SID` | Step 1 | console.twilio.com home page |
+| `TWILIO_AUTH_TOKEN` | Step 1 | Same page |
+| `TWILIO_PHONE_NUMBER` | Step 1 | The number you buy, E.164 |
+| `TWILIO_MESSAGING_SERVICE_SID` | Step 2 | Twilio → Messaging → Services |
+| `DISPATCH_PHONE` | Step 3 | Whichever mobiles should get lead alerts |
+| `GOOGLE_REVIEW_URL` | Step 4 | GBP → Reviews → Share review form |
+| `CRON_SECRET` | Step 5 | `openssl rand -base64 32` |
+| `LEAD_ESCALATION_MINUTES` | Step 5 | Optional. Defaults to `5,15,30` |
 
 ---
 
-## Step 1 — Admin password (5 min)
+## Step 1 — Twilio account + phone number (15 min)
 
-This is the password Jay types to log into Z and Z OS.
+Needs Z and Z's legal business name and **EIN** — Jay has to provide these.
 
-```bash
-# In any terminal, generate the bcrypt hash:
-node -e "console.log(require('bcryptjs').hashSync('REPLACE_WITH_REAL_PASSWORD', 10))"
-```
-
-Copy the output (starts with `$2b$10$...`) and set:
-
-- `ADMIN_PASSWORD_HASH=<the hash>`
-
-Also generate a session signing secret:
-
-```bash
-openssl rand -base64 48
-```
-
-Set:
-
-- `SESSION_SECRET=<the random string>`
-
-Both vars need to go in `.env.local` AND Vercel env. Add to all three Vercel
-environments (Production, Preview, Development).
-
----
-
-## Step 2 — Supabase project (15 min)
-
-The database. Free tier covers Z and Z's volume.
-
-1. Go to https://supabase.com → New Project
-2. Name: `zandz-os` (or anything)
-3. Database password: generate, save in 1Password
-4. Region: `us-west-1` (closest to East Bay)
-5. Plan: Free
-6. Wait ~2 min for provisioning
-
-**Get the keys:**
-
-7. Project → Settings → API
-8. Copy **Project URL** → `SUPABASE_URL`
-9. Copy **service_role** key (NOT anon key) → `SUPABASE_SERVICE_ROLE_KEY`
-
-⚠️ The service_role key bypasses Row Level Security. NEVER expose it to the
-browser. The code only uses it server-side.
-
-**Run the migrations:**
-
-10. Open project → SQL Editor → New Query
-11. Paste the contents of `supabase/migrations/001_sms_review_automation.sql`
-12. Run
-13. New Query, paste `supabase/migrations/002_fsm_core.sql`, run
-14. Verify in Table Editor: you should see `sms_consent`, `review_requests`,
-    `sms_log`, `sms_opt_outs`, plus the Phase 2 tables (`crew`, `customers`,
-    `jobs`, `invoices`, etc.)
-
----
-
-## Step 3 — HubSpot Starter (20 min)
-
-CRM + lead form + workflow trigger.
-
-1. Sign up for HubSpot Starter at https://www.hubspot.com (~$20/mo Marketing+CRM)
-2. Use `jordan@asala.ai` (transfer ownership to Jay later via HubSpot User
-   Management)
-
-### Create the booking form
-
-3. Marketing → Forms → Create form → Regular form
-4. Form name: "Z and Z · Web Booking"
-5. Fields (drag from sidebar):
-   - First name (required)
-   - Last name (required)
-   - Email (required)
-   - Phone (required)
-   - ZIP code → custom property `zip_code` (text)
-   - Service interest → custom property `service_interest` (dropdown):
-     General Plumbing, Clogged Drain, Toilet, Emergency, Gas Line, Sewer
-     Lateral, Water Heater, Repipe, Hydrojetting, Other
-   - Preferred callback time → custom property (single-line text)
-   - Brief description → custom property (multi-line text)
-   - Source page → custom property (single-line text, hidden)
-   - **SMS consent** → custom property `sms_consent` (single checkbox):
-     label "OK to text me about my service · Reply STOP to opt out"
-6. Settings → Submit text: "Get a Quote"
-7. Publish. Get the form ID from the URL (`/forms/<portalId>/<formId>`)
-
-Set:
-- `HUBSPOT_PORTAL_ID=<from your URL>`
-- `HUBSPOT_FORM_ID=<from your URL>`
-
-### Create the Private App token
-
-8. Settings → Integrations → Private Apps → Create private app
-9. Name: "Z and Z OS"
-10. Scopes (Standard tab):
-    - `crm.objects.contacts.read`
-    - `crm.objects.deals.read`
-    - `crm.schemas.deals.read`
-11. Create app → Show token
-
-Set:
-- `HUBSPOT_PRIVATE_APP_TOKEN=<the token>`
-
-### Create the custom contact property `sms_consent`
-
-12. Settings → Properties → Contact properties → Create property
-13. Label: "SMS consent" · Internal name: `sms_consent` · Field type: Single
-    checkbox
-
-This is the boolean we check before scheduling a review SMS. Form submissions
-will write to this. Manual contacts default to false (no consent).
-
-### Create the deal stage "Won" (if not present)
-
-14. Settings → Objects → Deals → Pipelines
-15. Default pipeline → ensure there is a stage with label "Closed won"
-    (HubSpot Starter ships with this). The internal name is `closedwon`.
-
-### Build the booking-form pipeline (optional Sprint 2)
-
-For Sprint 1 launch we use click-to-call. The booking form ships in Sprint 2.
-When it ships, every form submission should create a contact + deal in the
-"New Lead" stage.
-
----
-
-## Step 4 — HubSpot Workflow → review-request webhook (10 min)
-
-This is the trigger that fires the SMS engine when Jay marks a deal Won.
-
-1. Marketing → Workflows → Create workflow → Start from scratch → Deal-based
-2. Name: "Z and Z OS · Review request trigger"
-3. Trigger: Deal property change → Deal stage → is `Closed won`
-4. Add action: Send a webhook (under "External communications" or the
-   integrations panel)
-5. Method: POST
-6. URL: `https://zandzplumbing.com/api/webhooks/hubspot` (or your Vercel
-   preview URL during testing — use the prod URL once you flip DNS)
-7. Authentication: Generate a signing secret (HubSpot will offer this).
-   Copy the secret.
-8. Save the workflow
-
-Set:
-- `HUBSPOT_WEBHOOK_SECRET=<the signing secret>`
-
-9. Turn the workflow ON. Test by manually moving a test deal to Closed Won.
-   Check the Z and Z OS admin → Reviews page. You should see a new row in
-   the "Pending" section.
-
----
-
-## Step 5 — Twilio account + phone number (15 min)
-
-1. Sign up at https://www.twilio.com — use Z and Z's business name and EIN
-   (Jay needs to provide). Verify the account.
+1. Sign up at https://www.twilio.com and verify the account. Add Jordan as admin.
 2. Buy a phone number:
    - Phone Numbers → Manage → Buy a number
-   - Country: US, Number type: Local, Area code: 510 (East Bay) preferred
+   - Country US, type Local, area code 510 preferred
    - Capabilities: SMS + MMS + Voice
-   - Cost: ~$1.15/month
-3. Get the credentials:
-   - Account home page → Account SID + Auth Token
+   - ~$1.15/month
+3. Account home page → Account SID + Auth Token
 
-Set:
-- `TWILIO_ACCOUNT_SID=<the SID>`
-- `TWILIO_AUTH_TOKEN=<the token>`
-- `TWILIO_PHONE_NUMBER=<the number in E.164, e.g. +15105551234>`
+Set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`.
+
+> **Do not port (510) 708-4237.** The main business line stays exactly where it
+> is. Porting risks downtime and NAP consistency across GBP and every citation,
+> for no near-term benefit. When voice work lands we use conditional forwarding
+> (forward on no-answer or busy) into the Twilio number instead, which is
+> reversible in one setting.
 
 ---
 
-## Step 6 — A2P 10DLC registration + Messaging Service (carrier review: 1-2 weeks)
+## Step 2 — A2P 10DLC registration + Messaging Service
 
-US carriers require business SMS to be registered. Required for every
-production SMS. **Skipping this means messages get blocked.**
+**Carrier review: 1-2 weeks. Do this first, then carry on with everything else
+while it sits in the queue.** US carriers require business SMS to be registered.
+Skipping it means messages get silently blocked.
 
 1. Twilio Console → Messaging → Regulatory Compliance → A2P 10DLC
-2. Register a Brand:
-   - Business legal name: as on Z and Z's business registration
-   - EIN: Jay provides
-   - Business address: 3057 Teagarden St, San Leandro, CA 94577
+2. **Register a Brand** (~$4 one-time + ~$2/month). Approval usually 1-3
+   business days.
+   - Business legal name exactly as registered, EIN
+   - Address: 3057 Teagarden St, San Leandro, CA 94577
    - Industry: Home Services
-   - Submit. ~$4 one-time + ~$2/month
-3. Wait for Brand approval (1-3 business days typically)
-4. Create a Campaign:
-   - Use case: "Mixed" (transactional + marketing)
-   - Description: "Post-job customer-service messages. Review-request texts
-     sent to customers who completed a service and opted in to SMS."
-   - Sample messages (paste the actual body from `lib/twilio.ts`):
-     ```
-     Hi Maria, this is Seif at Z and Z Plumbing. Thanks for having us out
-     for sewer lateral. If we did right by you, would you leave us a quick
-     Google review? It really helps the crew.
-     
-     https://zandzplumbing.com/r/abc123
-     
-     Reply STOP to opt out.
-     ```
-   - Opt-in flow: "Customer opts in via web form checkbox when booking
-     service. Specific consent language is shown next to the checkbox."
-   - Submit. ~$10 one-time + ~$2-10/month
-5. Wait for Campaign approval (5-10 business days typically)
-6. Create a Messaging Service:
-   - Messaging → Services → Create new
-   - Friendly name: "Z and Z Review Engine"
-   - Use case: Marketing
-   - Add the phone number from Step 5
-   - Attach the Campaign you just created
-7. Copy the Messaging Service SID (starts with `MG...`)
+3. **Create a Campaign** (~$10 one-time + ~$2-10/month). Approval usually 5-10
+   business days.
+   - Use case: **Mixed** (transactional + marketing)
+   - Description: "Post-job customer-service messages. Lead confirmations,
+     appointment updates, invoices, and review-request texts sent to customers
+     who requested service and opted in to SMS."
+   - **Sample messages must match what the code actually sends.** Copy the real
+     bodies out of `lib/lead-sms.ts` and `buildReviewRequestBody` in
+     `lib/twilio.ts` rather than writing new ones — a mismatch is a common
+     rejection reason.
+   - Opt-in flow: "Customer opts in via a checkbox on the web booking form.
+     Specific consent language is shown next to the checkbox." Consent is
+     recorded per phone number in our own `sms_consent` table.
+4. **Create a Messaging Service**
+   - Messaging → Services → Create new, name "Z and Z Dispatch"
+   - Add the phone number from Step 1 to the Sender Pool
+   - Attach the Campaign
 
-Set:
-- `TWILIO_MESSAGING_SERVICE_SID=<the MG... SID>`
+Set `TWILIO_MESSAGING_SERVICE_SID` (starts with `MG...`).
 
-### Wire the inbound webhook
+5. **Wire the inbound webhook.** Phone Numbers → Manage → Active Numbers → your
+   number → Messaging → "A message comes in":
+   `https://www.zandzplumbing.com/api/webhooks/twilio/inbound` (HTTP POST)
 
-8. Phone Numbers → Manage → Active Numbers → click your number
-9. Messaging configuration → "A message comes in" →
-   Webhook: `https://zandzplumbing.com/api/webhooks/twilio/inbound`
-   HTTP POST
-10. Save
-
-This is what handles STOP replies and conversation logging.
+   This handles STOP replies and logs every inbound message.
 
 ---
 
-## Step 7 — Google review short link (3 min)
+## Step 3 — Dispatch recipients (2 min)
 
-1. Sign in to Google Business Profile (Jay does this).
-2. Reviews → "Share review form"
-3. Copy the short URL (looks like `https://g.page/r/Cxxxxxxxxxxxxxxx/review`)
+`DISPATCH_PHONE` accepts a **comma-separated list**, same as `DISPATCH_EMAIL`,
+so Jay and Seif can both be alerted:
 
-Set:
-- `GOOGLE_REVIEW_URL=<the URL>`
+```
+DISPATCH_PHONE=5107084237,5105551234
+```
 
-This is where the review-request SMS link sends customers.
+US 10-digit is fine; the app normalizes to E.164 and reports any entry it can't
+parse rather than silently dropping it.
 
 ---
 
-## Step 8 — Vercel: env vars + cron + deploy (10 min)
+## Step 4 — Google review short link (3 min)
 
-1. Open the Vercel project (`zandz-plumbing-v3`).
-2. Settings → Environment Variables. Add EVERY var from `.env.local` to all
-   three environments (Production, Preview, Development).
-3. Generate a cron secret:
+Jay does this from Google Business Profile → Reviews → "Share review form".
+Copy the short URL (shape: `https://g.page/r/Cxxxxxxxxxxxxxxx/review`).
+
+Set `GOOGLE_REVIEW_URL`. Without it the review SMS links to a generic search.
+
+---
+
+## Step 5 — Cron secrets + deploy (10 min)
+
+1. Generate: `openssl rand -base64 32` → set `CRON_SECRET` (Production).
+
+   Both crons **fail closed** without it — they return 401 rather than running
+   unauthenticated. This is why the review engine has never fired.
+
+2. Settings → Cron Jobs. Two jobs are auto-detected from `vercel.json`:
+   - `/api/cron/send-review-requests` — hourly
+   - `/api/cron/lead-escalation` — every 5 minutes
+
+3. Optional: `LEAD_ESCALATION_MINUTES` (default `5,15,30`) and
+   `LEAD_ESCALATION_ENABLED=off` to disable escalation without touching the cron.
+
+4. Redeploy.
+
+---
+
+## Step 6 — Apply the migrations
+
+Run in the Supabase SQL editor, in order, any that haven't been applied:
+
+- `009_service_catalog.sql` + `supabase/seeds/service_catalog.sql`
+- `010_materials.sql` + `supabase/seeds/materials.sql`
+- `011_knowledge_docs.sql` + `supabase/seeds/knowledge_docs.sql`
+- `012_speed_to_lead.sql`
+
+**009-011 gate the pricebook** — invoice line auto-fill and the assistant's
+pricing answers are inert until they're loaded.
+
+**012 gates speed-to-lead.** It adds response-time columns to `jobs`, makes
+`review_requests` first-party (it was keyed on a NOT NULL HubSpot deal id, so
+with HubSpot gone nothing could create a row), and makes `sms_consent`
+first-party.
+
+---
+
+## Step 7 — Test end-to-end (15 min)
+
+Once Twilio is approved and live:
+
+1. **Lead path.** Submit the booking form with the SMS box ticked. Confirm:
+   dispatch email arrives, customer confirmation email arrives, dispatch SMS
+   reaches every number in `DISPATCH_PHONE`, customer receipt SMS arrives, and a
+   `sms_consent` row exists with `consented = true`.
+2. **Escalation.** Leave a test lead untouched. Within ~5 minutes the first
+   escalation text should arrive. Confirm a second cron run does not re-send the
+   same rung.
+3. **Response time.** Move the lead out of New. `/admin` should now show a
+   median callback figure.
+4. **Review engine.** Mark a job complete. Confirm a `review_requests` row with
+   `scheduled_send_at` inside the 11am-6pm Pacific window. To test without
+   waiting 48 hours, edit `scheduled_send_at` into the past in the Supabase
+   table editor, then:
    ```bash
-   openssl rand -base64 32
+   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://www.zandzplumbing.com/api/cron/send-review-requests
    ```
-   Add as `CRON_SECRET` (Production only).
-4. Settings → Cron Jobs. You should see one job:
-   `/api/cron/send-review-requests` — every hour (`0 * * * *`).
-   This was auto-detected from `vercel.json`.
-5. Trigger a redeploy: Deployments → ⋯ → Redeploy. Or push to git.
-6. Once deployed, hit `https://zandzplumbing.com/admin/login` and sign in
-   with the password you set in Step 1.
+5. **Click + opt-out.** Click the link in the review text (check `click_count`
+   increments), then reply STOP and confirm the `sms_opt_outs` row appears and
+   any pending requests for that number are cancelled.
+
+If something fails, check Vercel function logs for the route, then Twilio →
+Messaging → Logs for delivery status and error codes.
 
 ---
 
-## Step 9 — Test end-to-end (15 min)
+## Business hours
 
-You now have everything wired. Test:
+**Mon-Fri 7:00am-5:00pm Pacific, with 24/7 emergency service.** Confirmed
+2026-07-22. Encoded in `lib/time.ts` as `isBusinessHours()`.
 
-1. **Manually create a test deal in HubSpot:**
-   - Deal name: "TEST · do not bill"
-   - Associate with a contact that has YOUR phone number and `sms_consent = true`
-   - Move the deal to "Closed Won"
-2. **Within ~10 seconds:**
-   - Vercel function logs (Logs tab) should show the HubSpot webhook hit
-     `/api/webhooks/hubspot` with 200
-   - Z and Z OS → Admin → Reviews → "Pending" should show the new row
-3. **Force send (don't wait 48 hours for the test):**
-   - Open the Pending row in Supabase Table Editor
-   - Edit `scheduled_send_at` to a time in the past (e.g., yesterday)
-4. **Trigger the cron manually:**
-   ```bash
-   curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
-        https://zandzplumbing.com/api/cron/send-review-requests
-   ```
-   Or wait up to 1 hour for it to fire on its own.
-5. **You should receive the SMS on your phone.**
-6. **Click the link** — you should land on the Google review form, and the
-   admin → Reviews → "Sent" row should show "1× clicked".
-7. **Reply STOP** to the SMS — confirm:
-   - You should not receive any further messages
-   - Admin → Reviews → "Opted out" should show the row
-   - `sms_opt_outs` table in Supabase has your number
-
-If any step fails, check:
-- Vercel function logs for the relevant route
-- Twilio console → Messaging → Logs for delivery status
-- HubSpot Workflow → "View history" for webhook delivery
+This matters operationally: the escalation ladder only chases routine leads
+during staffed hours (and starts their clock at 7am if they arrived overnight),
+while emergency-flagged leads escalate around the clock.
 
 ---
 
-## Step 10 — Train Jay + Seif (5 min, after Step 9 passes)
-
-1. Walk them through `https://zandzplumbing.com/admin` on Jay's phone.
-2. Save it to home screen (Safari → Share → Add to Home Screen).
-3. Explain the workflow:
-   - When a job is complete, they move the HubSpot deal to "Closed won".
-   - The review SMS auto-sends 48 hours later, between 11am and 6pm PT.
-   - They never have to remember to ask for a review again.
-4. Show them where to check progress: Admin → Reviews.
-
----
-
-## What I (Asala) own vs what Jay owns
+## Who owns what
 
 | Thing | Owner |
 |---|---|
 | Supabase project, Vercel project, codebase | Asala |
-| HubSpot account, billing | Z and Z (Jay) |
-| Twilio account, billing | Z and Z (Jay), with Asala as admin |
-| GoDaddy domain | Z and Z (Jay) |
+| Resend account | Asala |
+| Twilio account + billing | Z and Z (Jay), Asala as admin |
+| GoDaddy domain + DNS | Z and Z (Jay) |
 | Google Business Profile | Z and Z (Jay) |
+| ServiceTitan | Z and Z (Jay) |
 | Customer + job data in Supabase | Z and Z owns the data, Asala hosts it |
 
-This separation matters: if Z and Z ever decides to switch agencies, all of
-their customer data exports cleanly because we own the database we built.
-
----
-
-## Sprint 3 — what unlocks once Phase 1 is producing reviews
-
-The same `crew`, `customers`, `jobs`, `invoices` tables are already created
-in Supabase (migration 002). When you're ready to ship the dispatch board +
-jobs + invoicing, the schema is waiting.
-
-Specific work that will happen in Sprint 3:
-- `/admin/dispatch` — drag-and-drop today's jobs onto crew + timeslots
-- `/admin/jobs` and `/admin/jobs/[id]` — full job CRUD with HubSpot sync
-- `/admin/customers` — customer list with HubSpot cross-reference
-- Tech PWA — mobile dispatch view with photo upload + status updates
-- Stripe Payment Links for invoicing
-- Customer status tracking page at `/track/[token]`
-
-Then ServiceTitan goes away.
+If Z and Z ever switches agencies, all customer data exports cleanly, because
+the database is ours to export rather than a vendor's to withhold.
 
 ---
 
 ## Troubleshooting
 
-**HubSpot webhook returns 401**
-Signature mismatch. Verify `HUBSPOT_WEBHOOK_SECRET` matches exactly what
-HubSpot generated when you saved the workflow action.
+**Cron returns 401**
+`CRON_SECRET` is unset or mismatched. Both crons deliberately fail closed in
+production rather than run unauthenticated.
 
-**Cron doesn't fire**
-- Vercel free tier: only 2 cron runs per day. Z and Z's project is on Pro,
-  so hourly works. Confirm under Settings → Plan.
-- Cron auth fails: check Vercel logs for "Unauthorized". The `CRON_SECRET`
-  env var must match.
+**SMS stuck in "queued" forever in Twilio logs**
+A2P Campaign not yet approved (by far the most common cause — wait it out), or
+the phone number is not in the Messaging Service Sender Pool.
 
-**SMS goes to "queued" forever in Twilio logs**
-- A2P 10DLC Campaign not yet approved (most common — wait it out).
-- Phone number not attached to the Messaging Service.
-- Check Twilio → Messaging → Services → your service → Sender Pool.
+**Customer never receives an SMS**
+Check Twilio → Messaging → Logs for the carrier error code. Also confirm the
+number isn't in `sms_opt_outs` and that `sms_consent.consented` is true.
 
-**Customer doesn't receive SMS**
-- Carrier rejected. Check Twilio → Messaging → Logs → error code.
-- Most common cause: A2P registration not complete. Wait for approval.
+**Review texts never send**
+Check in order: `CRON_SECRET` set, migration 012 applied, the job actually
+reached `complete`/`invoiced`/`paid`, the customer has consent on record, and
+the 90-day per-number throttle hasn't already fired.
+
+**Email says "domain not verified"**
+`LEAD_FROM_EMAIL` / `INVOICE_FROM_EMAIL` must be on a verified Resend *sending*
+domain. Both the root `zandzplumbing.com` and `notifications.zandzplumbing.com`
+are verified; the latter is the active config.
 
 **Admin login redirects in a loop**
-- `SESSION_SECRET` not set or too short (<32 chars). Check env.
+`SESSION_SECRET` unset or under 32 characters.
 
-**Google review link goes to weird Google search results**
-- `GOOGLE_REVIEW_URL` not set. Falls back to a generic search. Set the real
-  short URL from GBP.
+**Revenue reads $0**
+Expected. Migration 007 intentionally wiped `invoice_history`, so revenue builds
+up from jobs invoiced through the OS from that point on.
