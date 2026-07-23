@@ -6,14 +6,12 @@ import {
   CalendarCheck,
   Briefcase,
   Users,
-  Inbox,
   Star,
   HardHat,
   Video,
   Tag,
   LogOut,
   BarChart3,
-  Wrench,
   FileText,
   FileSignature,
   Sparkles,
@@ -29,28 +27,31 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Operations — the day-to-day. Marketing tools sit below a divider so the
-// running-the-business items aren't diluted by the growth ones.
+// Three tiers, ServiceTitan-style. Operations is Jay's daily surface; Business
+// is weekly; Settings is configuration touched rarely. Leads folded into the
+// Jobs pipeline (a lead is a job at stage `new`); Field left the office nav
+// (it's the tech's phone tool — /field stays live for them).
 const navMain = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/assistant", label: "Assistant", icon: Sparkles },
-  { href: "/admin/messages", label: "Messages", icon: MessageSquare },
-  { href: "/admin/leads", label: "Leads", icon: Inbox },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/field", label: "Field", icon: Wrench },
+  { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/estimates", label: "Estimates", icon: FileSignature },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
-  { href: "/admin/pricebook", label: "Pricebook", icon: BookText },
-  { href: "/admin/customers", label: "Customers", icon: Users },
-  { href: "/admin/crew", label: "Crew", icon: HardHat },
+  { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+  { href: "/admin/assistant", label: "Assistant", icon: Sparkles },
 ];
 
-const navMarketing = [
+const navBusiness = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/learning", label: "Videos", icon: Video },
-  { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/coupons", label: "Coupons", icon: Tag },
+  { href: "/admin/learning", label: "Videos", icon: Video },
+];
+
+const navSettings = [
+  { href: "/admin/pricebook", label: "Pricebook", icon: BookText },
+  { href: "/admin/crew", label: "Crew", icon: HardHat },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -88,35 +89,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="mx-auto flex max-w-[1800px] gap-8 px-6 py-8">
         <aside className="hidden w-56 flex-shrink-0 lg:block">
           <nav className="sticky top-24 flex flex-col gap-1">
-            {navMain.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="group flex items-center gap-3 border border-transparent px-4 py-3 text-base font-semibold text-muted transition-colors duration-150 hover:border-line hover:bg-raised hover:text-ink"
-                >
-                  <Icon className="h-5 w-5 flex-shrink-0 text-muted group-hover:text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {navMain.map((item) => (
+              <NavLink key={item.href} {...item} />
+            ))}
 
-            {/* Marketing + insights, set apart from the operational items. */}
+            {/* Business — weekly, not the daily grind. */}
             <div className="my-2 border-t border-line" />
-            {navMarketing.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="group flex items-center gap-3 border border-transparent px-4 py-3 text-base font-semibold text-muted transition-colors duration-150 hover:border-line hover:bg-raised hover:text-ink"
-                >
-                  <Icon className="h-5 w-5 flex-shrink-0 text-muted group-hover:text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {navBusiness.map((item) => (
+              <NavLink key={item.href} {...item} />
+            ))}
+
+            {/* Settings — configuration, touched rarely. */}
+            <div className="my-2 border-t border-line" />
+            <p className="px-4 pb-1 pt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-faint">
+              Settings
+            </p>
+            {navSettings.map((item) => (
+              <NavLink key={item.href} {...item} />
+            ))}
           </nav>
         </aside>
 
@@ -129,7 +119,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-line bg-card lg:hidden"
       >
         {navMain
-          .filter((n) => ["Dashboard", "Leads", "Dispatch", "Field", "Jobs"].includes(n.label))
+          .filter((n) => ["Dashboard", "Dispatch", "Jobs", "Invoices", "Messages"].includes(n.label))
           .map((item) => {
           const Icon = item.icon;
           return (
@@ -145,5 +135,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         })}
       </nav>
     </div>
+  );
+}
+
+/** One sidebar row. Kept as a small component so the three tiers render alike. */
+function NavLink({ href, label, icon: Icon }: { href: string; label: string; icon: typeof LayoutDashboard }) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-3 border border-transparent px-4 py-3 text-base font-semibold text-muted transition-colors duration-150 hover:border-line hover:bg-raised hover:text-ink"
+    >
+      <Icon className="h-5 w-5 flex-shrink-0 text-muted group-hover:text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
+      {label}
+    </Link>
   );
 }
