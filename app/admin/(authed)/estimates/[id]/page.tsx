@@ -88,7 +88,39 @@ export default async function EstimateDetailPage({
         </div>
       )}
 
-      {/* Actions */}
+      {/* Primary action: email the estimate to the customer. This is the whole
+          point of a fresh estimate, so it gets its own prominent panel with the
+          recipient spelled out — no guessing what "send" does. */}
+      {!isConverted && (
+        <div className="mb-4 border-2 border-[#F96302]/50 bg-[#F96302]/5 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="font-display text-lg font-black uppercase tracking-tight text-ink">
+                {estimate.status === "draft" ? "Send this estimate" : "Estimate sent"}
+              </p>
+              <p className="mt-0.5 text-sm text-muted">
+                {customer?.email ? (
+                  <>Emails the estimate as a PDF to <span className="font-semibold text-ink">{customer.email}</span></>
+                ) : (
+                  <span className="text-red-600">No email on file for this customer. Add one to send.</span>
+                )}
+              </p>
+            </div>
+            <form action={`/api/admin/estimates/${estimate.id}/send`} method="POST" className="shrink-0">
+              <button
+                type="submit"
+                disabled={!customer?.email}
+                className="inline-flex items-center gap-2 bg-[#F96302] px-6 py-3 text-base font-bold uppercase tracking-wide text-white hover:bg-[#e05602] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Send className="h-5 w-5" aria-hidden="true" />
+                {estimate.status === "draft" ? "Email to customer" : "Resend email"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Secondary actions */}
       <div className="mb-6 flex flex-wrap gap-2">
         <a
           href={`/api/admin/estimates/${estimate.id}/pdf`}
@@ -97,7 +129,7 @@ export default async function EstimateDetailPage({
           className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
         >
           <FileText className="h-4 w-4" aria-hidden="true" />
-          PDF
+          View PDF
         </a>
 
         {canEdit && (
@@ -110,19 +142,6 @@ export default async function EstimateDetailPage({
           </Link>
         )}
 
-        {/* The real send: emails the customer the branded estimate + PDF, then
-            marks it sent. Available until converted; re-sending is fine. */}
-        {!isConverted && (
-          <form action={`/api/admin/estimates/${estimate.id}/send`} method="POST">
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
-            >
-              <Send className="h-4 w-4" aria-hidden="true" />
-              {estimate.status === "draft" ? "Send to customer" : "Resend"}
-            </button>
-          </form>
-        )}
         {canEdit && (estimate.status === "sent" || estimate.status === "draft") && (
           <StatusButton id={estimate.id} status="approved" icon="check" label="Mark approved" />
         )}
@@ -134,7 +153,7 @@ export default async function EstimateDetailPage({
           <form action={`/api/admin/estimates/${estimate.id}/convert`} method="POST">
             <button
               type="submit"
-              className="inline-flex items-center gap-2 bg-[#F96302] px-4 py-2 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+              className="inline-flex items-center gap-2 border border-[#F96302] bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-[#F96302] hover:bg-[#F96302]/10"
             >
               <ArrowRightCircle className="h-4 w-4" aria-hidden="true" />
               Convert to invoice

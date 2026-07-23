@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, ExternalLink, Pencil } from "lucide-react";
+import { Plus, ExternalLink, Pencil, Send } from "lucide-react";
 import { listInvoices, invoiceViewUrl, type InvoiceListItem } from "@/lib/invoices";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { DeleteInvoiceButton } from "../_components/DeleteInvoiceButton";
@@ -126,7 +126,24 @@ export default async function InvoicesPage({
                     </td>
                     <td className="px-4 py-3 text-muted">{fmtDate(inv.created_at)}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-4">
+                      <div className="flex items-center justify-end gap-3">
+                        {/* Email the invoice + PDF. Primary on an unpaid, unsent
+                            invoice; a quiet "Resend" otherwise. */}
+                        {!inv.paid_at && (
+                          <form action={`/api/admin/invoices/${inv.id}/send`} method="POST">
+                            <button
+                              type="submit"
+                              className={
+                                inv.sent_at
+                                  ? "inline-flex items-center gap-1.5 text-muted hover:text-[#F96302]"
+                                  : "inline-flex items-center gap-1.5 bg-[#F96302] px-3 py-1.5 font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+                              }
+                            >
+                              <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                              {inv.sent_at ? "Resend" : "Email"}
+                            </button>
+                          </form>
+                        )}
                         <a
                           href={invoiceViewUrl(inv.id)}
                           target="_blank"
@@ -135,7 +152,6 @@ export default async function InvoicesPage({
                         >
                           Open <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                         </a>
-                        {/* Paid invoices are locked; the edit page explains why if reached directly. */}
                         {!inv.paid_at && (
                           <Link
                             href={`/admin/invoices/${inv.id}/edit`}

@@ -523,13 +523,20 @@ function InvoiceSection({
                     </span>
                   ) : (
                     <>
+                      {/* Send is the primary action on an unsent invoice —
+                          orange and unmistakable. Becomes a quiet "Resend" once
+                          it's already gone out. */}
                       <form action={`/api/admin/invoices/${invoice.id}/send`} method="POST">
                         <button
                           type="submit"
-                          className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
+                          className={
+                            invoice.sent_at
+                              ? "inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
+                              : "inline-flex items-center gap-2 bg-[#F96302] px-5 py-2 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+                          }
                         >
                           <Send className="h-4 w-4" aria-hidden="true" />
-                          Send
+                          {invoice.sent_at ? "Resend" : "Email invoice"}
                         </button>
                       </form>
                       <Link
