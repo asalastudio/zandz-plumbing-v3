@@ -2,6 +2,7 @@ import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from 
 import { isAuthenticated } from "@/lib/auth";
 import { assistantTools } from "@/lib/assistant/tools";
 import { systemPrompt } from "@/lib/assistant/prompt";
+import { recordUsage } from "@/lib/api-usage";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -35,12 +36,23 @@ export async function POST(req: Request) {
     convertToModelMessages(messages),
   ]);
 
+  const model = process.env.ASSISTANT_MODEL ?? DEFAULT_MODEL;
   const result = streamText({
-    model: process.env.ASSISTANT_MODEL ?? DEFAULT_MODEL,
+    model,
     system,
     messages: modelMessages,
     tools: assistantTools,
     stopWhen: stepCountIs(6), // allow find → context tool chains
+    // Fire-and-forget cost logging so /admin/analytics can total AI spend.
+    onFinish: ({ usage }) => {
+      void recordUsage({
+        provider: "ai_gateway",
+        model,
+        operation: "assistant_chat",
+        inputTokens: usage?.inputTokens ?? 0,
+        outputTokens: usage?.outputTokens ?? 0,
+      });
+    },
   });
 
   return result.toUIMessageStreamResponse();

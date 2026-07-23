@@ -37,6 +37,13 @@ const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
 export type EmailResult = { ok: boolean; skipped?: boolean; error?: string };
 
+export interface EmailAttachment {
+  filename: string;
+  /** Base64-encoded file content. */
+  content: string;
+  contentType?: string;
+}
+
 export interface SendEmailInput {
   to: string | string[];
   subject: string;
@@ -46,6 +53,7 @@ export interface SendEmailInput {
   from?: string;
   /** Where replies should go. Omit for internal mail. */
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }
 
 /**
@@ -79,6 +87,15 @@ export async function sendEmail(input: SendEmailInput): Promise<EmailResult> {
         html: input.html,
         text: input.text,
         ...(input.replyTo ? { reply_to: input.replyTo } : {}),
+        ...(input.attachments && input.attachments.length
+          ? {
+              attachments: input.attachments.map((a) => ({
+                filename: a.filename,
+                content: a.content,
+                ...(a.contentType ? { content_type: a.contentType } : {}),
+              })),
+            }
+          : {}),
       }),
     });
 

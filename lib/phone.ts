@@ -9,6 +9,14 @@ export function isValidNanp10Digits(value: string): boolean {
   return !/^(\d)\1{9}$/.test(digits);
 }
 
+/** Human-friendly US phone display: "+15107084237" → "(510) 708-4237". */
+export function formatPhone(value: string): string {
+  const digits = digitsOnly(value);
+  const ten = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+  if (ten.length !== 10) return value;
+  return `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}`;
+}
+
 export function normalizeNanpToE164(value: string): string | null {
   const digits = digitsOnly(value);
 

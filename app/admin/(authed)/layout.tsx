@@ -18,6 +18,7 @@ import {
   FileSignature,
   Sparkles,
   BookText,
+  MessageSquare,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -28,19 +29,25 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const nav = [
+// Operations — the day-to-day. Marketing tools sit below a divider so the
+// running-the-business items aren't diluted by the growth ones.
+const navMain = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/assistant", label: "Assistant", icon: Sparkles },
+  { href: "/admin/messages", label: "Messages", icon: MessageSquare },
   { href: "/admin/leads", label: "Leads", icon: Inbox },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
-  { href: "/field", label: "Field", icon: Wrench },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/field", label: "Field", icon: Wrench },
   { href: "/admin/estimates", label: "Estimates", icon: FileSignature },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
   { href: "/admin/pricebook", label: "Pricebook", icon: BookText },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/crew", label: "Crew", icon: HardHat },
+];
+
+const navMarketing = [
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/learning", label: "Videos", icon: Video },
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
@@ -81,7 +88,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="mx-auto flex max-w-[1800px] gap-8 px-6 py-8">
         <aside className="hidden w-56 flex-shrink-0 lg:block">
           <nav className="sticky top-24 flex flex-col gap-1">
-            {nav.map((item) => {
+            {navMain.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex items-center gap-3 border border-transparent px-4 py-3 text-base font-semibold text-muted transition-colors duration-150 hover:border-line hover:bg-raised hover:text-ink"
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0 text-muted group-hover:text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
+                  {item.label}
+                </Link>
+              );
+            })}
+
+            {/* Marketing + insights, set apart from the operational items. */}
+            <div className="my-2 border-t border-line" />
+            {navMarketing.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
@@ -105,7 +128,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         aria-label="Admin"
         className="fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 border-t border-line bg-card lg:hidden"
       >
-        {nav
+        {navMain
           .filter((n) => ["Dashboard", "Leads", "Dispatch", "Field", "Jobs"].includes(n.label))
           .map((item) => {
           const Icon = item.icon;

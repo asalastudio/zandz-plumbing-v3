@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Phone, MapPin, TrendingUp, Users, Wrench, Clock, BarChart3, Timer } from "lucide-react";
+import { Phone, MapPin, TrendingUp, Users, Wrench, Clock, BarChart3, Timer, Cpu } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getAnalytics,
@@ -8,6 +8,7 @@ import {
   formatMoneyShort,
   formatDuration,
 } from "@/lib/db";
+import { getMonthUsage, formatMicros } from "@/lib/api-usage";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,11 @@ export default async function AnalyticsPage() {
     return <NotConfigured />;
   }
 
-  const [data, responseTime] = await Promise.all([getAnalytics(), getResponseTimeStats(90)]);
+  const [data, responseTime, usage] = await Promise.all([
+    getAnalytics(),
+    getResponseTimeStats(90),
+    getMonthUsage(),
+  ]);
 
   // For the monthly revenue bar chart — find the max value to normalize bar heights
   const monthlyMax = Math.max(1, ...data.monthlyRevenue.map((m) => m.revenueCents));
@@ -72,6 +77,69 @@ export default async function AnalyticsPage() {
           began with the speed-to-lead release, so this only covers leads handled since
           then. Do not publish a callback-time claim until the sample is meaningful.
         </p>
+      </section>
+
+      {/* API cost — what the platform's AI is spending this month. */}
+      <section className="mb-12">
+        <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted">
+          <Cpu className="h-4 w-4" aria-hidden="true" />
+          AI usage · {usage.monthLabel}
+        </h2>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {/* AI Gateway spend from the usage ledger */}
+          <div className="border border-line bg-card p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted">AI Gateway (Claude)</p>
+            <p className="mt-1 font-display text-3xl font-black text-ink">
+              {formatMicros(
+                usage.byProvider.find((p) => p.provider === "ai_gateway")?.costMicros ?? 0
+              )}
+            </p>
+            <p className="text-xs text-faint">
+              {(usage.byProvider.find((p) => p.provider === "ai_gateway")?.calls ?? 0).toLocaleString()}{" "}
+              calls · estimated
+            </p>
+          </div>
+
+          {/* ElevenLabs, live from their API */}
+          <div className="border border-line bg-card p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted">ElevenLabs voice</p>
+            {usage.elevenLabs ? (
+              <>
+                <p className="mt-1 font-display text-3xl font-black text-ink">
+                  {usage.elevenLabs.nextInvoiceCents != null
+                    ? `$${(usage.elevenLabs.nextInvoiceCents / 100).toFixed(2)}`
+                    : "—"}
+                </p>
+                <p className="text-xs text-faint">
+                  next invoice · {usage.elevenLabs.charactersUsed.toLocaleString()} /{" "}
+                  {usage.elevenLabs.characterLimit.toLocaleString()} chars
+                  {usage.elevenLabs.tier ? ` · ${usage.elevenLabs.tier}` : ""}
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 text-sm text-muted">Not connected (ELEVENLABS_API_KEY unset).</p>
+            )}
+          </div>
+
+          {/* Total */}
+          <div className="border border-[#F96302]/30 bg-[#F96302]/5 p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#F96302]">
+              Metered AI this month
+            </p>
+            <p className="mt-1 font-display text-3xl font-black text-ink">
+              {formatMicros(usage.totalMicros)}
+            </p>
+            <p className="text-xs text-faint">
+              Gateway spend. Voice billed separately by ElevenLabs.
+            </p>
+          </div>
+        </div>
+
+        {usage.byProvider.length > 0 && (
+          <p className="mt-2 text-xs text-faint">
+            Estimated from token counts at published model rates — a gauge, not a bill.
+          </p>
+        )}
       </section>
 
       {/* Summary stats strip */}
