@@ -43,7 +43,7 @@ export default async function PublicInvoicePage({
         {/* Brand bar */}
         <div className="mb-5 flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt={siteSettings.name} className="h-10 w-auto" />
+          <img src="/logo-wordmark.svg" alt={siteSettings.name} className="h-10 w-auto" />
         </div>
 
         <div className="overflow-hidden rounded-xl border border-[#E5E5E5] bg-white shadow-sm">
