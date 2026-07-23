@@ -57,13 +57,16 @@ export function FaucetMark({ size = 44, className }: FaucetMarkProps) {
  * contrast.
  */
 export function Logo({ variant = "light", className, linkWrapper = true }: LogoProps) {
-  const src = variant === "dark" ? "/logo-dark.svg" : "/logo.svg";
+  // The "dark" variant is the dark-text wordmark for light surfaces (admin
+  // chrome, field, customer track/invoice/estimate pages). "light" stays the
+  // white/orange mark for black header/footer bands on the marketing site.
+  const src = variant === "dark" ? "/logo-wordmark.svg" : "/logo.svg";
   const mark = (
     <img
       src={src}
       alt="Z and Z Plumbing"
-      width={variant === "dark" ? 228 : 220}
-      height={variant === "dark" ? 56 : 80}
+      width={variant === "dark" ? 260 : 220}
+      height={variant === "dark" ? 77 : 80}
       className={cn("h-12 w-auto md:h-14", className)}
     />
   );

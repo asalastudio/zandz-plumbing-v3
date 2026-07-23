@@ -15,7 +15,7 @@ export default async function EstimateDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; updated?: string; estimate?: string }>;
+  searchParams: Promise<{ error?: string; updated?: string; estimate?: string; sent?: string }>;
 }) {
   if (!isSupabaseConfigured()) return notFound();
 
@@ -67,6 +67,11 @@ export default async function EstimateDetailPage({
           Updated.
         </div>
       )}
+      {query.sent && (
+        <div className="mb-4 border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          Estimate emailed to the customer{customer?.email ? ` at ${customer.email}` : ""}, with the PDF attached.
+        </div>
+      )}
       {query.error && (
         <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {decodeURIComponent(query.error)}
@@ -105,8 +110,18 @@ export default async function EstimateDetailPage({
           </Link>
         )}
 
-        {canEdit && estimate.status === "draft" && (
-          <StatusButton id={estimate.id} status="sent" icon="send" label="Mark sent" />
+        {/* The real send: emails the customer the branded estimate + PDF, then
+            marks it sent. Available until converted; re-sending is fine. */}
+        {!isConverted && (
+          <form action={`/api/admin/estimates/${estimate.id}/send`} method="POST">
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
+            >
+              <Send className="h-4 w-4" aria-hidden="true" />
+              {estimate.status === "draft" ? "Send to customer" : "Resend"}
+            </button>
+          </form>
         )}
         {canEdit && (estimate.status === "sent" || estimate.status === "draft") && (
           <StatusButton id={estimate.id} status="approved" icon="check" label="Mark approved" />
