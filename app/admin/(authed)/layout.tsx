@@ -16,6 +16,7 @@ import {
   Wrench,
   FileText,
   Sparkles,
+  BookText,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/auth";
 import { Logo } from "@/components/Logo";
@@ -35,6 +36,7 @@ const nav = [
   { href: "/field", label: "Field", icon: Wrench },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
+  { href: "/admin/pricebook", label: "Pricebook", icon: BookText },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/crew", label: "Crew", icon: HardHat },
   { href: "/admin/learning", label: "Videos", icon: Video },

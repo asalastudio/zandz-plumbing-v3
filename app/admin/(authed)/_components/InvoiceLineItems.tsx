@@ -54,16 +54,36 @@ function lineTotal(l: Line): number {
  * stop retyping. Submits the same description/quantity/unit_price arrays the
  * API already parses, so nothing downstream changes.
  */
+export interface InitialLine {
+  description: string;
+  quantity: number;
+  unitPriceCents: number;
+  code?: string | null;
+  name?: string | null;
+}
+
 export default function InvoiceLineItems({
   defaultDescription = "",
   defaultPrice = "",
+  initialLines,
 }: {
   defaultDescription?: string;
   defaultPrice?: string;
+  /** Existing lines to edit. When present, seeds the editor instead of one blank line. */
+  initialLines?: InitialLine[];
 }) {
-  const [lines, setLines] = useState<Line[]>(() => [
-    blankLine({ description: defaultDescription, unitPrice: defaultPrice }),
-  ]);
+  const [lines, setLines] = useState<Line[]>(() =>
+    initialLines && initialLines.length > 0
+      ? initialLines.map((l) => ({
+          key: SEQ++,
+          code: l.code ?? null,
+          name: l.name ?? null,
+          description: l.description,
+          quantity: String(l.quantity),
+          unitPrice: (l.unitPriceCents / 100).toFixed(2),
+        }))
+      : [blankLine({ description: defaultDescription, unitPrice: defaultPrice })]
+  );
 
   const update = useCallback((key: number, patch: Partial<Line>) => {
     setLines((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)));

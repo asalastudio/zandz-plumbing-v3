@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, ExternalLink } from "lucide-react";
+import { Plus, ExternalLink, Pencil } from "lucide-react";
 import { listInvoices, invoiceViewUrl, type InvoiceListItem } from "@/lib/invoices";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { DeleteInvoiceButton } from "../_components/DeleteInvoiceButton";
@@ -135,6 +135,15 @@ export default async function InvoicesPage({
                         >
                           Open <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                         </a>
+                        {/* Paid invoices are locked; the edit page explains why if reached directly. */}
+                        {!inv.paid_at && (
+                          <Link
+                            href={`/admin/invoices/${inv.id}/edit`}
+                            className="inline-flex items-center gap-1.5 text-muted hover:text-[#F96302]"
+                          >
+                            Edit <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Link>
+                        )}
                         <DeleteInvoiceButton invoiceId={inv.id} compact label="Delete" />
                       </div>
                     </td>
