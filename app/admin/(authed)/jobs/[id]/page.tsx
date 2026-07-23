@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Phone, MapPin, Calendar, User, FileText, AlertTriangle, Camera, CreditCard, Send, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Phone, MapPin, Calendar, User, FileText, AlertTriangle, Camera, CreditCard, Send, CheckCircle2, Pencil } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getJob,
@@ -490,6 +490,13 @@ function InvoiceSection({
                           Send
                         </button>
                       </form>
+                      <Link
+                        href={`/admin/invoices/${invoice.id}/edit?return_to=${encodeURIComponent(`/admin/jobs/${jobId}`)}`}
+                        className="inline-flex items-center gap-2 border border-line bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-ink hover:border-[#F96302] hover:text-[#F96302]"
+                      >
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
+                        Edit
+                      </Link>
                       {invoice.stripe_payment_link_url && (
                         <a
                           href={invoice.stripe_payment_link_url}

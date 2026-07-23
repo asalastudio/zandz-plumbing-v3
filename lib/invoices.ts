@@ -126,6 +126,56 @@ export async function createJobInvoice(input: {
   return normalizeInvoice(data);
 }
 
+/**
+ * Edit an existing invoice's line items and notes.
+ *
+ * Refused once the invoice is paid — the amount on a paid invoice is a settled
+ * fact, and quietly changing it would desync the money. Recomputes the total
+ * from the new lines and re-syncs the job's final amount so the dashboard and a
+ * re-sent copy stay consistent.
+ */
+export async function updateInvoice(
+  invoiceId: number,
+  input: { lineItems: InvoiceLineItem[]; notes?: string | null }
+): Promise<InvoiceRecord> {
+  const sb = supabase();
+
+  const { data: existing, error: fetchErr } = await sb
+    .from("invoices")
+    .select("id, job_id, paid_at")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (fetchErr) throw new Error(`updateInvoice fetch: ${fetchErr.message}`);
+  if (!existing) throw new InvoiceInputError("Invoice not found.");
+  if (existing.paid_at) {
+    throw new InvoiceInputError("This invoice is marked paid and can no longer be edited.");
+  }
+
+  const amountCents = invoiceTotalCents(input.lineItems);
+
+  const { data: updated, error: upErr } = await sb
+    .from("invoices")
+    .update({
+      line_items: input.lineItems,
+      amount_cents: amountCents,
+      notes: input.notes ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", invoiceId)
+    .select("*")
+    .single();
+  if (upErr) throw new Error(`updateInvoice: ${upErr.message}`);
+
+  // Keep the linked job's final amount in step with the edited total.
+  if (existing.job_id) {
+    await syncJobAfterInvoice(existing.job_id as number, amountCents).catch((e) =>
+      console.error("[updateInvoice] job sync failed:", e)
+    );
+  }
+
+  return normalizeInvoice(updated);
+}
+
 export async function getInvoiceContext(invoiceId: number): Promise<InvoiceContext | null> {
   const sb = supabase();
   const { data: invoiceData, error: invoiceError } = await sb
