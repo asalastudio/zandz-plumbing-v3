@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Phone, MapPin, Calendar, User, FileText, AlertTriangle, Camera, CreditCard, Send, CheckCircle2, Pencil } from "lucide-react";
+import { ChevronLeft, Phone, MapPin, Calendar, User, FileText, AlertTriangle, Camera, CreditCard, Send, CheckCircle2, Pencil, FileSignature } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getJob,
@@ -18,6 +18,7 @@ import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
 import { listJobPhotos, type JobPhotoWithUrl } from "@/lib/job-photos";
 import { isStripeConfigured } from "@/lib/stripe-checkout";
 import { listJobInvoices, type InvoiceRecord } from "@/lib/invoices";
+import { listJobEstimates } from "@/lib/estimates";
 
 export const dynamic = "force-dynamic";
 
@@ -44,10 +45,11 @@ export default async function JobDetailPage({
   const job = await getJob(id);
   if (!job) notFound();
 
-  const [crew, photos, invoices] = await Promise.all([
+  const [crew, photos, invoices, estimates] = await Promise.all([
     listCrew({ activeOnly: true }),
     listJobPhotos(id),
     listJobInvoices(id),
+    listJobEstimates(id),
   ]);
   const transitions =
     job.status === "new"
@@ -78,14 +80,54 @@ export default async function JobDetailPage({
             </span>
           </p>
         </div>
-        <a
-          href="#invoice"
-          className="inline-flex items-center gap-2 self-start border border-line bg-card px-5 py-3 text-sm font-bold uppercase tracking-wide text-muted transition-colors hover:border-[#F96302] hover:text-[#F96302] md:self-auto"
-        >
-          <CreditCard className="h-4 w-4" aria-hidden="true" />
-          Create invoice
-        </a>
+        <div className="flex flex-wrap gap-2 self-start md:self-auto">
+          <Link
+            href={`/admin/estimates/new?job_id=${job.id}&return_to=${encodeURIComponent(`/admin/jobs/${job.id}`)}`}
+            className="inline-flex items-center gap-2 border border-line bg-card px-5 py-3 text-sm font-bold uppercase tracking-wide text-muted transition-colors hover:border-[#F96302] hover:text-[#F96302]"
+          >
+            <FileSignature className="h-4 w-4" aria-hidden="true" />
+            Estimate
+          </Link>
+          <a
+            href="#invoice"
+            className="inline-flex items-center gap-2 border border-line bg-card px-5 py-3 text-sm font-bold uppercase tracking-wide text-muted transition-colors hover:border-[#F96302] hover:text-[#F96302]"
+          >
+            <CreditCard className="h-4 w-4" aria-hidden="true" />
+            Create invoice
+          </a>
+        </div>
       </header>
+
+      {estimates.length > 0 && (
+        <section className="mb-8 border border-line bg-card p-5">
+          <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-muted">
+            <FileSignature className="h-4 w-4" aria-hidden="true" />
+            Estimates
+          </h2>
+          <ul className="space-y-2">
+            {estimates.map((est) => (
+              <li key={est.id} className="flex items-center justify-between gap-3 border border-line bg-surface px-4 py-3">
+                <Link href={`/admin/estimates/${est.id}`} className="group min-w-0">
+                  <span className="font-bold text-ink group-hover:text-[#F96302]">
+                    Estimate #{est.id}
+                  </span>
+                  <span className="ml-2 text-sm text-muted">
+                    ${(est.amount_cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })} · {est.status}
+                  </span>
+                </Link>
+                <a
+                  href={`/api/admin/estimates/${est.id}/pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-sm font-semibold text-[#F96302] hover:underline"
+                >
+                  PDF
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {query.error === "has_invoice" && (
         <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">

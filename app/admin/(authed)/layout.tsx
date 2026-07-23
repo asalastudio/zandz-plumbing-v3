@@ -15,6 +15,7 @@ import {
   BarChart3,
   Wrench,
   FileText,
+  FileSignature,
   Sparkles,
   BookText,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const nav = [
   { href: "/admin/dispatch", label: "Dispatch", icon: CalendarCheck },
   { href: "/field", label: "Field", icon: Wrench },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/admin/estimates", label: "Estimates", icon: FileSignature },
   { href: "/admin/invoices", label: "Invoices", icon: FileText },
   { href: "/admin/pricebook", label: "Pricebook", icon: BookText },
   { href: "/admin/customers", label: "Customers", icon: Users },
