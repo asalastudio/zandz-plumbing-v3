@@ -35,7 +35,33 @@ interface SendInvoiceEmailInput {
   notes?: string | null;
 }
 
+/**
+ * Render the invoice as a PDF attachment. Best-effort: a rendering failure must
+ * never stop the invoice email itself from going out, so this returns undefined
+ * and the caller sends without the attachment.
+ */
+async function invoicePdfAttachment(invoiceId: number) {
+  try {
+    const { getInvoiceForDocument } = await import("@/lib/invoices");
+    const { renderInvoicePdf } = await import("@/lib/documents/invoice-pdf");
+    const { loadLogo } = await import("@/lib/documents/logo");
+    const data = await getInvoiceForDocument(invoiceId);
+    if (!data) return undefined;
+    const logo = await loadLogo();
+    const pdf = await renderInvoicePdf(data, logo?.uri, logo?.isWordmark);
+    return {
+      filename: `Invoice-${invoiceId}.pdf`,
+      content: pdf.toString("base64"),
+      contentType: "application/pdf",
+    };
+  } catch (err) {
+    console.error("[invoice-email] PDF attach failed:", err);
+    return undefined;
+  }
+}
+
 export async function sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<EmailResult> {
+  const pdf = await invoicePdfAttachment(input.invoiceId);
   const html = renderEmailLayout({
     eyebrow: "Invoice from Z and Z Plumbing",
     heading: formatMoney(input.amountCents),
@@ -51,6 +77,7 @@ export async function sendInvoiceEmail(input: SendInvoiceEmailInput): Promise<Em
     html,
     text: buildInvoiceText(input),
     replyTo: replyToInbox(),
+    attachments: pdf ? [pdf] : undefined,
   });
 }
 

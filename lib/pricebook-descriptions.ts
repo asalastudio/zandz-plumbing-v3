@@ -14,6 +14,7 @@
 import { generateText } from "ai";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { getServiceMaterials } from "@/lib/db";
+import { recordUsage } from "@/lib/api-usage";
 
 const MODEL = process.env.ASSISTANT_MODEL ?? "anthropic/claude-sonnet-4-6";
 
@@ -209,11 +210,18 @@ export async function regenerateDescription(id: number): Promise<void> {
 
 export async function generateDescriptionDraft(s: DraftableService): Promise<string> {
   const prompt = await buildPrompt(s);
-  const { text } = await generateText({
+  const { text, usage } = await generateText({
     model: MODEL,
     system: SYSTEM,
     prompt,
     temperature: 0.4,
+  });
+  void recordUsage({
+    provider: "ai_gateway",
+    model: MODEL,
+    operation: "pricebook_draft",
+    inputTokens: usage?.inputTokens ?? 0,
+    outputTokens: usage?.outputTokens ?? 0,
   });
   return text.trim();
 }
