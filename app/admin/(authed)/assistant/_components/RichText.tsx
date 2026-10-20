@@ -24,10 +24,32 @@ type Href =
   | { kind: "internal"; href: string }
   | { kind: "external"; href: string };
 
+// External links are clickable only for hosts the assistant has a real reason
+// to point at. Customer-typed text reaches the model through tool results, so
+// an arbitrary link in a reply could be planted; anything else renders as
+// plain text the operator can read but not click.
+const EXTERNAL_HOSTS = [
+  "zandzplumbing.com",
+  "google.com",
+  "g.page",
+  "ebmud.com",
+  "cslb.ca.gov",
+  "oaklandca.gov",
+];
+
+function isAllowedHost(href: string): boolean {
+  try {
+    const host = new URL(href).hostname.toLowerCase();
+    return EXTERNAL_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+  } catch {
+    return false;
+  }
+}
+
 function safeHref(raw: string): Href | null {
   const href = raw.trim();
   if (href.startsWith("/")) return { kind: "internal", href };
-  if (/^https?:\/\//i.test(href)) return { kind: "external", href };
+  if (/^https?:\/\//i.test(href)) return isAllowedHost(href) ? { kind: "external", href } : null;
   // Genuinely useful for an operator mid-call, and both are inert on their own.
   if (/^(?:tel:|mailto:)/i.test(href)) return { kind: "external", href };
   return null;
@@ -90,8 +112,12 @@ function parseInline(text: string, keyPrefix: string): ReactNode[] {
 
     push(/\[([^\]\n]+)\]\(([^)\s]+)\)/.exec(rest), (m) => {
       const href = safeHref(m[2]);
-      // Unsafe scheme: keep the label, drop the link.
-      if (!href) return <span key={`${keyPrefix}-l${i}`}>{m[1]}</span>;
+      // Unsafe scheme or unknown site: keep the label, drop the link. Web
+      // addresses stay visible as plain text so the operator can judge them.
+      if (!href) {
+        const shown = /^https?:\/\//i.test(m[2]) ? `${m[1]} (${m[2]})` : m[1];
+        return <span key={`${keyPrefix}-l${i}`}>{shown}</span>;
+      }
       return (
         <Anchor key={`${keyPrefix}-l${i}`} href={href}>
           {m[1]}

@@ -9,7 +9,7 @@ import { listPublicJobInvoices, type InvoiceRecord } from "@/lib/invoices";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Job Status · Z and Z Plumbing",
+  title: { absolute: "Job Status · Z and Z Plumbing" },
   robots: { index: false, follow: false },
 };
 
@@ -19,6 +19,18 @@ const STATUS_TIMELINE = [
   { key: "on_site", label: "On site", description: "The crew has arrived and is working on it." },
   { key: "complete", label: "Complete", description: "Work is done. Thanks for choosing Z and Z." },
 ] as const;
+
+/**
+ * Where a job status sits on the customer timeline. Statuses that aren't a
+ * step of their own map onto the nearest one: a paused job is still "on site"
+ * (the crew stepped away mid-job), and invoiced / paid jobs are past the last
+ * step, so every work step shows as done.
+ */
+function timelineIndex(status: string): number {
+  if (status === "paused") return STATUS_TIMELINE.findIndex((s) => s.key === "on_site");
+  if (status === "invoiced" || status === "paid") return STATUS_TIMELINE.length;
+  return STATUS_TIMELINE.findIndex((s) => s.key === status);
+}
 
 type Job = {
   id: number;
@@ -97,7 +109,7 @@ export default async function TrackingPage({
   if (!data) notFound();
 
   const { job, customer, assignee, invoices } = data;
-  const currentStepIndex = STATUS_TIMELINE.findIndex((s) => s.key === job.status);
+  const currentStepIndex = timelineIndex(job.status);
   const isCancelled = job.status === "cancelled";
 
   return (

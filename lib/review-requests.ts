@@ -26,8 +26,8 @@ import { pacificYmd, pacificHour, pacificWallClock } from "@/lib/time";
 export const REVIEW_TRIGGER_STATUSES = ["complete", "invoiced", "paid"] as const;
 
 const DELAY_HOURS = 48;
-const WINDOW_OPEN_HOUR = 11; // 11am Pacific
-const WINDOW_CLOSE_HOUR = 18; // 6pm Pacific
+export const WINDOW_OPEN_HOUR = 11; // 11am Pacific
+export const WINDOW_CLOSE_HOUR = 18; // 6pm Pacific
 const THROTTLE_DAYS = 90;
 
 /**

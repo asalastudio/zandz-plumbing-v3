@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Section, SectionHeading } from "@/components/Section";
+import { Section } from "@/components/Section";
 import { siteSettings } from "@/content/site-settings";
 
 const LAST_UPDATED = "May 12, 2026";
@@ -8,7 +8,7 @@ const LAST_UPDATED = "May 12, 2026";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "The terms that govern your use of zandzplumbing.com and the plumbing services provided by Z and Z Plumbing.",
+    "The terms that govern your use of zandzplumbing.com and the plumbing services Z and Z Plumbing provides, including estimates, scheduling, and payment.",
   alternates: { canonical: `${siteSettings.siteUrl}/terms/` },
   openGraph: {
     title: "Terms of Service | Z and Z Plumbing",
@@ -197,11 +197,18 @@ const sections: { id: string; heading: string; body: React.ReactNode }[] = [
 export default function TermsPage() {
   return (
     <Section bg="white" size="lg" narrow>
-      <SectionHeading
-        eyebrow="Legal"
-        title="Terms of Service"
-        description={`The terms that govern your use of zandzplumbing.com and the services provided by Z and Z Plumbing. Last updated ${LAST_UPDATED}.`}
-      />
+      {/* Same styling as SectionHeading, but the page title is the H1. */}
+      <div className="mb-10 md:mb-12">
+        <p className="mb-4 font-sans text-sm font-bold uppercase tracking-[0.08em] text-[#F96302] md:text-base">
+          Legal
+        </p>
+        <h1 className="font-display text-5xl md:text-6xl font-black uppercase leading-tight text-black">
+          Terms of Service
+        </h1>
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-[#333333] md:text-3xl">
+          {`The terms that govern your use of zandzplumbing.com and the services provided by Z and Z Plumbing. Last updated ${LAST_UPDATED}.`}
+        </p>
+      </div>
 
       {/* Table of contents */}
       <nav aria-label="On this page" className="mb-12 rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-6 md:p-8">

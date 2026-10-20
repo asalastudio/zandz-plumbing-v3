@@ -9,12 +9,12 @@ import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
 export const metadata: Metadata = {
-  title: "Plumbing Service Areas | Oakland, San Leandro, Berkeley & East Bay",
+  title: "East Bay Plumbing Service Areas",
   description:
-    "Z and Z Plumbing serves the East Bay corridor from our San Leandro headquarters, including Alameda County, Contra Costa County, Oakland, San Leandro, Berkeley, Alameda, Hayward, Castro Valley, Union City, Fremont, Newark, Dublin, Pleasanton, and Walnut Creek. 24/7 emergency response.",
+    "Same-day plumbing from our San Leandro HQ to Oakland, Berkeley, Alameda, Hayward, Fremont, Walnut Creek, and the rest of the East Bay. 24/7 emergencies.",
   alternates: { canonical: `${siteSettings.siteUrl}/service-areas/` },
   openGraph: {
-    title: "Service Areas | Z and Z Plumbing",
+    title: "East Bay Plumbing Service Areas | Z and Z Plumbing",
     description:
       "East Bay corridor coverage. Same-day plumbing service from our San Leandro base. Two licenses. One crew.",
     url: `${siteSettings.siteUrl}/service-areas/`,

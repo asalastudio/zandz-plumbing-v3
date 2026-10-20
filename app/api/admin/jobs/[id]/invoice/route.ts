@@ -6,7 +6,6 @@ import { sendInvoiceEmail } from "@/lib/invoice-email";
 import {
   createJobInvoice,
   ensureCustomerTrackingToken,
-  invoiceTotalCents,
   InvoiceInputError,
   markInvoiceSent,
   parseInvoiceLineItems,
@@ -69,7 +68,7 @@ export async function POST(
       lineItems,
       notes,
     });
-    await syncJobAfterInvoice(jobId, invoiceTotalCents(lineItems));
+    await syncJobAfterInvoice(jobId);
 
     if (!sendNow) {
       return NextResponse.redirect(new URL(`/admin/jobs/${jobId}?invoice=created`, req.url), 303);

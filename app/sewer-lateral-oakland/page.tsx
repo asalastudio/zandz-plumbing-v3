@@ -21,12 +21,12 @@ import { siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
-  title: "Sewer Lateral Oakland CA · EBMUD Compliance | Z and Z Plumbing",
+  title: "Oakland Sewer Lateral & EBMUD Compliance",
   description:
-    "EBMUD sewer lateral repair and compliance certificates in Oakland. Z and Z holds the rare A General Engineering license that legally covers street-side work. Call (510) 708-4237.",
+    "Oakland sewer lateral repair and EBMUD compliance. Our A General Engineering license covers street-side work most plumbers can't touch. (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/sewer-lateral-oakland/` },
   openGraph: {
-    title: "Sewer Lateral Oakland · EBMUD Compliance | Z and Z Plumbing",
+    title: "Oakland Sewer Lateral & EBMUD Compliance | Z and Z Plumbing",
     description:
       "One crew, both licenses. C-36 plumbing plus A General Engineering. We handle the entire lateral, including the portion in the public right-of-way most plumbers cannot legally touch.",
     url: `${siteSettings.siteUrl}/sewer-lateral-oakland/`,
@@ -55,20 +55,7 @@ const serviceSchema = {
   description:
     "EBMUD sewer lateral compliance certificates, repair, and trenchless replacement in Oakland, California. Z and Z Plumbing holds both the C-36 plumbing and A General Engineering CSLB licenses (CSLB #896116), allowing legal work in the public right-of-way most plumbers must subcontract.",
   url: PAGE_URL,
-  provider: {
-    "@type": "Plumber",
-    name: siteSettings.name,
-    telephone: siteSettings.phoneTel,
-    url: siteSettings.siteUrl,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: siteSettings.address.street,
-      addressLocality: siteSettings.address.city,
-      addressRegion: siteSettings.address.state,
-      postalCode: siteSettings.address.zip,
-      addressCountry: "US",
-    },
-  },
+  provider: { "@id": `${siteSettings.siteUrl}/#organization` },
   areaServed: {
     "@type": "City",
     name: "Oakland",

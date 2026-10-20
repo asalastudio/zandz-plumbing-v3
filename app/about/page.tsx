@@ -19,12 +19,12 @@ import { siteSettings } from "@/content/site-settings";
 import { team } from "@/content/team";
 
 export const metadata: Metadata = {
-  title: "About Z and Z Plumbing | Two-License East Bay Plumber Since 2003",
+  title: "About Us: East Bay Plumber Since 2003",
   description:
-    "Z and Z Plumbing has served the East Bay since 2003 from our San Leandro base. Two California licenses, C-36 Plumbing and A General Engineering, mean we handle work most other plumbers can't. CSLB #896116. Call (510) 708-4237.",
+    "Serving the East Bay since 2003 from San Leandro. C-36 Plumbing and A General Engineering licenses let us handle work most plumbers can't. CSLB #896116.",
   alternates: { canonical: `${siteSettings.siteUrl}/about/` },
   openGraph: {
-    title: "About Z and Z Plumbing | East Bay Since 2003",
+    title: "About Us: East Bay Plumber Since 2003 | Z and Z Plumbing",
     description:
       "Two licenses. One crew. The Pros Other Plumbers Call. Serving Oakland, San Leandro, Berkeley, and the East Bay since 2003.",
     url: `${siteSettings.siteUrl}/about/`,

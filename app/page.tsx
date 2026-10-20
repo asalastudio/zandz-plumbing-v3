@@ -18,13 +18,17 @@ import HeroZipForm from "@/components/HeroZipForm";
 import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
+const HOME_TITLE = "East Bay Plumber in Oakland & San Leandro | Z and Z Plumbing";
+
 export const metadata: Metadata = {
-  title: "Z and Z Plumbing | East Bay Plumber | San Leandro, CA",
+  // Root page shares the root layout segment, so the layout's title template
+  // does not apply here. `absolute` makes that explicit.
+  title: { absolute: HOME_TITLE },
   description:
-    "Licensed East Bay plumber headquartered in San Leandro. C-36 + A General Engineering. Same-day plumbing service. Call (510) 708-4237.",
+    "Licensed East Bay plumber headquartered in San Leandro. C-36 and A General Engineering licenses, same-day service, 24/7 emergencies. Call (510) 708-4237.",
   alternates: { canonical: "https://www.zandzplumbing.com/" },
   openGraph: {
-    title: "Z and Z Plumbing | East Bay Plumber",
+    title: HOME_TITLE,
     description:
       "Two licenses. One crew. Same-day service across Oakland, Berkeley, Alameda, and the East Bay.",
     url: "https://www.zandzplumbing.com/",
@@ -176,16 +180,19 @@ export default function HomePage() {
           <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-[#F5F5F5]/80 via-[#F5F5F5]/40 to-transparent md:hidden" aria-hidden="true" />
           <div className="relative z-10 mx-auto flex w-full max-w-[1800px] flex-1 items-start px-6 pb-7 pt-7 md:items-center md:px-8 md:py-14 lg:px-12">
             <div className="max-w-[310px] sm:max-w-xl lg:max-w-2xl">
-              <p className="mb-3 font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-[#F96302] animate-fade-up md:mb-4 md:text-xs">
-                Same-Day East Bay Plumbing.
-              </p>
-              <h1
+              {/* The eyebrow is the H1 so the page heading carries the service
+                  and location keywords; the tagline below keeps its display
+                  styling as the visual headline. One H1 per page. */}
+              <h1 className="mb-3 font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-[#F96302] animate-fade-up md:mb-4 md:text-xs">
+                East Bay Plumbers, Headquartered in San Leandro.
+              </h1>
+              <p
                 className="mb-4 font-display text-[3.35rem] font-black uppercase leading-[0.96] tracking-tight text-black animate-fade-up md:mb-6 md:text-7xl lg:text-[6.5rem]"
                 style={{ animationDelay: "0.12s" }}
               >
                 <span className="md:hidden">The Pros Plumbers Call.</span>
                 <span className="hidden md:inline">The Pros Other Plumbers Call.</span>
-              </h1>
+              </p>
               <p
                 className="mb-4 max-w-[290px] font-sans text-[15px] leading-snug text-[#333333] animate-fade-up sm:max-w-lg sm:text-lg md:mb-6 md:leading-relaxed"
                 style={{ animationDelay: "0.28s" }}
@@ -199,7 +206,7 @@ export default function HomePage() {
                 style={{ animationDelay: "0.36s" }}
               >
                 <p className="mb-2 max-w-[300px] text-[10px] font-bold uppercase leading-snug tracking-[0.12em] text-[#666] md:text-[11px]">
-                  Enter your ZIP — we&apos;ll route you to the nearest crew
+                  Enter your ZIP and we&apos;ll route you to the nearest crew
                 </p>
                 <HeroZipForm variant="light" />
               </div>
@@ -339,6 +346,24 @@ export default function HomePage() {
               );
             })}
           </div>
+
+          <p className="mt-8 max-w-3xl text-base leading-relaxed text-white/70 scroll-reveal">
+            Oakland property?{" "}
+            <Link
+              href="/sewer-lateral-oakland/"
+              className="font-semibold text-[#F96302] underline underline-offset-4 hover:text-white"
+            >
+              Sewer lateral repair in Oakland
+            </Link>{" "}
+            covers street-side work, and our{" "}
+            <Link
+              href="/ebmud-compliance/"
+              className="font-semibold text-[#F96302] underline underline-offset-4 hover:text-white"
+            >
+              EBMUD private sewer lateral compliance
+            </Link>{" "}
+            guide walks through testing and repair at sale or remodel.
+          </p>
         </Container>
       </section>
 

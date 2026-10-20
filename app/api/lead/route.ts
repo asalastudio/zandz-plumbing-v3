@@ -1,25 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ingestLead, type LeadInput } from "@/lib/leads";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { isUploadablePhoto, saveJobPhoto } from "@/lib/job-photos";
 
 export const runtime = "nodejs";
 
+// Generous caps. They exist to stop junk payloads, not to trim real requests.
+const FIELD_LIMITS: Partial<Record<keyof LeadInput, number>> = {
+  firstName: 80,
+  lastName: 80,
+  email: 254,
+  phone: 32,
+  zip: 10,
+  jobAddress: 200,
+  jobCity: 80,
+  serviceInterest: 80,
+  serviceLabel: 120,
+  preferredCallbackTime: 80,
+  briefDescription: 2000,
+  sourcePage: 200,
+  serviceAreaSlug: 80,
+};
+
 export async function POST(req: NextRequest) {
   let body: Partial<LeadInput>;
   let photo: File | null = null;
+  let honeypot = "";
 
   try {
     if (req.headers.get("content-type")?.includes("multipart/form-data")) {
       const form = await req.formData();
       body = leadInputFromForm(form);
+      honeypot = stringOrUndefined(form, HONEYPOT_FIELD) ?? "";
       const photoValue = form.get("photo");
       photo = photoValue instanceof File ? photoValue : null;
     } else {
-      body = await req.json();
+      const json = await req.json();
+      honeypot = typeof json?.[HONEYPOT_FIELD] === "string" ? json[HONEYPOT_FIELD].trim() : "";
+      body = json;
     }
   } catch {
     return NextResponse.json({ error: "Invalid lead request" }, { status: 400 });
   }
+
+  if (honeypot) {
+    console.warn("[lead] honeypot tripped, dropping submission");
+    return NextResponse.json({ ok: true });
+  }
+
+  body = capFieldLengths(body);
 
   const { firstName, lastName, email, phone, serviceInterest } = body;
 
@@ -43,7 +72,8 @@ export async function POST(req: NextRequest) {
       });
       photoOutcome = "ok";
     } catch (err) {
-      photoOutcome = `err: ${(err as Error).message}`;
+      // Logged in full below; the customer only learns that it failed.
+      photoOutcome = "failed";
       console.error("[lead] photo upload failed", err);
     }
   }
@@ -84,9 +114,26 @@ function leadInputFromForm(form: FormData): Partial<LeadInput> {
     briefDescription: stringOrUndefined(form, "briefDescription"),
     sourcePage: stringOrUndefined(form, "sourcePage"),
     serviceAreaSlug: stringOrUndefined(form, "serviceAreaSlug"),
-    smsConsent: booleanFromForm(form, "smsConsent"),
+    // Absent means the form never asked, which must not overwrite an earlier
+    // answer in the consent ledger.
+    smsConsent: form.has("smsConsent") ? booleanFromForm(form, "smsConsent") : undefined,
     outOfArea: booleanFromForm(form, "outOfArea"),
   };
+}
+
+function capFieldLengths(body: Partial<LeadInput>): Partial<LeadInput> {
+  const capped: Partial<LeadInput> = { ...body };
+  for (const [key, limit] of Object.entries(FIELD_LIMITS) as [keyof LeadInput, number][]) {
+    const value = capped[key];
+    if (typeof value === "string" && value.length > limit) {
+      (capped as Record<string, unknown>)[key] = value.slice(0, limit);
+    }
+  }
+  // JSON callers can send anything; only a real boolean counts as consent.
+  if (capped.smsConsent !== undefined && typeof capped.smsConsent !== "boolean") {
+    capped.smsConsent = (capped.smsConsent as unknown) === "true";
+  }
+  return capped;
 }
 
 function stringOrUndefined(form: FormData, key: string): string | undefined {

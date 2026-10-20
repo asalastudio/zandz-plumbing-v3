@@ -4,6 +4,7 @@ import { ArrowRight, Camera, CheckCircle2, Pause, Phone, Play, Wrench } from "lu
 import { isAuthenticated } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
+  getJobsForDay,
   listJobs,
   STATUS_COLOR,
   STATUS_LABEL,
@@ -23,7 +24,8 @@ export const metadata = {
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Z&Z Field" },
 };
 
-const FIELD_STATUSES: JobStatus[] = ["scheduled", "en_route", "on_site", "paused"];
+/** Work already under way shows up whatever day it was booked for. */
+const ACTIVE_STATUSES: JobStatus[] = ["en_route", "on_site", "paused"];
 
 export default async function FieldPage({
   searchParams,
@@ -45,8 +47,19 @@ export default async function FieldPage({
     );
   }
 
-  const { rows } = await listJobs({ status: "open", limit: 100 });
-  const jobs = rows.filter((job) => FIELD_STATUSES.includes(job.status));
+  // Today's board: jobs scheduled for today (Pacific), plus anything a crew is
+  // already en route to, on site at, or has paused, whatever its date.
+  const [today, active] = await Promise.all([
+    getJobsForDay(new Date()),
+    listJobs({ statuses: ACTIVE_STATUSES, limit: 100 }),
+  ]);
+  const byId = new Map<number, JobWithRelations>();
+  for (const job of today) if (job.status === "scheduled") byId.set(job.id, job);
+  for (const job of active.rows) byId.set(job.id, job);
+  // Earliest appointment first; anything without a start time goes last.
+  const startMs = (job: JobWithRelations) =>
+    job.scheduled_start ? new Date(job.scheduled_start).getTime() : Number.MAX_SAFE_INTEGER;
+  const jobs = [...byId.values()].sort((a, b) => startMs(a) - startMs(b));
 
   return (
     <FieldShell>
@@ -83,7 +96,7 @@ export default async function FieldPage({
       {jobs.length === 0 ? (
         <div className="border border-dashed border-line bg-raised px-6 py-14 text-center">
           <Wrench className="mx-auto h-8 w-8 text-faint" aria-hidden="true" />
-          <p className="mt-3 text-base text-muted">No active field jobs right now.</p>
+          <p className="mt-3 text-base text-muted">Nothing scheduled for today and no job in progress.</p>
           <Link href="/admin/leads" className="mt-5 inline-flex bg-[#F96302] px-5 py-3 text-sm font-bold text-white">
             View leads
           </Link>

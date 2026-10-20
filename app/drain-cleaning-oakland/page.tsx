@@ -20,12 +20,12 @@ import { siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
-  title: "Drain Cleaning Oakland CA | Snake, Camera, Hydrojet | Z and Z Plumbing",
+  title: "Drain Cleaning & Hydrojetting in Oakland",
   description:
-    "Drain cleaning in Oakland. Snaking, camera inspection, and hydrojetting from a licensed contractor that can also handle the sewer lateral if your drain problem turns out to be deeper. Call (510) 708-4237.",
+    "Oakland drain cleaning with snaking, camera inspection, and hydrojetting, plus sewer lateral repair if the problem runs deeper. Call (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/drain-cleaning-oakland/` },
   openGraph: {
-    title: "Drain Cleaning Oakland | Z and Z Plumbing",
+    title: "Drain Cleaning & Hydrojetting in Oakland | Z and Z Plumbing",
     description:
       "Snake, camera, hydrojet, lateral. One crew handles the full diagnostic path under CSLB #896116.",
     url: `${siteSettings.siteUrl}/drain-cleaning-oakland/`,
@@ -54,20 +54,7 @@ const serviceSchema = {
   description:
     "Drain cleaning, hydrojetting, and camera inspection in Oakland, California. Z and Z Plumbing handles kitchen, bath, floor drain, and main sewer line clearing, plus EBMUD-compliant cleanouts under CSLB #896116.",
   url: PAGE_URL,
-  provider: {
-    "@type": "Plumber",
-    name: siteSettings.name,
-    telephone: siteSettings.phoneTel,
-    url: siteSettings.siteUrl,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: siteSettings.address.street,
-      addressLocality: siteSettings.address.city,
-      addressRegion: siteSettings.address.state,
-      postalCode: siteSettings.address.zip,
-      addressCountry: "US",
-    },
-  },
+  provider: { "@id": `${siteSettings.siteUrl}/#organization` },
   areaServed: {
     "@type": "City",
     name: "Oakland",

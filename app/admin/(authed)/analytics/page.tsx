@@ -34,9 +34,8 @@ export default async function AnalyticsPage() {
           Your Business in Numbers
         </h1>
         <p className="mt-3 max-w-2xl text-base text-muted md:text-lg">
-          Real numbers from every invoice ever logged. {data.totals.invoiceCount.toLocaleString()}{" "}
-          invoices across {data.totals.customersWithJobs.toLocaleString()} customers who have
-          actually booked a job.
+          Real numbers from every paid invoice. {data.totals.invoiceCount.toLocaleString()}{" "}
+          paid invoices across {data.totals.customersWithJobs.toLocaleString()} customers.
         </p>
       </header>
 
@@ -67,7 +66,7 @@ export default async function AnalyticsPage() {
           />
           <SummaryStat
             label="Uncontacted now"
-            value={responseTime.breaches.length.toLocaleString()}
+            value={responseTime.breachCount.toLocaleString()}
             sub="Past the escalation ladder"
             icon={Phone}
           />

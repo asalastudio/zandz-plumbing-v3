@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, ChevronRight, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { HoneypotField } from "@/components/HoneypotField";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { isValidNanp10Digits } from "@/lib/phone";
 import { trackEvent } from "@/lib/analytics";
 
@@ -75,6 +77,7 @@ export function QuickLeadForm({
   const [step, setStep] = useState<QuickLeadStep>("contact");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const update = <K extends keyof QuickLeadFormState>(key: K, value: QuickLeadFormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -138,9 +141,11 @@ export function QuickLeadForm({
       payload.set("email", form.email.trim());
       payload.set("serviceInterest", serviceInterest);
       payload.set("serviceLabel", serviceLabel);
-      payload.set("smsConsent", "false");
-      payload.set("outOfArea", "false");
-      if (serviceZip || zip?.trim()) payload.set("zip", serviceZip || zip?.trim() || "");
+      // No SMS checkbox on this form, so send no consent answer at all: "false"
+      // would overwrite a returning customer's earlier opt-in. The server
+      // works out out-of-area from the ZIP.
+      payload.set(HONEYPOT_FIELD, honeypotRef.current?.value ?? "");
+      if (serviceZip) payload.set("zip", serviceZip);
       if (form.serviceAddress.trim()) payload.set("jobAddress", form.serviceAddress.trim());
       if (form.serviceCity.trim() || cityLabel) payload.set("jobCity", form.serviceCity.trim() || cityLabel || "");
       if (form.briefDescription.trim()) payload.set("briefDescription", form.briefDescription.trim());
@@ -151,10 +156,16 @@ export function QuickLeadForm({
       );
       if (form.photo) payload.set("photo", form.photo);
 
-      const res = await fetch("/api/lead/", {
+      let res = await fetch("/api/lead/", {
         method: "POST",
         body: payload,
       });
+      // Too large for the platform (413 never reaches our code). Send the
+      // request again without the photo so the lead itself is never lost.
+      if (res.status === 413 && payload.has("photo")) {
+        payload.delete("photo");
+        res = await fetch("/api/lead/", { method: "POST", body: payload });
+      }
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -238,6 +249,8 @@ export function QuickLeadForm({
         <span className="h-px flex-1 bg-[#E5E5E5]" />
         <span className={step === "details" ? "text-[#F96302]" : "text-[#777777]"}>2. Service details</span>
       </div>
+
+      <HoneypotField inputRef={honeypotRef} />
 
       {step === "contact" ? (
         <form onSubmit={goToDetails}>

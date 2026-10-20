@@ -28,6 +28,14 @@ function emptyTwiML() {
 }
 
 export async function POST(req: NextRequest) {
+  // Fail closed: without the auth token we cannot verify the request came from
+  // Twilio, and this route writes the inbox and the opt-out list.
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!authToken && process.env.NODE_ENV === "production") {
+    console.error("[twilio-inbound] TWILIO_AUTH_TOKEN is not configured");
+    return new NextResponse("Twilio not configured", { status: 503 });
+  }
+
   if (!isSupabaseConfigured()) return emptyTwiML();
 
   // Twilio sends application/x-www-form-urlencoded
@@ -40,7 +48,7 @@ export async function POST(req: NextRequest) {
   // Validate signature
   const signature = req.headers.get("x-twilio-signature");
   const url = req.nextUrl.toString();
-  if (process.env.TWILIO_AUTH_TOKEN) {
+  if (authToken) {
     const valid = validateTwilioSignature(signature, url, params);
     if (!valid) {
       console.warn("[twilio-inbound] invalid signature");

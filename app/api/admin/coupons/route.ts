@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { isAuthenticated } from "@/lib/auth";
-import { countPublishedCoupons, MAX_PUBLISHED_COUPONS } from "@/lib/db";
+import { countPublishedCoupons, couponBoundaryIso, MAX_PUBLISHED_COUPONS } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -54,8 +54,10 @@ function buildPayload(form: FormData, headline: string, published: boolean) {
     terms: emptyToNull(form.get("terms")),
     code: emptyToNull(form.get("code")),
     image_url: emptyToNull(form.get("image_url")),
-    valid_from: toIsoOrNull(form.get("valid_from")),
-    valid_until: toIsoOrNull(form.get("valid_until")),
+    // Date-only inputs: start of the first day and end of the last day, in
+    // Pacific, so "valid until Oct 31" runs through Oct 31 here.
+    valid_from: couponBoundaryIso(emptyToNull(form.get("valid_from")), "start"),
+    valid_until: couponBoundaryIso(emptyToNull(form.get("valid_until")), "end"),
     display_order: parseIntOr(form.get("display_order"), 0),
     published,
   };
@@ -65,13 +67,6 @@ function emptyToNull(v: FormDataEntryValue | null): string | null {
   if (v === null) return null;
   const s = String(v).trim();
   return s.length ? s : null;
-}
-
-function toIsoOrNull(v: FormDataEntryValue | null): string | null {
-  const s = emptyToNull(v);
-  if (!s) return null;
-  const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 function parseIntOr(v: FormDataEntryValue | null, fallback: number): number {

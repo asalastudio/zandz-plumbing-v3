@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ChevronDown,
   ChevronRight,
   Menu,
   Phone,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { siteSettings } from "@/content/site-settings";
+import { oaklandServicePages } from "@/content/services";
 
 const mobileServiceLinks = [
   { label: "All Services", href: "/services/" },
@@ -21,6 +23,10 @@ const mobileServiceLinks = [
   { label: "Sewer Lines", href: "/services/sewer-lateral/" },
   { label: "Service Areas", href: "/service-areas/" },
 ];
+
+// Desktop Services menu: the service hubs plus the Oakland priority pages, so
+// every page on the site links to them from the header.
+const desktopServiceLinks = mobileServiceLinks.filter((link) => link.href !== "/service-areas/");
 
 const trustItems = [
   "Two Licenses, One Crew",
@@ -72,8 +78,10 @@ export function Header() {
           code: null,
         }
       : null);
+  const servicesActive =
+    isActivePath(pathname, "/services/") ||
+    oaklandServicePages.some((page) => isActivePath(pathname, page.href));
   const desktopNavLinks = [
-    { label: "Services", href: "/services/" },
     { label: "Service Areas", href: "/service-areas/" },
     ...(showCoupons ? [{ label: "Coupons", href: "/coupons/" }] : []),
     { label: "Videos", href: "/videos/" },
@@ -144,6 +152,60 @@ export function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8" aria-label="Primary navigation">
+            <div className="group relative">
+              <Link
+                href="/services/"
+                className={[
+                  "inline-flex items-center gap-1.5 text-sm font-medium uppercase tracking-wide transition-colors duration-150",
+                  servicesActive ? "text-white" : "text-white/80 hover:text-white",
+                ].join(" ")}
+              >
+                Services
+                <ChevronDown
+                  className="h-3.5 w-3.5 transition-transform duration-150 group-hover:rotate-180 group-focus-within:rotate-180"
+                  aria-hidden="true"
+                />
+              </Link>
+              <div className="invisible absolute left-0 top-full z-[120] w-72 pt-4 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 lg:w-[34rem]">
+                <div className="grid grid-cols-1 gap-2 rounded-lg border border-white/10 bg-black p-2 shadow-2xl shadow-black/40 lg:grid-cols-2">
+                  {[
+                    { heading: "Services", links: desktopServiceLinks },
+                    { heading: "Oakland", links: oaklandServicePages },
+                  ].map((group) => (
+                    <div key={group.heading}>
+                      <p className="px-3 pb-1 pt-2 text-[11px] font-black uppercase tracking-[0.14em] text-white/45">
+                        {group.heading}
+                      </p>
+                      {group.links.map((link) => {
+                        const active =
+                          link.href === "/services/"
+                            ? isExactPath(pathname, link.href)
+                            : isActivePath(pathname, link.href);
+                        return (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            aria-current={active ? "page" : undefined}
+                            className={[
+                              "flex min-h-11 items-center justify-between rounded-md px-3 text-sm font-bold transition-colors duration-150",
+                              active
+                                ? "bg-white/[0.08] text-white ring-1 ring-[#F96302]/70"
+                                : "text-white/70 hover:bg-white/[0.06] hover:text-white",
+                            ].join(" ")}
+                          >
+                            {link.label}
+                            <ChevronRight
+                              className={["h-4 w-4", active ? "text-[#F96302]" : "text-white/30"].join(" ")}
+                              aria-hidden="true"
+                            />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
             {desktopNavLinks.map((link) => (
               <Link
                 key={link.href}

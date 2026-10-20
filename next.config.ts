@@ -1,9 +1,23 @@
 import type { NextConfig } from "next";
 
+// Baseline headers for every response. No full CSP yet: GA4, Clarity, and the
+// ElevenLabs voice session would each need allowlisting first. frame-ancestors
+// alone stops the OS from being framed for clickjacking.
+const securityHeaders = [
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "geolocation=(), payment=(), usb=()" },
+];
+
 const nextConfig: NextConfig = {
   trailingSlash: true,
   turbopack: {
     root: __dirname,
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
   },
   async redirects() {
     return [

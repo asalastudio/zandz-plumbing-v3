@@ -10,12 +10,12 @@ import { siteSettings } from "@/content/site-settings";
 import { services } from "@/content/services";
 
 export const metadata: Metadata = {
-  title: "Plumbing Services in the East Bay | Z and Z Plumbing",
+  title: "Plumbing Services in the East Bay",
   description:
-    "Full residential and commercial plumbing services across Oakland, San Leandro, Berkeley, and the East Bay. Sewer lateral, drain cleaning, water heater, repipe, hydrojetting, leak detection, gas line, emergency, and more. Two licenses. One crew.",
+    "Sewer lateral, drain cleaning, water heater, repipe, gas line, and 24/7 emergency plumbing across Oakland and the East Bay. Two licenses, one crew.",
   alternates: { canonical: `${siteSettings.siteUrl}/services/` },
   openGraph: {
-    title: "Plumbing Services | Z and Z Plumbing",
+    title: "Plumbing Services in the East Bay | Z and Z Plumbing",
     description:
       "Sewer lateral, drain cleaning, water heater, repipe, hydrojetting, leak detection, gas line, and 24/7 emergency. Two licenses. One crew.",
     url: `${siteSettings.siteUrl}/services/`,

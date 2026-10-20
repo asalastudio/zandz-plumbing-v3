@@ -3,6 +3,7 @@ import { Phone, MapPin, Clock, Facebook, Instagram } from "lucide-react";
 import { Container } from "@/components/Container";
 import { Logo } from "@/components/Logo";
 import { siteSettings } from "@/content/site-settings";
+import { oaklandServicePages } from "@/content/services";
 
 const serviceLinks = [
   { label: "Sewer Lines", href: "/services/sewer-lateral/" },
@@ -113,6 +114,22 @@ export function Footer() {
             <ul className="space-y-2">
               {serviceLinks.map((link) => (
                 <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/60 hover:text-[#F96302] transition-colors duration-150"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="mt-8 text-sm font-bold uppercase tracking-widest text-white mb-4">
+              Oakland Services
+            </h3>
+            <ul className="space-y-2">
+              {oaklandServicePages.map((link) => (
+                <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-sm text-white/60 hover:text-[#F96302] transition-colors duration-150"

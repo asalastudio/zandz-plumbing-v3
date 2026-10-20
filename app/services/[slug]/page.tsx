@@ -22,17 +22,64 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const service = services.find((s) => s.slug === slug);
   if (!service) return {};
 
-  const title = `${service.title} in the East Bay | Z and Z Plumbing`;
-  const description = `${service.summary} Z and Z Plumbing handles ${service.title.toLowerCase()} across Oakland, San Leandro, Berkeley, and the East Bay. CSLB #896116. Call ${siteSettings.phone}.`;
+  // The layout template appends " | Z and Z Plumbing", so `title` is the
+  // keyword part only. Keep the rendered title at or under 60 characters.
+  const preferredTitle = `${service.title} in the East Bay`;
+  const title =
+    preferredTitle.length + ` | ${siteSettings.name}`.length <= 60
+      ? preferredTitle
+      : `${service.title}, East Bay`;
+  const description = buildServiceDescription(service.summary);
   const url = `${siteSettings.siteUrl}/services/${service.slug}/`;
 
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "article" },
+    openGraph: { title: `${title} | ${siteSettings.name}`, description, url, type: "article" },
   };
 }
+
+// Meta descriptions should land at 140-155 characters. Summaries vary in
+// length, so take the first variant that fits; every current service lands in
+// range (checked 2026-10-20).
+function buildServiceDescription(summary: string): string {
+  const variants = [
+    `${summary} Licensed East Bay plumber serving Oakland and San Leandro. CSLB #896116. Call ${siteSettings.phone}.`,
+    `${summary} East Bay plumber serving Oakland and San Leandro. CSLB #896116. Call ${siteSettings.phone}.`,
+    `${summary} East Bay plumber, CSLB #896116. Call ${siteSettings.phone}.`,
+  ];
+  return variants.find((d) => d.length <= 155) ?? variants[variants.length - 1];
+}
+
+// Natural-anchor links from each service hub to its Oakland landing page(s).
+const oaklandCallouts: Record<string, React.ReactNode> = {
+  "sewer-lateral": (
+    <>
+      Selling or remodeling in Oakland? See{" "}
+      <Link href="/sewer-lateral-oakland/">sewer lateral repair in Oakland</Link> and our guide to{" "}
+      <Link href="/ebmud-compliance/">EBMUD private sewer lateral compliance</Link>.
+    </>
+  ),
+  emergency: (
+    <>
+      In Oakland? Our <Link href="/emergency-plumber-oakland/">24/7 emergency plumber in Oakland</Link> page
+      covers burst pipes, sewer backups, and what to shut off while we are on the way.
+    </>
+  ),
+  "water-heater": (
+    <>
+      In Oakland? See <Link href="/water-heater-oakland/">water heater repair and installation in Oakland</Link>{" "}
+      for tank and tankless, gas and electric options.
+    </>
+  ),
+  "drain-cleaning": (
+    <>
+      In Oakland? See <Link href="/drain-cleaning-oakland/">drain cleaning in Oakland</Link> for snaking, camera
+      inspection, and hydrojetting.
+    </>
+  ),
+};
 
 function buildFaqs(serviceTitle: string): FaqItem[] {
   return [
@@ -66,6 +113,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
   const related = services.filter((s) => s.slug !== service.slug).slice(0, 3);
   const faqs = buildFaqs(service.title);
+  const oaklandCallout = oaklandCallouts[service.slug];
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -89,20 +137,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     name: service.title,
     description: service.description,
     url: `${siteSettings.siteUrl}/services/${service.slug}/`,
-    provider: {
-      "@type": "Plumber",
-      name: siteSettings.name,
-      telephone: siteSettings.phoneTel,
-      url: siteSettings.siteUrl,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: siteSettings.address.street,
-        addressLocality: siteSettings.address.city,
-        addressRegion: siteSettings.address.state,
-        postalCode: siteSettings.address.zip,
-        addressCountry: "US",
-      },
-    },
+    provider: { "@id": `${siteSettings.siteUrl}/#organization` },
     areaServed: serviceAreas.map((a) => ({ "@type": "City", name: a.city })),
   };
 
@@ -162,6 +197,11 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
         <p className="font-sans text-xl leading-relaxed text-[#333333] md:text-xl">
           {service.description}
         </p>
+        {oaklandCallout && (
+          <p className="mt-6 border-l-4 border-[#F96302] bg-[#F5F5F5] px-5 py-4 font-sans text-lg leading-relaxed text-[#333333] [&_a]:font-semibold [&_a]:text-[#F96302] [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-[#e05602]">
+            {oaklandCallout}
+          </p>
+        )}
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5">
             <p className="font-display text-3xl font-black uppercase leading-none text-black">2</p>

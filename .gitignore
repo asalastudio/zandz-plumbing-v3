@@ -37,3 +37,8 @@ tsconfig.tsbuildinfo
 _docs/migration/source-exports/*.xlsx
 _docs/migration/source-exports/*.csv
 .env*.local
+
+# Local-only artifacts that can hold customer PII or secrets
+outputs/
+.env*.bak
+supabase/.temp/

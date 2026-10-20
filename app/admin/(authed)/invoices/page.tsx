@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, ExternalLink, Pencil } from "lucide-react";
+import { Plus, ExternalLink, Pencil, Send, Briefcase } from "lucide-react";
 import { listInvoices, invoiceViewUrl, type InvoiceListItem } from "@/lib/invoices";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { DeleteInvoiceButton } from "../_components/DeleteInvoiceButton";
@@ -32,7 +32,12 @@ function banner(status: string | undefined): string | null {
   if (status === "created") return "Invoice created.";
   if (status === "deleted") return "Invoice deleted.";
   if (status === "delete_failed") return "Could not delete that invoice. Try again.";
-  if (status === "bad_id") return "That invoice could not be found.";
+  if (status === "paid_locked") return "That invoice is marked paid, so it can't be deleted.";
+  if (status === "paid") return "Invoice marked paid.";
+  if (status === "paid_failed") return "Could not mark that invoice paid. Try again.";
+  if (status === "send_failed") return "Could not send that invoice. Try again.";
+  if (status === "no_contact") return "This customer has no email or phone on file, so nothing was sent.";
+  if (status === "bad_id" || status === "missing") return "That invoice could not be found.";
   const parts = status.split(",").map((p) => {
     if (p === "email_sent") return "Emailed to the customer.";
     if (p === "text_sent") return "Texted to the customer.";
@@ -96,7 +101,7 @@ export default async function InvoicesPage({
         </div>
       ) : (
         <div className="overflow-x-auto border border-line">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
+          <table className="w-full min-w-[860px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line bg-raised text-left text-[11px] uppercase tracking-[0.1em] text-muted">
                 <th className="px-4 py-3 font-bold">Invoice</th>
@@ -144,7 +149,20 @@ export default async function InvoicesPage({
                             Edit <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                           </Link>
                         )}
-                        <DeleteInvoiceButton invoiceId={inv.id} compact label="Delete" />
+                        {/* Job invoices are sent and paid from their job page. Standalone
+                            ones have no job page, so they get the actions here. */}
+                        {inv.job_id ? (
+                          <Link
+                            href={`/admin/jobs/${inv.job_id}#invoice`}
+                            className="inline-flex items-center gap-1.5 text-muted hover:text-[#F96302]"
+                          >
+                            Job <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Link>
+                        ) : (
+                          !inv.paid_at && <StandaloneActions invoiceId={inv.id} sent={Boolean(inv.sent_at)} />
+                        )}
+                        {/* Paid invoices are settled money and can't be deleted. */}
+                        {!inv.paid_at && <DeleteInvoiceButton invoiceId={inv.id} compact label="Delete" />}
                       </div>
                     </td>
                   </tr>
@@ -155,5 +173,41 @@ export default async function InvoicesPage({
         </div>
       )}
     </div>
+  );
+}
+
+function StandaloneActions({ invoiceId, sent }: { invoiceId: number; sent: boolean }) {
+  return (
+    <>
+      <form action={`/api/admin/invoices/${invoiceId}/send`} method="POST">
+        <button
+          type="submit"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:text-[#F96302]"
+        >
+          <Send className="h-3.5 w-3.5" aria-hidden="true" />
+          {sent ? "Resend" : "Send"}
+        </button>
+      </form>
+      <form action={`/api/admin/invoices/${invoiceId}/paid`} method="POST" className="flex items-center gap-1.5">
+        <select
+          name="payment_method"
+          defaultValue="manual"
+          aria-label={`Payment method for invoice #${invoiceId}`}
+          className="border border-line bg-card px-2 py-1 text-xs text-ink outline-none focus:border-[#F96302]"
+        >
+          <option value="manual">Manual</option>
+          <option value="card">Card</option>
+          <option value="cash">Cash</option>
+          <option value="check">Check</option>
+          <option value="zelle">Zelle</option>
+        </select>
+        <button
+          type="submit"
+          className="inline-flex items-center bg-emerald-600 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white hover:bg-emerald-500"
+        >
+          Mark paid
+        </button>
+      </form>
+    </>
   );
 }
