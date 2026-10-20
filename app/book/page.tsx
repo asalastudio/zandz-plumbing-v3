@@ -7,7 +7,7 @@ import BookBookingFormClient from "./BookBookingFormClient";
 export const metadata: Metadata = {
   title: "Book a Plumber Online in the East Bay",
   description:
-    "Book a licensed East Bay plumber in 60 seconds. Enter your ZIP and pick your issue, and we call back within 15 minutes during business hours.",
+    "Book a licensed East Bay plumber in 60 seconds. Enter your ZIP and pick your issue, and we call back within 30 minutes during business hours.",
   alternates: { canonical: "https://www.zandzplumbing.com/book/" },
   openGraph: {
     title: "Book a Plumber Online in the East Bay | Z and Z Plumbing",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 const trustPoints = [
   { value: "23", label: "Years in business" },
   { value: "257+", label: "Combined reviews" },
-  { value: "30-60", label: "Min response time" },
+  { value: "Same-day", label: "Service" },
   { value: "24/7", label: "Emergency coverage" },
 ];
 
@@ -30,26 +30,28 @@ export default function BookPage() {
     <>
       <section className="bg-[#F5F5F5] pb-12 pt-5 md:pt-20 md:pb-24">
         <Container>
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-12">
-            <div className="order-2 hidden lg:order-1 lg:block">
-              <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-3">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.05fr_1fr] lg:items-start lg:gap-12">
+            {/* One H1 for every width. On phones this column sits under the form
+                (order-2) and shows only the eyebrow, H1, and callback line. */}
+            <div className="order-2 lg:order-1">
+              <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] mb-2 lg:mb-3">
                 Book online · East Bay
               </p>
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight text-black">
+              <h1 className="font-display text-4xl md:text-5xl lg:text-7xl font-black uppercase leading-[0.95] tracking-tight text-black">
                 Get a Licensed Plumber Out Today.
               </h1>
-              <p className="mt-5 max-w-xl font-sans text-lg text-[#333] leading-relaxed">
-                Three quick questions, no account needed. We&apos;ll call you back within 15
-                minutes during business hours to confirm and get the crew rolling.
+              <p className="mt-3 max-w-xl font-sans text-sm text-[#333] leading-relaxed lg:mt-5 lg:text-lg">
+                Three quick questions, no account needed. We&apos;ll call you back within 30 minutes during
+                business hours (Mon to Fri, 7am to 5pm) to confirm and get the crew rolling.
               </p>
 
-              <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4 lg:max-w-xl">
+              <div className="mt-8 hidden grid-cols-2 gap-4 md:grid-cols-4 lg:grid lg:max-w-xl">
                 {trustPoints.map((t) => (
                   <div key={t.label} className="border-l-2 border-[#F96302] pl-3">
                     <p className="font-display text-3xl font-black uppercase leading-none text-black">
                       {t.value}
                     </p>
-                    <p className="mt-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#666]">
+                    <p className="mt-1.5 text-xs font-bold uppercase tracking-[0.1em] text-[#666]">
                       {t.label}
                     </p>
                   </div>
@@ -71,21 +73,9 @@ export default function BookPage() {
             </div>
 
             <div className="order-1 lg:sticky lg:top-24 lg:order-2">
-              <h1 className="sr-only lg:hidden">Get a plumber out today</h1>
               <Suspense fallback={<FormSkeleton />}>
                 <BookBookingFormClient />
               </Suspense>
-              <div className="mt-4 lg:hidden">
-                <p className="font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-[#F96302]">
-                  Book online · East Bay
-                </p>
-                <h2 className="mt-2 font-display text-4xl font-black uppercase leading-[0.95] tracking-tight text-black">
-                  Get a Plumber Out Today.
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-[#333]">
-                  ZIP, issue, contact info. We&apos;ll call back to confirm.
-                </p>
-              </div>
             </div>
           </div>
         </Container>

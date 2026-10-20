@@ -50,9 +50,11 @@ export async function POST(req: NextRequest) {
 
   body = capFieldLengths(body);
 
-  const { firstName, lastName, email, phone, serviceInterest } = body;
+  const { firstName, lastName, phone, serviceInterest } = body;
 
-  if (!firstName || !lastName || !email || !phone || !serviceInterest) {
+  // Email is optional: phone is how we reach a lead, and an emergency caller
+  // shouldn't be turned away for skipping it.
+  if (!firstName || !lastName || !phone || !serviceInterest) {
     return NextResponse.json(
       { error: "Missing required fields" },
       { status: 400 }

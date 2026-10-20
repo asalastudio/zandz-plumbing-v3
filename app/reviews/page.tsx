@@ -3,8 +3,7 @@ import Link from "next/link";
 import { Phone, Star, ExternalLink } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";
-import { TestimonialCard } from "@/components/TestimonialCard";
-import { TestimonialCarousel } from "@/components/TestimonialCarousel";
+import { StarRating, TestimonialCard } from "@/components/TestimonialCard";
 import { TrustStrip } from "@/components/TrustStrip";
 import { siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
@@ -31,6 +30,11 @@ const breadcrumbSchema = {
     { "@type": "ListItem", position: 2, name: "Reviews", item: `${siteSettings.siteUrl}/reviews/` },
   ],
 };
+
+// Combined figure from the two review platforms below, weighted by review
+// count: (4.6 x 19 + 4.5 x 238) / 257 = 4.51, shown as 4.5. Buildzoom is a
+// contractor profile, not a review count, so it stays out of the math.
+const combinedRating = 4.5;
 
 const platforms = [
   {
@@ -77,7 +81,7 @@ export default function ReviewsPage() {
               What East Bay Customers Say
             </p>
             <h1 className="font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
-              4.6 Stars. 257+ Reviews.
+              4.5 Stars From 257+ Google and Yelp Reviews.
             </h1>
             <p className="mt-6 max-w-2xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
               Z and Z Plumbing earns its reviews on the job site. Two licenses, one crew, same-day East Bay response.
@@ -86,17 +90,14 @@ export default function ReviewsPage() {
           </div>
           <div className="flex flex-col gap-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <div className="flex items-center gap-2 mb-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-6 w-6 text-[#F96302]" fill="#F96302" aria-hidden="true" />
-                ))}
-              </div>
+              <StarRating rating={combinedRating} starClassName="h-6 w-6" className="mb-3 gap-2" />
               <p className="font-display text-5xl font-black uppercase leading-none tracking-tight text-white">
-                4.6 / 5.0
+                {combinedRating} / 5.0
               </p>
-              <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-white/60">
-                Aggregate rating across Google + Yelp + Buildzoom
+              <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-white/70">
+                {combinedRating} stars from 257+ Google and Yelp reviews
               </p>
+              <p className="mt-1 text-sm text-white/55">Google 4.6 (19 reviews). Yelp 4.5 (238 reviews).</p>
             </div>
           </div>
         </div>
@@ -146,23 +147,12 @@ export default function ReviewsPage() {
         </div>
       </Section>
 
-      {/* Carousel */}
+      {/* Testimonials: shown once. The old carousel repeated this same list. */}
       <Section bg="light-gray" size="lg">
         <SectionHeading
           eyebrow="Featured Reviews"
           title="In Their Own Words."
-          description="A rotating selection of recent East Bay reviews. Swipe through or click the dots."
-        />
-        <div className="mx-auto max-w-2xl">
-          <TestimonialCarousel testimonials={testimonials} />
-        </div>
-      </Section>
-
-      {/* Full grid */}
-      <Section bg="white" size="lg">
-        <SectionHeading
-          eyebrow="All Reviews"
-          title="Every Testimonial."
+          description="A selection of East Bay reviews from Google, Yelp, and Buildzoom."
         />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((t) => (
@@ -172,7 +162,7 @@ export default function ReviewsPage() {
       </Section>
 
       {/* Trust strip */}
-      <Section bg="light-gray" size="md">
+      <Section bg="white" size="md">
         <SectionHeading eyebrow="Credentials" title="Backed by License and Track Record." />
         <TrustStrip />
       </Section>
@@ -189,9 +179,14 @@ export default function ReviewsPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
+            {/* siteSettings.social.google is a Google search URL, not a review link.
+                A direct "write a review" link needs the Google Business Profile
+                place ID (https://search.google.com/local/writereview?placeid=...),
+                which we don't have yet. Until then the button only finds the
+                listing, so it says so. */}
             {siteSettings.social.google && (
               <Button variant="inverse" size="lg" href={siteSettings.social.google} external>
-                Review on Google
+                Find us on Google
               </Button>
             )}
             {siteSettings.social.yelp && (

@@ -38,7 +38,7 @@ export const services: Service[] = [
     icon: "AlertTriangle",
     summary: "Burst pipes, active leaks, sewer backups. We answer every call.",
     description:
-      "Plumbing emergencies don't wait for business hours. We're available 24/7 across the East Bay. Call and a plumber picks up.",
+      "Plumbing emergencies don't wait for business hours. Emergency calls are answered 24/7 across the East Bay.",
     featured: false,
   },
   {

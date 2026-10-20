@@ -18,7 +18,7 @@ import { Button } from "@/components/Button";
 import { TrustStrip } from "@/components/TrustStrip";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import type { FaqItem } from "@/components/FaqAccordion";
-import { siteSettings } from "@/content/site-settings";
+import { cslbLicenseUrl, siteSettings } from "@/content/site-settings";
 
 export const metadata: Metadata = {
   title: "EBMUD PSL Sewer Lateral Compliance",
@@ -452,7 +452,7 @@ export default function EbmudCompliancePage() {
         <p className="mt-6 font-sans text-base text-[#666666]">
           Verify both licenses directly at{" "}
           <a
-            href="https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
+            href={cslbLicenseUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[#F96302] underline hover:text-[#e05602]"

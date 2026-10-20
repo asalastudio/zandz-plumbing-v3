@@ -24,7 +24,7 @@ const DUPLICATE_WINDOW_MINUTES = 10;
 export interface LeadInput {
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone: string;
   zip?: string;
   jobAddress?: string;
@@ -158,7 +158,7 @@ export async function ingestLead(rawInput: LeadInput): Promise<LeadResult> {
           .insert({
             name: fullName,
             phone_e164: phoneE164,
-            email: input.email,
+            email: input.email || null,
             zip: zip ?? null,
             street_address: jobAddress ?? null,
             city: jobCity,

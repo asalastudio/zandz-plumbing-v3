@@ -68,16 +68,10 @@ export function Header() {
   const [featuredCoupon, setFeaturedCoupon] = useState<FeaturedCoupon | null>(null);
   const pathname = usePathname();
   const showCoupons = siteSettings.features.coupons || Boolean(featuredCoupon);
-  const menuCoupon =
-    featuredCoupon ??
-    (siteSettings.features.coupons
-      ? {
-          id: 0,
-          headline: "Current coupons",
-          subheadline: "See today's plumbing specials.",
-          code: null,
-        }
-      : null);
+  // The menu coupon card (and the emphasized Coupons link) only render when
+  // /api/coupons/featured/ returns a live coupon. With nothing live, the plain
+  // "Coupons" nav link stays and nothing promises a special that isn't there.
+  const menuCoupon = featuredCoupon;
   const servicesActive =
     isActivePath(pathname, "/services/") ||
     oaklandServicePages.some((page) => isActivePath(pathname, page.href));
@@ -151,7 +145,7 @@ export function Header() {
           <Logo variant="light" />
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-8" aria-label="Primary navigation">
+          <nav className="hidden md:flex items-center gap-8 lg:gap-6 xl:gap-8" aria-label="Primary navigation">
             <div className="group relative">
               <Link
                 href="/services/"
@@ -173,7 +167,7 @@ export function Header() {
                     { heading: "Oakland", links: oaklandServicePages },
                   ].map((group) => (
                     <div key={group.heading}>
-                      <p className="px-3 pb-1 pt-2 text-[11px] font-black uppercase tracking-[0.14em] text-white/45">
+                      <p className="px-3 pb-1 pt-2 text-xs font-black uppercase tracking-[0.14em] text-white/45">
                         {group.heading}
                       </p>
                       {group.links.map((link) => {
@@ -220,24 +214,33 @@ export function Header() {
           {/* Desktop phone CTA */}
           <a
             href={`tel:${siteSettings.phoneTel}`}
-            className="hidden md:inline-flex items-center gap-2 bg-[#F96302] text-white px-5 py-2.5 text-sm font-semibold rounded-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602]"
+            className="hidden md:inline-flex items-center gap-2 bg-[#F96302] text-white px-5 py-2.5 text-sm font-semibold rounded-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602] lg:flex-shrink-0 lg:whitespace-nowrap"
           >
             <Phone className="h-4 w-4" aria-hidden="true" />
             {siteSettings.phone}
           </a>
 
-          {/* Mobile menu toggle */}
+          {/* Mobile: compact call button + menu toggle */}
           {!mobileOpen && (
-            <button
-              type="button"
-              className="inline-flex min-h-12 min-w-12 items-center justify-center text-white md:hidden"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-              aria-expanded="false"
-              aria-controls="mobile-menu"
-            >
-              <Menu className="h-6 w-6" aria-hidden="true" />
-            </button>
+            <div className="flex items-center gap-1 md:hidden">
+              <a
+                href={`tel:${siteSettings.phoneTel}`}
+                className="inline-flex h-11 w-11 items-center justify-center bg-[#F96302] text-white transition-colors hover:bg-[#e05602]"
+                aria-label={`Call Z and Z Plumbing at ${siteSettings.phone}`}
+              >
+                <Phone className="h-5 w-5" aria-hidden="true" />
+              </a>
+              <button
+                type="button"
+                className="inline-flex min-h-12 min-w-12 items-center justify-center text-white"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
+                aria-expanded="false"
+                aria-controls="mobile-menu"
+              >
+                <Menu className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -292,7 +295,7 @@ export function Header() {
             </div>
 
             <div className="flex-shrink-0 border-b border-white/10 px-5">
-              <div className="flex min-h-10 items-center justify-between gap-3 text-[11px] font-bold uppercase tracking-[0.1em] text-white/60">
+              <div className="flex min-h-10 items-center justify-between gap-3 text-xs font-bold uppercase tracking-[0.1em] text-white/60">
                 <span>CSLB #896116</span>
                 <span className="text-[#F96302]" aria-hidden="true">|</span>
                 <span>Since 2003</span>
@@ -332,9 +335,9 @@ export function Header() {
 
               {menuCoupon && (
                 <div className="mt-3 rounded-lg border border-dashed border-[#F96302]/70 bg-[#F96302]/10 p-3.5">
-                  <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.14em] text-[#F96302]">
+                  <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[#F96302]">
                     <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-                    {featuredCoupon ? "Current coupon" : "Coupons"}
+                    Current coupon
                   </p>
                   <p className="mt-2 font-display text-[1.35rem] font-black uppercase leading-none text-white">
                     {menuCoupon.headline}
@@ -369,7 +372,7 @@ export function Header() {
                     Services
                   </p>
                   {(pathname?.startsWith("/services") || pathname?.startsWith("/service-areas")) && (
-                    <span className="text-[11px] font-black uppercase tracking-[0.12em] text-[#F96302]">
+                    <span className="text-xs font-black uppercase tracking-[0.12em] text-[#F96302]">
                       Current
                     </span>
                   )}
@@ -413,14 +416,23 @@ export function Header() {
                       onClick={closeMobileMenu}
                       aria-current={isActivePath(pathname, "/coupons/") ? "page" : undefined}
                       className={[
-                        "flex min-h-[54px] items-center justify-between rounded-lg px-3 text-[1.25rem] font-black uppercase tracking-wide transition-colors duration-150",
+                        "flex items-center justify-between rounded-lg px-3 transition-colors duration-150",
+                        // Emphasis only while a coupon is actually live.
+                        featuredCoupon
+                          ? "min-h-[54px] text-[1.25rem] font-black uppercase tracking-wide"
+                          : "min-h-12 text-base font-bold",
                         isActivePath(pathname, "/coupons/")
                           ? "bg-white/[0.08] text-white ring-1 ring-[#F96302]/70"
-                          : "text-white hover:bg-white/[0.06] hover:text-[#F96302]",
+                          : featuredCoupon
+                            ? "text-white hover:bg-white/[0.06] hover:text-[#F96302]"
+                            : "text-white/75 hover:bg-white/[0.06] hover:text-white",
                       ].join(" ")}
                     >
                       Coupons
-                      <ChevronRight className="h-5 w-5 text-white/35" aria-hidden="true" />
+                      <ChevronRight
+                        className={[featuredCoupon ? "h-5 w-5" : "h-4 w-4", "text-white/30"].join(" ")}
+                        aria-hidden="true"
+                      />
                     </Link>
                   </div>
                 )}

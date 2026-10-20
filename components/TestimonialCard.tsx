@@ -8,6 +8,54 @@ interface TestimonialCardProps {
   className?: string;
 }
 
+interface StarRatingProps {
+  /** 0 to 5. Fractions render as a partially filled star (4.5 shows 4 and a half). */
+  rating: number;
+  /** Tailwind size classes for each star, e.g. "h-6 w-6". */
+  starClassName?: string;
+  /** Color class for the unfilled part of each star. */
+  emptyClassName?: string;
+  className?: string;
+}
+
+/**
+ * Honest star display: fills each star by the fraction of the rating it
+ * covers instead of always drawing five full stars.
+ */
+export function StarRating({
+  rating,
+  starClassName = "h-5 w-5",
+  emptyClassName = "text-white/25",
+  className,
+}: StarRatingProps) {
+  const clamped = Math.max(0, Math.min(5, rating));
+  return (
+    <span
+      className={cn("inline-flex items-center gap-1", className)}
+      role="img"
+      aria-label={`${clamped} out of 5 stars`}
+    >
+      {Array.from({ length: 5 }).map((_, i) => {
+        const fill = Math.max(0, Math.min(1, clamped - i));
+        return (
+          <span key={i} className="relative inline-flex flex-shrink-0">
+            <Star className={cn(starClassName, emptyClassName)} aria-hidden={true} />
+            {fill > 0 && (
+              <span className="absolute inset-y-0 left-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+                <Star
+                  className={cn(starClassName, "max-w-none text-[#F96302]")}
+                  fill="#F96302"
+                  aria-hidden={true}
+                />
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 const platformLabel: Record<Testimonial["platform"], string> = {
   google: "Google",
   yelp: "Yelp",

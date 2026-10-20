@@ -43,9 +43,17 @@ test("an international phone number is refused", async () => {
   assert.notEqual(response.status, 200);
 });
 
-test("missing required fields are rejected", async () => {
+test("a missing phone is rejected", async () => {
+  const form = leadForm();
+  form.delete("phone");
+  const response = await fetch(`${baseUrl}/api/lead/`, { method: "POST", body: form });
+  assert.equal(response.status, 400);
+});
+
+test("email is optional", async () => {
   const form = leadForm();
   form.delete("email");
   const response = await fetch(`${baseUrl}/api/lead/`, { method: "POST", body: form });
-  assert.equal(response.status, 400);
+  // Past the required-field check and on to saving (502 against the test DB).
+  assert.equal(response.status, 502);
 });

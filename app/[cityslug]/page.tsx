@@ -70,7 +70,7 @@ function buildCityFaqs(city: string, isHQ: boolean): FaqItem[] {
       question: `How quickly can a Z and Z plumber respond in ${city}?`,
       answer: isHQ
         ? `${city} is home to our headquarters at ${siteSettings.address.street}, so response times are the fastest in our service area. Same-day appointments are typical, and emergency calls run 24/7.`
-        : `From our San Leandro dispatch base, we typically reach ${city} within 30 to 60 minutes for standard calls. Emergency response runs 24/7 every day of the year.`,
+        : `From our San Leandro dispatch base, same-day service is typical in ${city} for standard calls. Emergency calls are answered 24/7, every day of the year.`,
     },
     {
       question: `What plumbing services do you offer in ${city}?`,
@@ -86,7 +86,7 @@ function buildCityFaqs(city: string, isHQ: boolean): FaqItem[] {
     },
     {
       question: `Do you provide emergency plumbing service in ${city}?`,
-      answer: `Yes, 24/7. Z and Z answers emergency calls in ${city} every day of the year. A plumber picks up the phone, not a call center. Same number, same crew.`,
+      answer: `Yes. Emergency calls in ${city} are answered 24/7, every day of the year, on the same number: ${siteSettings.phone}.`,
     },
   ];
 }
@@ -251,11 +251,9 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               </p>
             </div>
             <div className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5">
-              <p className="font-display text-3xl font-black uppercase leading-none text-black">
-                {area.isHQ ? "0" : "30-60"}
-              </p>
+              <p className="font-display text-3xl font-black uppercase leading-none text-black">Same-day</p>
               <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">
-                {area.isHQ ? "min, we are local" : "min response window"}
+                {area.isHQ ? "service from our home base" : `service in ${area.city}`}
               </p>
             </div>
             <div className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5 col-span-2">
@@ -287,8 +285,8 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               Request a call back.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
-              Skip the phone tag. Send your contact details here and the request lands in the Z and Z lead dashboard
-              with {area.city} already attached.
+              Tell us who to call and what&apos;s going on. We&apos;ll call you back within 30 minutes during business
+              hours (Mon to Fri, 7am to 5pm).
             </p>
             <ul className="mt-6 space-y-3 text-base font-semibold text-white/80">
               <li className="border-l-2 border-[#F96302] pl-3">Name, phone, email, and a short note.</li>
@@ -302,7 +300,6 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
             serviceInterest="city-plumbing-request"
             serviceLabel={`${area.city} plumbing request`}
             sourcePage={`/${area.slug}/`}
-            zip={area.zips[0]}
             serviceAreaSlug={area.slug}
             cityLabel={area.city}
           />
@@ -423,7 +420,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               Need a plumber in {area.city}?
             </h2>
             <p className="mt-2 font-sans text-base text-white/85">
-              Call us or book online. A plumber answers the phone.
+              Call us or book online. Emergency calls are answered 24/7.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">

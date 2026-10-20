@@ -30,7 +30,7 @@ interface DispatchEmailInput {
   name: string;
   phoneFormatted: string;
   phoneE164: string;
-  email: string;
+  email?: string;
   zip: string;
   city: string;
   serviceLabel: string;
@@ -66,7 +66,7 @@ export async function sendDispatchEmail(input: DispatchEmailInput): Promise<Emai
     subject,
     html,
     text: buildDispatchText(input),
-    replyTo: input.email,
+    replyTo: input.email || undefined,
   });
 }
 
@@ -96,7 +96,7 @@ function buildDispatchBody(i: DispatchEmailInput): string {
   return `${banner}
     <table style="width:100%;border-collapse:collapse;">
       ${row("Phone", `<a href="tel:${escapeAttr(i.phoneE164)}" style="color:${BRAND.orange};font-weight:600;text-decoration:none;">${escapeHtml(i.phoneFormatted)}</a>`)}
-      ${row("Email", `<a href="mailto:${escapeAttr(i.email)}" style="color:${BRAND.orange};text-decoration:none;">${escapeHtml(i.email)}</a>`)}
+      ${row("Email", i.email ? `<a href="mailto:${escapeAttr(i.email)}" style="color:${BRAND.orange};text-decoration:none;">${escapeHtml(i.email)}</a>` : "Not provided")}
       ${row("Service", escapeHtml(i.serviceLabel))}
       ${row("ZIP", `${escapeHtml(i.zip)} · ${escapeHtml(i.city)}`)}
       ${callbackRow}
@@ -116,7 +116,7 @@ function buildDispatchText(i: DispatchEmailInput): string {
     `${i.name} — ${i.serviceLabel} — ${i.city} ${i.zip}`,
     ``,
     `Phone: ${i.phoneFormatted} (${i.phoneE164})`,
-    `Email: ${i.email}`,
+    `Email: ${i.email || "Not provided"}`,
     i.preferredCallbackTime ? `Best time: ${capitalize(i.preferredCallbackTime)}` : "",
     i.briefDescription ? `Notes: ${i.briefDescription}` : "",
     i.sourcePage ? `Source: ${i.sourcePage}` : "",
@@ -148,7 +148,7 @@ export async function sendCustomerConfirmationEmail(
 
   const intro = input.outOfArea
     ? `We received your request for ${escapeHtml(service)}. Your ZIP is outside our regular East Bay service area, but we will review it and reach back out.`
-    : `We received your request for ${escapeHtml(service)} and will call you within about 15 minutes during business hours.`;
+    : `We received your request for ${escapeHtml(service)} and will call you within 30 minutes during business hours (Mon to Fri, 7am to 5pm).`;
 
   const bodyHtml = `
     <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#333;">Hi ${escapeHtml(first)}, thanks for reaching out to ${escapeHtml(siteSettings.name)}.</p>
@@ -173,7 +173,7 @@ export async function sendCustomerConfirmationEmail(
     ``,
     input.outOfArea
       ? `We received your request for ${service}. Your ZIP is outside our regular East Bay service area, but we will review it and reach back out.`
-      : `We received your request for ${service} and will call you within about 15 minutes during business hours.`,
+      : `We received your request for ${service} and will call you within 30 minutes during business hours (Mon to Fri, 7am to 5pm).`,
     ``,
     `Need to reach us first? Call ${siteSettings.phone}.`,
     `${siteSettings.name} · ${siteSettings.cslb}`,

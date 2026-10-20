@@ -155,7 +155,7 @@ const faqs: FaqItem[] = [
   {
     question: "How fast can Z and Z get to a drain clog in Oakland?",
     answer:
-      "Most drain cleaning calls book inside the day. Our San Leandro dispatch base puts most Oakland addresses 30 to 60 minutes from a route-ready truck during business hours. Emergency calls run 24/7.",
+      "Most drain cleaning calls book inside the day, with same-day service across Oakland from our San Leandro dispatch base. Emergency calls are answered 24/7.",
   },
 ];
 
@@ -202,7 +202,7 @@ export default function DrainCleaningOaklandPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="xl" href="/book/?zip=94601&service=clog">
+          <Button variant="inverse" size="xl" href="/book/?service=clog">
             Schedule online
           </Button>
         </div>
@@ -442,7 +442,7 @@ export default function DrainCleaningOaklandPage() {
             >
               Call {siteSettings.phone}
             </Button>
-            <Button variant="inverse" size="lg" href="/book/?zip=94601&service=clog">
+            <Button variant="inverse" size="lg" href="/book/?service=clog">
               Schedule online
             </Button>
           </div>

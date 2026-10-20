@@ -106,13 +106,13 @@ const responseSteps = [
   {
     step: "1",
     title: "Call",
-    detail: `A plumber picks up. Not a call center. ${siteSettings.phone} routes straight to dispatch every hour of the day.`,
+    detail: `Emergency calls are answered 24/7. ${siteSettings.phone} routes straight to dispatch.`,
   },
   {
     step: "2",
     title: "Dispatch",
     detail:
-      "We send the nearest available crew from our San Leandro yard. Most Oakland addresses see a 30 to 60 minute response window during the day, longer at night depending on traffic and active calls.",
+      "We send the nearest available crew from our San Leandro yard. For emergencies, most Oakland addresses see a 30 to 60 minute on-site arrival window during the day, longer at night depending on traffic and active calls.",
   },
   {
     step: "3",
@@ -149,12 +149,12 @@ const faqs: FaqItem[] = [
   {
     question: "How fast can a Z and Z emergency plumber reach me in Oakland?",
     answer:
-      "Most Oakland addresses see a 30 to 60 minute response window during business hours. After hours and at night, response can run longer depending on traffic and active calls already in progress. We dispatch from our San Leandro yard with route-ready trucks.",
+      "For emergencies, most Oakland addresses see a 30 to 60 minute on-site arrival window during business hours. After hours and at night, arrival can run longer depending on traffic and active calls already in progress. We dispatch from our San Leandro yard with route-ready trucks.",
   },
   {
     question: "Do you actually answer the phone at 2 AM?",
     answer:
-      "Yes. A plumber picks up the phone, not a call center. Same number, same crew, every hour of the day, every day of the year.",
+      `Yes. Emergency calls are answered 24/7, every day of the year, on the same number: ${siteSettings.phone}.`,
   },
   {
     question: "What should I do while I wait for the plumber?",
@@ -217,12 +217,8 @@ export default function EmergencyPlumberOaklandPage() {
         <h1 className="max-w-5xl font-display text-5xl md:text-7xl font-black uppercase leading-none tracking-tight text-white">
           24/7 Emergency Plumber in Oakland. We Answer the Phone.
         </h1>
-        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
-          Burst pipes, sewer backups, water heater failure, gas leaks, main water line breaks. Z and Z Plumbing
-          dispatches from San Leandro 24 hours a day and runs both licenses on every truck. A plumber picks up the
-          phone every hour of every day.
-        </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        {/* Call sits directly under the H1 so it is on the first screen on phones. */}
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row md:mt-8">
           <Button
             variant="primary"
             size="xl"
@@ -232,10 +228,14 @@ export default function EmergencyPlumberOaklandPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="xl" href="/book/?zip=94601&service=emergency">
+          <Button variant="inverse" size="xl" href="/book/?service=emergency">
             Schedule online
           </Button>
         </div>
+        <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:mt-8 md:text-3xl">
+          Burst pipes, sewer backups, water heater failure, gas leaks, main water line breaks. Z and Z Plumbing
+          dispatches from San Leandro and runs both licenses on every truck. Emergency calls are answered 24/7.
+        </p>
         <p className="mt-6 max-w-3xl text-sm font-semibold uppercase tracking-[0.12em] text-white/55">
           {siteSettings.cslb} · C-36 + A General Engineering · 23 years in Oakland · Same crew on every call
         </p>
@@ -249,7 +249,7 @@ export default function EmergencyPlumberOaklandPage() {
           <a href={`tel:${siteSettings.phoneTel}`} className="font-bold text-[#F96302] underline">
             {siteSettings.phone}
           </a>
-          , a plumber picks up. Not a call center. Not a voicemail. Dispatch leaves the San Leandro yard and runs the
+          , the call is answered, day or night. Dispatch leaves the San Leandro yard and runs the
           most direct route to your Oakland address. Two California contractor licenses on every truck, which means the
           same crew handles property-side work, street-side work, and the public right-of-way without subcontracting.
         </p>
@@ -370,8 +370,8 @@ export default function EmergencyPlumberOaklandPage() {
                 Right now. Not in the morning.
               </p>
               <p className="mt-2 max-w-2xl text-base text-white/85">
-                Call {siteSettings.phone}. A plumber picks up. Dispatch leaves the San Leandro yard and routes the
-                fastest way to your Oakland address.
+                Call {siteSettings.phone}. Emergency calls are answered 24/7. Dispatch leaves the San Leandro yard and
+                routes the fastest way to your Oakland address.
               </p>
             </div>
           </div>
@@ -411,9 +411,11 @@ export default function EmergencyPlumberOaklandPage() {
             <Clock className="h-5 w-5 flex-shrink-0 text-[#F96302]" strokeWidth={1.5} aria-hidden="true" />
             <div>
               <p className="font-sans text-lg font-extrabold leading-snug text-black">
-                30-60 min daytime
+                30-60 min emergency arrival
               </p>
-              <p className="mt-1 text-sm text-[#333333]">Most Oakland addresses during business hours.</p>
+              <p className="mt-1 text-sm text-[#333333]">
+                Typical on-site arrival for most Oakland addresses during business hours.
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-[#E5E5E5] bg-white p-5">
@@ -533,7 +535,7 @@ export default function EmergencyPlumberOaklandPage() {
               Right Now? Call.
             </h2>
             <p className="mt-2 max-w-2xl font-sans text-base text-white/75">
-              A plumber answers the phone every hour of the day. {siteSettings.cslb}.
+              Emergency calls are answered 24/7. {siteSettings.cslb}.
             </p>
           </div>
           <Button
