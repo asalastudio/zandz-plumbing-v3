@@ -1,6 +1,7 @@
 import { Users, Phone, Mail, Plus } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { listCrew, type Crew } from "@/lib/db";
+import { formatPhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ const ROLES: Crew["role"][] = ["owner", "lead_plumber", "plumber", "apprentice",
 export default async function CrewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ added?: string; updated?: string }>;
+  searchParams: Promise<{ added?: string; updated?: string; error?: string }>;
 }) {
   const params = await searchParams;
 
@@ -49,6 +50,16 @@ export default async function CrewPage({
         <div className="mb-6 border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm font-bold uppercase tracking-wide text-emerald-700">
           {params.added && "Crew member added."}
           {params.updated && "Crew member updated."}
+        </div>
+      )}
+
+      {params.error && (
+        <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4 text-sm font-bold text-red-700">
+          {params.error === "bad_phone"
+            ? "That phone number doesn't look like a US mobile number. Use 10 digits, like (510) 555-0123."
+            : params.error === "missing"
+              ? "Name, email, and role are required."
+              : "Couldn't save that crew member. Try again."}
         </div>
       )}
 
@@ -88,7 +99,7 @@ export default async function CrewPage({
                 {c.phone_e164 && (
                   <p className="mt-2 flex items-center gap-2 text-sm text-muted">
                     <Phone className="h-4 w-4 text-muted" aria-hidden="true" />
-                    {c.phone_e164}
+                    {formatPhone(c.phone_e164)}
                   </p>
                 )}
                 <form action={`/api/admin/crew/${c.id}/toggle`} method="POST" className="mt-4">
@@ -116,7 +127,7 @@ export default async function CrewPage({
         <form action="/api/admin/crew" method="POST" className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <Field label="Name *" name="name" required />
           <Field label="Email *" name="email" type="email" required />
-          <Field label="Phone (E.164)" name="phone_e164" type="tel" />
+          <Field label="Mobile phone" name="phone_e164" type="tel" />
           <Field label="Role *" name="role" required>
             <select
               name="role"

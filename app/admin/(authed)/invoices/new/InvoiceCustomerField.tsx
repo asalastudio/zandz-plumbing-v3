@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Search, X, UserPlus, AlertTriangle, Check } from "lucide-react";
+import { formatPhone } from "@/lib/phone";
 
 export interface PickedCustomer {
   id: number;
@@ -23,7 +24,7 @@ const inputCls =
 const labelCls = "mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-muted";
 
 function contactLine(c: PickedCustomer): string {
-  return [c.phone_e164, c.email, c.city].filter(Boolean).join(" · ");
+  return [c.phone_e164 ? formatPhone(c.phone_e164) : null, c.email, c.city].filter(Boolean).join(" · ");
 }
 
 /**

@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { isTwilioConfigured } from "@/lib/twilio";
+import { InvoiceSendControls } from "./InvoiceSendControls";
 import { getCustomer, getCustomerJobs, getJob, STATUS_LABEL, type JobStatus } from "@/lib/db";
 import InvoiceCustomerField, {
   type JobOption,
@@ -140,52 +142,7 @@ export default async function NewInvoicePage({
         </section>
 
         {/* Delivery */}
-        <section className="border border-line bg-surface p-4 md:p-5">
-          <h2 className="mb-4 text-sm font-bold uppercase tracking-[0.12em] text-muted">
-            Send
-          </h2>
-          <div className="space-y-3">
-            <label className="flex items-center gap-3 text-sm text-muted">
-              <input
-                type="checkbox"
-                name="send_now"
-                defaultChecked
-                className="h-5 w-5 accent-[#F96302]"
-              />
-              Send now (uncheck to save as a draft)
-            </label>
-            <label className="flex items-center gap-3 text-sm text-muted">
-              <input
-                type="checkbox"
-                name="channel_email"
-                defaultChecked
-                className="h-5 w-5 accent-[#F96302]"
-              />
-              Email the invoice
-            </label>
-            <label className="flex items-center gap-3 text-sm text-muted">
-              <input type="checkbox" name="channel_text" className="h-5 w-5 accent-[#F96302]" />
-              Text the invoice
-              <span className="text-xs text-muted">(activates once Twilio is live)</span>
-            </label>
-          </div>
-        </section>
-
-        <div className="flex justify-end gap-3">
-          <Link
-            href="/admin/invoices"
-            className="inline-flex items-center bg-transparent border border-line px-6 py-3 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
-          >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            className="inline-flex items-center gap-2 bg-[#F96302] px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-transform duration-150 hover:-translate-y-0.5 hover:bg-[#e05602] hover:shadow-lg"
-          >
-            <Send className="h-4 w-4" aria-hidden="true" />
-            Create invoice
-          </button>
-        </div>
+        <InvoiceSendControls textingAvailable={isTwilioConfigured()} />
       </form>
     </div>
   );

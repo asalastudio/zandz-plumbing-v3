@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeNanpToE164 } from "@/lib/phone";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { isAuthenticated } from "@/lib/auth";
 
@@ -18,7 +19,13 @@ export async function POST(req: NextRequest) {
   const name = String(form.get("name") ?? "").trim();
   const email = String(form.get("email") ?? "").trim().toLowerCase();
   const role = String(form.get("role") ?? "").trim();
-  const phone = String(form.get("phone_e164") ?? "").trim() || null;
+  const rawPhone = String(form.get("phone_e164") ?? "").trim();
+  // Lead alerts and dispatch texts need E.164, so normalize whatever was typed.
+  const phone = rawPhone ? normalizeNanpToE164(rawPhone) : null;
+
+  if (rawPhone && !phone) {
+    return NextResponse.redirect(new URL("/admin/crew?error=bad_phone", req.url), 303);
+  }
 
   if (!name || !email || !role || !ROLES.includes(role)) {
     return NextResponse.redirect(new URL("/admin/crew?error=missing", req.url), 303);

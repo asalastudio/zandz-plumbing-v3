@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Search, Phone, ChevronRight, Plus } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { listCustomers, formatMoneyShort, type CustomerFilter, type CustomerSort } from "@/lib/db";
+import { formatPhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -194,7 +195,7 @@ export default async function CustomersPage({
                         className="inline-flex items-center gap-2 text-base text-muted hover:text-[#F96302]"
                       >
                         <Phone className="h-4 w-4" aria-hidden="true" />
-                        {c.phone_e164}
+                        {formatPhone(c.phone_e164)}
                       </a>
                     ) : (
                       <span className="text-muted">·</span>

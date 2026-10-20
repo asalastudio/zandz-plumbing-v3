@@ -27,6 +27,7 @@ import {
   formatMoneyShort,
 } from "@/lib/db";
 import { formatPhone } from "@/lib/phone";
+import { getArchivedCustomerWork } from "@/lib/customer-history";
 
 const CONTACT_ERRORS: Record<string, string> = {
   missing_name: "The customer needs a name.",
@@ -59,10 +60,11 @@ export default async function CustomerDetailPage({
   const customer = await getCustomer(id);
   if (!customer) notFound();
 
-  const [jobs, invoiceHistory, stats] = await Promise.all([
+  const [jobs, invoiceHistory, stats, archived] = await Promise.all([
     getCustomerJobs(id),
     getCustomerInvoiceHistory(id),
     getCustomerLifetimeStats(id),
+    getArchivedCustomerWork(id),
   ]);
 
   const avgTicketCents =
@@ -131,13 +133,13 @@ export default async function CustomerDetailPage({
               className="flex items-center justify-center gap-3 bg-[#F96302] px-5 py-4 font-display text-xl font-black uppercase tracking-tight text-white transition-transform duration-150 hover:-translate-y-0.5 hover:bg-[#e05602]"
             >
               <Phone className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
-              {customer.phone_e164}
+              {formatPhone(customer.phone_e164)}
             </a>
           )}
           {customer.email && (
             <a
               href={`mailto:${customer.email}`}
-              className="flex items-center justify-center gap-3 border border-line bg-card px-5 py-4 font-display text-base font-black uppercase tracking-tight text-ink transition-colors hover:border-[#F96302] hover:text-[#F96302]"
+              className="flex items-center justify-center gap-3 border border-line bg-card px-5 py-4 text-base font-bold text-ink transition-colors hover:border-[#F96302] hover:text-[#F96302]"
             >
               <Mail className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
               <span className="truncate">{customer.email}</span>
@@ -407,7 +409,11 @@ export default async function CustomerDetailPage({
         {invoiceHistory.length === 0 ? (
           <div className="border border-dashed border-line bg-raised px-8 py-12 text-center">
             <FileText className="mx-auto h-8 w-8 text-faint" aria-hidden="true" />
-            <p className="mt-3 text-base text-muted">No invoice history for this customer.</p>
+            <p className="mt-3 text-base text-muted">
+              {archived.rows.length > 0
+                ? "No invoices in the OS yet. Earlier work is listed below."
+                : "No invoice history for this customer."}
+            </p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <Link
                 href={`/admin/invoices/new?customer_id=${id}`}
@@ -484,6 +490,44 @@ export default async function CustomerDetailPage({
           </div>
         )}
       </section>
+
+      {archived.rows.length > 0 && (
+        <section className="mt-10">
+          <h2 className="mb-1 font-display text-2xl font-black uppercase tracking-tight md:text-3xl">
+            Past work
+            <span className="ml-3 text-base font-bold text-muted">({archived.rows.length})</span>
+          </h2>
+          <p className="mb-4 text-sm text-muted">
+            {`From ServiceTitan, 2021 to 2023: ${formatMoney(archived.totalCents)} billed. For reference on calls; it doesn't count toward OS revenue.`}
+          </p>
+          <div className="overflow-x-auto border border-line">
+            <table className="w-full text-left">
+              <thead className="bg-card">
+                <tr>
+                  <Th>Date</Th>
+                  <Th>Work</Th>
+                  <Th>Tech</Th>
+                  <Th>Total</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {archived.rows.map((row) => (
+                  <tr key={row.id} className="border-t border-line">
+                    <td className="px-5 py-4 text-sm text-muted">
+                      {formatDate(row.completedOn ?? row.invoicedOn)}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-ink">{row.jobType ?? "·"}</td>
+                    <td className="px-5 py-4 text-sm text-muted">{row.technician ?? "·"}</td>
+                    <td className="px-5 py-4 font-display text-base font-black tracking-tight text-ink">
+                      {formatMoney(row.totalCents)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
