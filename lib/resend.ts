@@ -79,7 +79,7 @@ function buildDispatchBody(i: DispatchEmailInput): string {
     : "";
 
   const callbackRow = i.preferredCallbackTime
-    ? row("Best time to call", capitalize(i.preferredCallbackTime))
+    ? row("Best time to call", escapeHtml(capitalize(i.preferredCallbackTime)))
     : "";
   const descriptionRow = i.briefDescription
     ? row("Customer notes", escapeHtml(i.briefDescription))
@@ -89,7 +89,7 @@ function buildDispatchBody(i: DispatchEmailInput): string {
   const dashboardLine = i.supabaseJobId
     ? `<p style="margin-top:24px;font-size:13px;color:${BRAND.muted};">
          Job <strong>#${i.supabaseJobId}</strong> · open in
-         <a href="https://www.zandzplumbing.com/admin/jobs" style="color:${BRAND.orange};font-weight:700;">Z and Z OS</a>
+         <a href="https://www.zandzplumbing.com/admin/jobs/${i.supabaseJobId}/" style="color:${BRAND.orange};font-weight:700;">Z and Z OS</a>
        </p>`
     : "";
 

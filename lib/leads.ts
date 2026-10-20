@@ -16,7 +16,10 @@ import { sendDispatchEmail, sendCustomerConfirmationEmail } from "@/lib/resend";
 import { sendDispatchSms, sendCustomerReceiptSms } from "@/lib/lead-sms";
 import { recordSmsConsent } from "@/lib/sms-consent";
 import { lookupServiceAreaBySlug, lookupServiceAreaByZip } from "@/lib/service-area-lookup";
-import { toE164 } from "@/lib/twilio";
+import { normalizeNanpToE164 } from "@/lib/phone";
+
+/** A second identical request inside this window is a double submit, not a new lead. */
+const DUPLICATE_WINDOW_MINUTES = 10;
 
 export interface LeadInput {
   firstName: string;
@@ -56,11 +59,19 @@ const okSkipped = (detail: string): SideEffect => ({ ok: true, skipped: true, de
 const okDone = (detail?: string): SideEffect => ({ ok: true, detail });
 const failed = (detail: string): SideEffect => ({ ok: false, detail });
 
-export async function ingestLead(input: LeadInput): Promise<LeadResult> {
+export async function ingestLead(rawInput: LeadInput): Promise<LeadResult> {
+  const zip = rawInput.zip?.trim() || undefined;
+  // The client only flags out-of-area on the booking form. Decide it here too,
+  // from the ZIP, so contact-page and API submissions get the same warning.
+  const input: LeadInput = {
+    ...rawInput,
+    outOfArea: rawInput.outOfArea === true || (!!zip && /^\d{5}$/.test(zip) && !lookupServiceAreaByZip(zip)),
+  };
   const fullName = `${input.firstName} ${input.lastName}`.trim();
-  const zip = input.zip?.trim() || undefined;
   const jobAddress = input.jobAddress?.trim() || undefined;
-  const phoneE164 = toE164(input.phone);
+  // US numbers only. Accepting international numbers here would let a direct
+  // POST make us text anywhere in the world once Twilio is live.
+  const phoneE164 = normalizeNanpToE164(input.phone);
   if (!phoneE164) {
     return {
       ok: false,
@@ -91,6 +102,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       // Upsert customer by phone_e164 (or email if phone missing). Avoids dupes
       // when an existing customer submits a new request.
       let customerId: number | undefined;
+      let phoneMismatchNote: string | undefined;
 
       if (phoneE164) {
         const { data: existing } = await sb
@@ -104,11 +116,40 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
       if (!customerId && input.email) {
         const { data: existing } = await sb
           .from("customers")
-          .select("id")
+          .select("id, phone_e164")
           .eq("email", input.email)
           .limit(1)
           .maybeSingle();
-        if (existing?.id) customerId = existing.id as number;
+        if (existing?.id) {
+          customerId = existing.id as number;
+          // Matched on email, so this lead's phone is new to us. Fill a blank
+          // phone; never overwrite a different one (shared household emails).
+          if (!existing.phone_e164) {
+            await sb.from("customers").update({ phone_e164: phoneE164 }).eq("id", customerId);
+          } else {
+            phoneMismatchNote = `Lead phone ${input.phone} differs from the customer record`;
+          }
+        }
+      }
+
+      if (customerId) {
+        const duplicateJobId = await findRecentDuplicateJob(customerId, input.serviceInterest);
+        if (duplicateJobId) {
+          console.warn("[leads] duplicate submission folded into job", duplicateJobId);
+          return {
+            ok: true,
+            supabaseJobId: duplicateJobId,
+            supabaseCustomerId: customerId,
+            outcomes: {
+              supabase: okSkipped(`duplicate of job ${duplicateJobId}`),
+              smsConsent: okSkipped("duplicate submission"),
+              dispatchEmail: okSkipped("duplicate submission"),
+              dispatchSms: okSkipped("duplicate submission"),
+              customerSms: okSkipped("duplicate submission"),
+              customerEmail: okSkipped("duplicate submission"),
+            },
+          };
+        }
       }
 
       if (!customerId) {
@@ -130,7 +171,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
 
       supabaseCustomerId = customerId;
 
-      const internalNotes = buildInternalNotes(input);
+      const internalNotes = [buildInternalNotes(input), phoneMismatchNote].filter(Boolean).join("\n");
       const { data: jobRow, error: jobErr } = await sb
         .from("jobs")
         .insert({
@@ -157,19 +198,24 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
   }
 
   // ── 2. SMS consent ledger (A2P 10DLC evidence) ──
-  // Recorded either way. Proving someone declined matters as much as proving
-  // someone agreed, and it is the only consent record we keep now.
-  const smsConsentRes = await safeAwait(
-    recordSmsConsent({
-      phoneE164,
-      customerName: fullName,
-      consented: input.smsConsent === true,
-      source: "web_form",
-      customerId: supabaseCustomerId,
-      jobId: supabaseJobId,
-    }),
-    "sms consent ledger"
-  );
+  // Recorded either way when the form asked. Proving someone declined matters
+  // as much as proving someone agreed, and it is the only consent record we
+  // keep now. A form that never showed the checkbox (smsConsent undefined)
+  // must not overwrite an earlier answer.
+  const smsConsentRes =
+    input.smsConsent === undefined
+      ? okSkipped("form did not ask for SMS consent")
+      : await safeAwait(
+          recordSmsConsent({
+            phoneE164,
+            customerName: fullName,
+            consented: input.smsConsent === true,
+            source: "web_form",
+            customerId: supabaseCustomerId,
+            jobId: supabaseJobId,
+          }),
+          "sms consent ledger"
+        );
 
   // ── 3. Dispatch email (Resend) ──
   const dispatchEmailRes = await safeAwait(
@@ -205,7 +251,7 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
 
   // ── 5. Customer SMS receipt (Twilio) ──
   let customerSmsRes: SideEffect;
-  if (!input.smsConsent) {
+  if (input.smsConsent !== true) {
     customerSmsRes = okSkipped("customer declined SMS consent");
   } else {
     customerSmsRes = await safeAwait(
@@ -253,6 +299,28 @@ export async function ingestLead(input: LeadInput): Promise<LeadResult> {
 // ──────────────────────────────────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Same customer, same service, within a few minutes: a double tap or a
+ * scripted replay. Fold it into the job we already have instead of creating a
+ * second lead and a second round of emails.
+ */
+async function findRecentDuplicateJob(
+  customerId: number,
+  serviceInterest: string
+): Promise<number | undefined> {
+  const since = new Date(Date.now() - DUPLICATE_WINDOW_MINUTES * 60_000).toISOString();
+  const { data } = await supabase()
+    .from("jobs")
+    .select("id")
+    .eq("customer_id", customerId)
+    .eq("service_type", serviceInterest)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.id as number | undefined) ?? undefined;
+}
 
 function deriveCity(input: LeadInput): string | null {
   // First try the explicit serviceAreaSlug the client passed

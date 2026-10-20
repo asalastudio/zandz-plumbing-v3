@@ -5,7 +5,10 @@ import { reviewClickUrl, siteOrigin } from "@/lib/url";
 import {
   scheduleReviewRequestForJob,
   REVIEW_TRIGGER_STATUSES,
+  WINDOW_OPEN_HOUR,
+  WINDOW_CLOSE_HOUR,
 } from "@/lib/review-requests";
+import { pacificHour } from "@/lib/time";
 
 /**
  * Cron: send any review_requests where scheduled_send_at <= now and not yet sent.
@@ -27,6 +30,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const MAX_PER_RUN = 50; // hard cap, prevent runaway sends
+// A request that fails this many times is cancelled instead of retried hourly
+// forever (and crowding out good rows from the batch).
+const MAX_SEND_ATTEMPTS = 3;
 
 function authorize(req: NextRequest): boolean {
   // Vercel Cron sets this header automatically when CRON_SECRET is configured.
@@ -63,6 +69,13 @@ export async function GET(req: NextRequest) {
   // scheduling calls across every mutation site, this sweep self-heals: any
   // finished job with no review_request gets picked up within the hour.
   const swept = await sweepUnqueuedJobs(sb);
+
+  // Scheduling already clamps send times into the window, but backlog rows,
+  // swept jobs, and retries can come due overnight. Hold them until it opens.
+  const hourNow = pacificHour(new Date());
+  if (hourNow < WINDOW_OPEN_HOUR || hourNow >= WINDOW_CLOSE_HOUR) {
+    return NextResponse.json({ ok: true, sent: 0, swept, message: "Outside the send window" });
+  }
 
   // Pull due requests
   const { data: due, error } = await sb
@@ -106,6 +119,23 @@ export async function GET(req: NextRequest) {
       continue;
     }
 
+    const { count: failedAttempts } = await sb
+      .from("sms_log")
+      .select("id", { count: "exact", head: true })
+      .eq("related_review_request_id", r.id)
+      .eq("status", "failed");
+    if ((failedAttempts ?? 0) >= MAX_SEND_ATTEMPTS) {
+      await sb
+        .from("review_requests")
+        .update({
+          cancelled_at: new Date().toISOString(),
+          cancellation_reason: `send_failed_${MAX_SEND_ATTEMPTS}x`,
+        })
+        .eq("id", r.id);
+      results.push({ id: r.id, ok: false, reason: "too many failed attempts" });
+      continue;
+    }
+
     const clickUrl = reviewClickUrl(r.click_token);
     const body = buildReviewRequestBody({
       customerFirstName: r.customer_name,
@@ -116,7 +146,9 @@ export async function GET(req: NextRequest) {
     const sendResult = await sendSms({
       to: r.customer_phone_e164,
       body,
-      statusCallback: `${siteOrigin()}/api/webhooks/twilio/status`,
+      // Trailing slash matters: next.config enforces it, and Twilio signs the
+      // exact URL, so a 308 hop would fail signature validation.
+      statusCallback: `${siteOrigin()}/api/webhooks/twilio/status/`,
     });
 
     // Log every send attempt
@@ -172,6 +204,7 @@ async function sweepUnqueuedJobs(
     .select("id, updated_at")
     .in("status", REVIEW_TRIGGER_STATUSES as unknown as string[])
     .gte("updated_at", since)
+    .order("updated_at", { ascending: false })
     .limit(MAX_PER_RUN);
 
   if (error || !finished?.length) {

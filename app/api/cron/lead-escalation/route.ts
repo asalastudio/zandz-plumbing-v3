@@ -34,6 +34,8 @@ export const maxDuration = 60;
 
 const DEFAULT_RUNGS = [5, 15, 30];
 const MAX_PER_RUN = 25;
+// Long enough to cover a lead that lands Friday evening and waits for Monday.
+const MAX_LEAD_AGE_HOURS = 72;
 
 function authorize(req: NextRequest): boolean {
   const auth = req.headers.get("authorization");
@@ -83,6 +85,9 @@ export async function GET(req: NextRequest) {
   // Anything still sitting in 'new' past the first rung is a candidate. The
   // partial index jobs_awaiting_contact covers exactly this query.
   const oldest = new Date(now.getTime() - rungs[0] * 60 * 1000).toISOString();
+  // Escalation is about minutes, not weeks. A lead older than this is backlog
+  // for the dashboard to show, not something to page the crew about.
+  const floor = new Date(now.getTime() - MAX_LEAD_AGE_HOURS * 60 * 60 * 1000).toISOString();
 
   const { data: waiting, error } = await sb
     .from("jobs")
@@ -92,6 +97,10 @@ export async function GET(req: NextRequest) {
     .eq("status", "new")
     .is("first_contact_at", null)
     .lte("created_at", oldest)
+    .gte("created_at", floor)
+    // Skip leads that already fired every rung. Without this the oldest
+    // fully-escalated leads fill every batch and newer leads never escalate.
+    .lt("sla_alert_level", rungs.length)
     .order("created_at", { ascending: true })
     .limit(MAX_PER_RUN);
 

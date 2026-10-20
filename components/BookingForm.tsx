@@ -32,6 +32,8 @@ import {
 } from "lucide-react";
 import { siteSettings } from "@/content/site-settings";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { HoneypotField } from "@/components/HoneypotField";
+import { HONEYPOT_FIELD } from "@/lib/honeypot";
 import { lookupServiceAreaByZip } from "@/lib/service-area-lookup";
 import { isValidNanp10Digits } from "@/lib/phone";
 import { trackEvent } from "@/lib/analytics";
@@ -133,7 +135,8 @@ const initialFormState = (initialZip = "", initialService = ""): FormState => {
     phone: "",
     preferredCallbackTime: "",
     briefDescription: "",
-    smsConsent: true,
+    // Unchecked by default. A pre-ticked box is not valid opt-in for A2P/TCPA.
+    smsConsent: false,
     photo: null,
   };
 };
@@ -152,6 +155,7 @@ export default function BookingForm({
   sourcePage,
 }: BookingFormProps) {
   const formShellRef = useRef<HTMLDivElement>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const hasInitialZip = /^\d{5}$/.test(initialZip.trim());
   const hasInitialService = SERVICE_OPTIONS.some((s) => s.id === initialService);
   const [step, setStep] = useState<Step>(
@@ -245,6 +249,7 @@ export default function BookingForm({
       payload.set("serviceLabel", form.serviceLabel);
       payload.set("smsConsent", String(form.smsConsent));
       payload.set("outOfArea", String(form.outOfArea));
+      payload.set(HONEYPOT_FIELD, honeypotRef.current?.value ?? "");
       if (form.preferredCallbackTime) payload.set("preferredCallbackTime", form.preferredCallbackTime);
       if (form.briefDescription.trim()) payload.set("briefDescription", form.briefDescription.trim());
       if (form.serviceArea?.slug) payload.set("serviceAreaSlug", form.serviceArea.slug);
@@ -254,10 +259,16 @@ export default function BookingForm({
       );
       if (form.photo) payload.set("photo", form.photo);
 
-      const res = await fetch("/api/lead/", {
+      let res = await fetch("/api/lead/", {
         method: "POST",
         body: payload,
       });
+      // Too large for the platform (413 never reaches our code). Send the
+      // request again without the photo so the lead itself is never lost.
+      if (res.status === 413 && payload.has("photo")) {
+        payload.delete("photo");
+        res = await fetch("/api/lead/", { method: "POST", body: payload });
+      }
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -298,6 +309,7 @@ export default function BookingForm({
       ref={formShellRef}
       className="w-full max-w-2xl scroll-mt-32 md:scroll-mt-28"
     >
+      <HoneypotField inputRef={honeypotRef} />
       <ProgressBar step={step} />
 
       <div className="mt-4 rounded-2xl border border-[#E5E5E5] bg-white p-5 shadow-2xl md:mt-6 md:p-8">
