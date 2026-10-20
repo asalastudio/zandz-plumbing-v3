@@ -1,6 +1,6 @@
 # Z and Z OS · Wiring Guide
 
-**Updated: 2026-07-22.** Everything in this codebase is built. This doc is the
+**Updated: 2026-10-20.** Everything in this codebase is built. This doc is the
 step-by-step for setting up the third-party accounts and pasting credentials so
 it all comes alive.
 
@@ -118,9 +118,16 @@ Set `TWILIO_MESSAGING_SERVICE_SID` (starts with `MG...`).
 
 5. **Wire the inbound webhook.** Phone Numbers → Manage → Active Numbers → your
    number → Messaging → "A message comes in":
-   `https://www.zandzplumbing.com/api/webhooks/twilio/inbound` (HTTP POST)
+   `https://www.zandzplumbing.com/api/webhooks/twilio/inbound/` (HTTP POST)
 
-   This handles STOP replies and logs every inbound message.
+   This handles STOP replies and logs every inbound message. **Keep the
+   trailing slash.** The site enforces trailing slashes with a 308 redirect,
+   and Twilio signs the exact URL it calls, so a URL without the slash fails
+   signature validation.
+
+   Delivery status needs no setup: the review sender passes
+   `https://www.zandzplumbing.com/api/webhooks/twilio/status/` as the status
+   callback on every message.
 
 ---
 
@@ -154,9 +161,13 @@ Set `GOOGLE_REVIEW_URL`. Without it the review SMS links to a generic search.
    Both crons **fail closed** without it — they return 401 rather than running
    unauthenticated. This is why the review engine has never fired.
 
+   **Before setting it, clear the lead backlog.** Escalation only looks at
+   leads from the last 72 hours, so old leads won't page anyone, but the
+   dashboard numbers stay wrong until stale `new` leads are called or closed.
+
 2. Settings → Cron Jobs. Two jobs are auto-detected from `vercel.json`:
-   - `/api/cron/send-review-requests` — hourly
-   - `/api/cron/lead-escalation` — every 5 minutes
+   - `/api/cron/send-review-requests/` — hourly (sends only 11am to 6pm Pacific)
+   - `/api/cron/lead-escalation/` — every 5 minutes
 
 3. Optional: `LEAD_ESCALATION_MINUTES` (default `5,15,30`) and
    `LEAD_ESCALATION_ENABLED=off` to disable escalation without touching the cron.
@@ -167,15 +178,23 @@ Set `GOOGLE_REVIEW_URL`. Without it the review SMS links to a generic search.
 
 ## Step 6 — Apply the migrations
 
-Run in the Supabase SQL editor, in order, any that haven't been applied:
+Run in the Supabase SQL editor, in order, any that haven't been applied.
+**As of 2026-10-20, 001 to 015 are confirmed applied in production. Only 016 is
+outstanding.**
 
 - `009_service_catalog.sql` + `supabase/seeds/service_catalog.sql`
 - `010_materials.sql` + `supabase/seeds/materials.sql`
 - `011_knowledge_docs.sql` + `supabase/seeds/knowledge_docs.sql`
 - `012_speed_to_lead.sql`
+- `016_security_hardening.sql` (RLS on eight tables, foreign keys that let
+  spam leads be deleted, and the shared login-throttle table)
 
 **009-011 gate the pricebook** — invoice line auto-fill and the assistant's
 pricing answers are inert until they're loaded.
+
+**016 is safe to apply any time.** The app uses the service-role key, which
+bypasses RLS, and the login throttle falls back to memory until the table
+exists.
 
 **012 gates speed-to-lead.** It adds response-time columns to `jobs`, makes
 `review_requests` first-party (it was keyed on a NOT NULL HubSpot deal id, so
@@ -202,7 +221,7 @@ Once Twilio is approved and live:
    waiting 48 hours, edit `scheduled_send_at` into the past in the Supabase
    table editor, then:
    ```bash
-   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://www.zandzplumbing.com/api/cron/send-review-requests
+   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://www.zandzplumbing.com/api/cron/send-review-requests/
    ```
 5. **Click + opt-out.** Click the link in the review text (check `click_count`
    increments), then reply STOP and confirm the `sms_opt_outs` row appears and
@@ -264,6 +283,11 @@ the 90-day per-number throttle hasn't already fired.
 `LEAD_FROM_EMAIL` / `INVOICE_FROM_EMAIL` must be on a verified Resend *sending*
 domain. Both the root `zandzplumbing.com` and `notifications.zandzplumbing.com`
 are verified; the latter is the active config.
+
+**Nobody knows the admin password**
+Run `node scripts/reset-admin-password.mjs` from the repo root, then deploy.
+It stores only a bcrypt hash in Vercel; the password itself is never saved
+anywhere, so put it in the team password manager.
 
 **Admin login redirects in a loop**
 `SESSION_SECRET` unset or under 32 characters.
