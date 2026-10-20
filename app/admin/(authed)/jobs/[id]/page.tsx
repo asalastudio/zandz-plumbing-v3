@@ -1,6 +1,24 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Phone, MapPin, Calendar, User, FileText, AlertTriangle, Camera, CreditCard, Send, CheckCircle2, Pencil, FileSignature } from "lucide-react";
+import {
+  ChevronLeft,
+  Phone,
+  PhoneCall,
+  Mail,
+  MapPin,
+  Calendar,
+  CalendarClock,
+  Clock,
+  Globe,
+  FileText,
+  AlertTriangle,
+  Camera,
+  CreditCard,
+  Send,
+  CheckCircle2,
+  Pencil,
+  FileSignature,
+} from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getJob,
@@ -10,9 +28,21 @@ import {
   STATUS_TRANSITIONS,
   formatDateTime,
   formatMoney,
+  formatPacificDateTime,
+  formatWait,
+  isGenericLeadService,
+  isPastOneBusinessDay,
+  jobTitle,
+  parseLeadIntake,
+  secondsSince,
+  serviceName,
+  type JobWithRelations,
+  type LeadIntake,
 } from "@/lib/db";
+import { formatPhone } from "@/lib/phone";
 import { DeleteJobButton } from "../../_components/DeleteJobButton";
 import { DeleteInvoiceButton } from "../../_components/DeleteInvoiceButton";
+import { MarkSpamButton } from "../../_components/MarkSpamButton";
 import InvoiceLineItems from "../../_components/InvoiceLineItems";
 import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
 import { listJobPhotos, type JobPhotoWithUrl } from "@/lib/job-photos";
@@ -27,7 +57,13 @@ export default async function JobDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; photo?: string; updated?: string; invoice?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    photo?: string;
+    updated?: string;
+    invoice?: string;
+    contact?: string;
+  }>;
 }) {
   const { id: idStr } = await params;
   const query = await searchParams;
@@ -51,10 +87,13 @@ export default async function JobDetailPage({
     listJobInvoices(id),
     listJobEstimates(id),
   ]);
-  const transitions =
-    job.status === "new"
-      ? STATUS_TRANSITIONS[job.status].filter((status) => status !== "scheduled")
-      : STATUS_TRANSITIONS[job.status];
+  const isLead = job.status === "new";
+  // A lead's way to Scheduled is the schedule block (it needs a time), so the
+  // lead panel below carries its only other move, Cancelled.
+  const transitions = isLead ? [] : STATUS_TRANSITIONS[job.status];
+  const calledAt = isLead ? (job.first_contact_at ?? null) : null;
+  const phone = job.customer?.phone_e164 ?? null;
+  const intake = parseLeadIntake(job.internal_notes);
 
   return (
     <div className="pb-24 lg:pb-0">
@@ -66,21 +105,71 @@ export default async function JobDetailPage({
         Back to jobs
       </Link>
 
-      <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
+      {/* Results of the last action, first thing on the page after a redirect. */}
+      {query.contact === "logged" && (
+        <div className="mb-6 border border-emerald-200 bg-emerald-50 p-5 text-base text-emerald-800">
+          Call logged. The lead stays in New Leads until you book it in the schedule block below.
+        </div>
+      )}
+
+      {query.contact === "already" && (
+        <div className="mb-6 border border-line bg-card p-5 text-base text-muted">
+          A call was already logged for this lead.
+        </div>
+      )}
+
+      {query.error === "has_invoice" && (
+        <div className="mb-6 border border-red-200 bg-red-50 p-5 text-base text-red-800">
+          This job has invoice records attached, so it is protected from deletion.
+        </div>
+      )}
+
+      {query.error && query.error !== "has_invoice" && (
+        <div className="mb-6 border border-red-200 bg-red-50 p-5 text-base text-red-800">
+          We could not complete that job action. Please try again.
+        </div>
+      )}
+
+      {query.photo === "1" && (
+        <div className="mb-6 border border-emerald-200 bg-emerald-50 p-5 text-base text-emerald-800">
+          Photo added.
+        </div>
+      )}
+
+      {(query.photo === "missing" || query.photo === "error") && (
+        <div className="mb-6 border border-red-200 bg-red-50 p-5 text-base text-red-800">
+          We could not add that photo. Use an image under 8MB.
+        </div>
+      )}
+
+      {query.invoice && <InvoiceFlash status={query.invoice} />}
+
+      {/* Phones stack title, lead summary, then the document buttons. Wider
+          screens keep the buttons beside the title, summary underneath. */}
+      <div className="mb-8 flex flex-col gap-5 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-6">
+        <header className="min-w-0 md:col-start-1 md:row-start-1">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#F96302]">
             Job #{job.id}
           </p>
-          <h1 className="mt-2 font-display text-4xl font-black uppercase tracking-tight md:text-5xl">
-            {job.service_label ?? job.service_type}
+          <h1 className="mt-2 break-words font-display text-3xl font-black uppercase tracking-tight sm:text-4xl md:text-5xl">
+            {jobTitle(job, job.customer?.name)}
           </h1>
-          <p className="mt-2">
+          <p className="mt-2 flex flex-wrap items-center gap-2">
             <span className={`inline-flex items-center px-3 py-1 text-sm font-bold uppercase tracking-wide ${STATUS_COLOR[job.status]}`}>
               {STATUS_LABEL[job.status]}
             </span>
+            {calledAt && (
+              <span className="inline-flex items-center gap-1.5 bg-emerald-100 px-3 py-1 text-sm font-bold uppercase tracking-wide text-emerald-700">
+                <PhoneCall className="h-4 w-4" aria-hidden="true" />
+                Called {formatDateTime(calledAt)}
+              </span>
+            )}
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2 self-start md:self-auto">
+        </header>
+
+        <LeadSummaryCard job={job} intake={intake} className="md:col-span-2 md:row-start-2" />
+
+        <div className="flex flex-wrap gap-2 md:col-start-2 md:row-start-1">
           <Link
             href={`/admin/estimates/new?job_id=${job.id}&return_to=${encodeURIComponent(`/admin/jobs/${job.id}`)}`}
             className="inline-flex items-center gap-2 border border-line bg-card px-5 py-3 text-sm font-bold uppercase tracking-wide text-muted transition-colors hover:border-[#F96302] hover:text-[#F96302]"
@@ -96,7 +185,7 @@ export default async function JobDetailPage({
             Create invoice
           </a>
         </div>
-      </header>
+      </div>
 
       {estimates.length > 0 && (
         <section className="mb-8 border border-line bg-card p-5">
@@ -129,53 +218,69 @@ export default async function JobDetailPage({
         </section>
       )}
 
-      {query.error === "has_invoice" && (
-        <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">
-          This job has invoice records attached, so it is protected from deletion.
-        </div>
-      )}
-
-      {query.error && query.error !== "has_invoice" && (
-        <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">
-          We could not complete that job action. Please try again.
-        </div>
-      )}
-
-      {query.photo === "1" && (
-        <div className="mb-8 border border-emerald-200 bg-emerald-50 p-5 text-base text-emerald-800">
-          Photo added.
-        </div>
-      )}
-
-      {(query.photo === "missing" || query.photo === "error") && (
-        <div className="mb-8 border border-red-200 bg-red-50 p-5 text-base text-red-800">
-          We could not add that photo. Use an image under 8MB.
-        </div>
-      )}
-
-      {query.invoice && <InvoiceFlash status={query.invoice} />}
-
-      {job.status === "new" && (
+      {/* Lead panel: call, log the call, or clear junk, all in one place. */}
+      {isLead && (
         <section className="mb-8 border-l-4 border-[#F96302] bg-[#F96302]/10 p-5 md:p-6">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em] text-[#F96302]">
-                <AlertTriangle className="h-5 w-5" aria-hidden="true" />
-                New lead waiting
+                {calledAt ? (
+                  <PhoneCall className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+                )}
+                {calledAt ? "Called, not booked yet" : "New lead waiting"}
               </p>
               <p className="mt-2 text-base text-muted">
-                Call the customer, then use the schedule block below once it becomes real work.
+                {calledAt
+                  ? `Call logged ${formatDateTime(calledAt)}. Next step: pick the appointment window in the schedule block below.`
+                  : "Call the customer, then tap Log call so the alerts stop. Book the visit in the schedule block below once it becomes real work."}
               </p>
             </div>
-            {job.customer?.phone_e164 && (
-              <a
-                href={`tel:${job.customer.phone_e164}`}
-                className="inline-flex items-center justify-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
-              >
-                <Phone className="h-4 w-4" aria-hidden="true" />
-                Call lead
-              </a>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {calledAt ? (
+                <a
+                  href="#schedule"
+                  className="inline-flex items-center justify-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+                >
+                  <CalendarClock className="h-4 w-4" aria-hidden="true" />
+                  Schedule visit
+                </a>
+              ) : (
+                phone && (
+                  <a
+                    href={`tel:${phone}`}
+                    className="inline-flex items-center justify-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+                  >
+                    <Phone className="h-4 w-4" aria-hidden="true" />
+                    Call lead
+                  </a>
+                )
+              )}
+              {!calledAt && (
+                <form action={`/api/admin/jobs/${id}/contact`} method="POST">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-2 border border-[#F96302] bg-card px-4 py-3 text-sm font-bold uppercase tracking-wide text-[#B24400] transition-colors duration-150 hover:bg-[#F96302]/10"
+                  >
+                    <PhoneCall className="h-4 w-4" aria-hidden="true" />
+                    Log call
+                  </button>
+                </form>
+              )}
+              <MarkSpamButton jobId={job.id} />
+              {STATUS_TRANSITIONS.new.includes("cancelled") && (
+                <form action={`/api/admin/jobs/${id}/status`} method="POST">
+                  <input type="hidden" name="status" value="cancelled" />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold uppercase tracking-wide text-red-700 hover:bg-red-100"
+                  >
+                    Cancel lead
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </section>
       )}
@@ -231,16 +336,16 @@ export default async function JobDetailPage({
         </section>
       )}
 
-      <form action={`/api/admin/jobs/${id}/schedule`} method="POST" className="mb-8">
+      <form id="schedule" action={`/api/admin/jobs/${id}/schedule`} method="POST" className="mb-8 scroll-mt-24">
         <ScheduleTimeFields
           initialStart={job.scheduled_start}
           initialEnd={job.scheduled_end}
           description={
-            job.status === "new"
+            isLead
               ? "Pick the appointment window after the first callback. Saving a start time moves this lead to Scheduled."
               : "Update the appointment window without changing the rest of the job."
           }
-          scheduledBadge={job.status === "new" ? "Will move to scheduled" : "Schedule selected"}
+          scheduledBadge={isLead ? "Will move to scheduled" : "Schedule selected"}
         />
         <div className="mt-3 flex justify-end">
           <button
@@ -252,41 +357,23 @@ export default async function JobDetailPage({
         </div>
       </form>
 
-      {/* Top cards */}
-      <section className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card icon={User} label="Customer">
-          {job.customer ? (
-            <Link href={`/admin/customers/${job.customer.id}`} className="text-ink hover:text-[#F96302]">
-              {job.customer.name}
-              {job.customer.phone_e164 && (
-                <span className="block text-sm text-muted mt-1">{job.customer.phone_e164}</span>
-              )}
-            </Link>
-          ) : (
-            <span className="text-muted">·</span>
-          )}
-        </Card>
+      {/* Schedule and money. Customer and address live in the summary up top. */}
+      <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card icon={Calendar} label="Scheduled">
           <span className="text-ink">{formatDateTime(job.scheduled_start)}</span>
           {job.scheduled_end && (
             <span className="block text-sm text-muted mt-1">to {formatDateTime(job.scheduled_end)}</span>
           )}
         </Card>
-        <Card icon={MapPin} label="Address">
-          {job.job_address || job.customer?.street_address ? (
-            <span className="text-ink">
-              {job.job_address ?? job.customer?.street_address}
-              {(job.job_city || job.customer?.city) && (
-                <>
-                  <br />
-                  {job.job_city ?? job.customer?.city}
-                  {job.job_zip ? ` · ${job.job_zip}` : ""}
-                </>
-              )}
-            </span>
-          ) : (
-            <span className="text-muted">·</span>
-          )}
+        <Card label="Estimated">
+          <span className="font-display text-3xl font-black tracking-tight text-ink">
+            {formatMoney(job.estimated_amount_cents)}
+          </span>
+        </Card>
+        <Card label="Final">
+          <span className="font-display text-3xl font-black tracking-tight text-ink">
+            {formatMoney(job.final_amount_cents)}
+          </span>
         </Card>
       </section>
 
@@ -322,24 +409,10 @@ export default async function JobDetailPage({
         </form>
       </section>
 
-      {/* Money */}
-      <section className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card label="Estimated">
-          <span className="font-display text-3xl font-black tracking-tight text-ink">
-            {formatMoney(job.estimated_amount_cents)}
-          </span>
-        </Card>
-        <Card label="Final">
-          <span className="font-display text-3xl font-black tracking-tight text-ink">
-            {formatMoney(job.final_amount_cents)}
-          </span>
-        </Card>
-      </section>
-
       <InvoiceSection
         jobId={job.id}
         invoices={invoices}
-        defaultDescription={`${job.service_label ?? job.service_type} service`}
+        defaultDescription={`${isGenericLeadService(job) ? "Plumbing" : serviceName(job)} service`}
         defaultAmountCents={job.final_amount_cents ?? job.estimated_amount_cents}
         customerEmail={job.customer?.email ?? null}
         customerId={job.customer?.id ?? null}
@@ -348,7 +421,12 @@ export default async function JobDetailPage({
 
       {/* Notes */}
       <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <NotesCard title="Customer-facing notes" body={job.customer_notes} icon={FileText} />
+        <NotesCard
+          title="Customer's description"
+          hint="Shows on the customer's tracking page."
+          body={job.customer_notes}
+          icon={FileText}
+        />
         <NotesCard title="Internal notes" body={job.internal_notes} icon={FileText} highlight />
       </section>
 
@@ -367,6 +445,141 @@ export default async function JobDetailPage({
         </div>
       </section>
     </div>
+  );
+}
+
+/**
+ * Everything needed to call a lead back, in one card: who, how to reach
+ * them, where, what they wrote, and how long they've waited.
+ */
+function LeadSummaryCard({
+  job,
+  intake,
+  className = "",
+}: {
+  job: JobWithRelations;
+  intake: LeadIntake;
+  className?: string;
+}) {
+  const customer = job.customer ?? null;
+  const phone = customer?.phone_e164 ?? null;
+  const email = customer?.email ?? null;
+  const address = job.job_address ?? customer?.street_address ?? null;
+  const cityLine = [job.job_city ?? customer?.city, job.job_zip ?? customer?.zip]
+    .filter(Boolean)
+    .join(" · ");
+  // Only a lead nobody has called is "waiting". After that, show how long
+  // the first contact took instead.
+  const waitingSeconds =
+    job.status === "new" && !job.first_contact_at ? secondsSince(job.created_at) : null;
+  const late = waitingSeconds !== null && isPastOneBusinessDay(job.created_at);
+  const sourceIsPath = intake.sourcePage?.startsWith("/") ?? false;
+
+  return (
+    <section aria-label="Lead summary" className={`border border-line bg-card p-5 md:p-6 ${className}`}>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:gap-8">
+        <div className="min-w-0 space-y-3">
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-[0.12em] text-muted">Customer</p>
+            {customer ? (
+              <Link
+                href={`/admin/customers/${customer.id}`}
+                className="break-words font-display text-2xl font-black uppercase tracking-tight text-ink hover:text-[#F96302]"
+              >
+                {customer.name}
+              </Link>
+            ) : (
+              <span className="text-base text-muted">No customer linked</span>
+            )}
+          </div>
+          {phone && (
+            <a
+              href={`tel:${phone}`}
+              className="flex min-h-11 items-center gap-2 text-lg font-bold text-[#F96302] hover:underline"
+            >
+              <Phone className="h-5 w-5 shrink-0" aria-hidden="true" />
+              {formatPhone(phone)}
+            </a>
+          )}
+          {email && (
+            <a
+              href={`mailto:${email}`}
+              className="flex items-center gap-2 break-all text-base text-ink hover:text-[#F96302]"
+            >
+              <Mail className="h-5 w-5 shrink-0 text-muted" aria-hidden="true" />
+              {email}
+            </a>
+          )}
+          {(address || cityLine) && (
+            <p className="flex items-start gap-2 text-base text-ink">
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-muted" aria-hidden="true" />
+              <span>
+                {address}
+                {address && cityLine && <br />}
+                {cityLine}
+              </span>
+            </p>
+          )}
+          {intake.outOfArea && (
+            <p className="inline-flex items-center gap-2 bg-amber-100 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-amber-800">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              ZIP is outside the service area
+            </p>
+          )}
+        </div>
+
+        <div className="min-w-0">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-muted">
+            Customer&rsquo;s message
+          </p>
+          {job.customer_notes ? (
+            <p className="whitespace-pre-line break-words border-l-4 border-[#F96302] bg-surface px-4 py-3 text-base leading-relaxed text-ink">
+              {job.customer_notes}
+            </p>
+          ) : (
+            <p className="text-base text-muted">No message left.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-2 border-t border-line pt-4 text-sm text-muted md:flex-row md:flex-wrap md:items-center md:gap-x-6">
+        <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
+          Received {formatPacificDateTime(job.created_at)}
+          {waitingSeconds !== null && (
+            <span className={`font-bold ${late ? "text-red-700" : "text-ink"}`}>
+              · waiting {formatWait(waitingSeconds)}
+            </span>
+          )}
+          {job.first_contact_at && job.first_response_seconds != null && (
+            <span>· first contact after {formatWait(job.first_response_seconds)}</span>
+          )}
+        </span>
+        {intake.sourcePage && (
+          <span className="inline-flex items-center gap-1.5">
+            <Globe className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Source:{" "}
+            {sourceIsPath ? (
+              <a
+                href={intake.sourcePage}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-ink hover:text-[#F96302]"
+              >
+                {intake.sourcePage}
+              </a>
+            ) : (
+              <span className="font-bold text-ink">{intake.sourcePage}</span>
+            )}
+          </span>
+        )}
+        {intake.preferredCallback && (
+          <span>
+            Preferred callback: <span className="font-bold text-ink">{intake.preferredCallback}</span>
+          </span>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -569,9 +782,10 @@ function InvoiceSection({
                         <select
                           name="payment_method"
                           defaultValue="manual"
+                          aria-label="How it was paid"
                           className="border border-line bg-card px-3 py-2 text-sm text-ink outline-none focus:border-[#F96302]"
                         >
-                          <option value="manual">Manual</option>
+                          <option value="manual">Paid by: other</option>
                           <option value="card">Card</option>
                           <option value="cash">Cash</option>
                           <option value="check">Check</option>
@@ -707,21 +921,25 @@ function Card({
 
 function NotesCard({
   title,
+  hint,
   body,
   icon: Icon,
   highlight = false,
 }: {
   title: string;
+  /** One line under the title saying where this text shows up. */
+  hint?: string;
   body: string | null;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   highlight?: boolean;
 }) {
   return (
     <div className={`border ${highlight ? "border-l-4 border-[#F96302]" : "border-line"} bg-card p-6 md:p-7`}>
-      <div className="mb-3 flex items-center gap-3">
+      <div className={`${hint ? "mb-1" : "mb-3"} flex items-center gap-3`}>
         <Icon className="h-5 w-5 text-[#F96302]" strokeWidth={1.75} aria-hidden="true" />
         <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted">{title}</span>
       </div>
+      {hint && <p className="mb-3 text-sm text-muted">{hint}</p>}
       {body ? (
         <p className="text-base leading-relaxed text-muted md:text-lg whitespace-pre-line">{body}</p>
       ) : (

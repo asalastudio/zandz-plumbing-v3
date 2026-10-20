@@ -1,16 +1,28 @@
 import Link from "next/link";
-import { Plus, Phone, MapPin, User, AlertCircle, ChevronRight } from "lucide-react";
+import { Plus, Phone, MapPin, User, AlertCircle, ChevronRight, Inbox } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getJobsForDay,
   listCrew,
+  listJobs,
   STATUS_LABEL,
   STATUS_COLOR,
   formatDateTime,
+  formatPacificDateTime,
+  formatReceived,
+  isPastOneBusinessDay,
+  leadProblem,
   type JobWithRelations,
   type Crew,
 } from "@/lib/db";
+import { formatPhone } from "@/lib/phone";
 import { PACIFIC_TZ, pacificDayFromIsoDate, startOfPacificDay, pacificYmd } from "@/lib/time";
+import { DispatchDatePicker } from "../_components/DispatchDatePicker";
+
+/** How many unbooked leads the board lists before pointing at the lead inbox. */
+const WAITING_CAP = 15;
+/** Phones show fewer, so the day's board isn't pushed far down. */
+const WAITING_CAP_MOBILE = 5;
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +43,12 @@ export default async function DispatchPage({
     );
   }
 
-  const [dayJobs, allCrew] = await Promise.all([getJobsForDay(day), listCrew()]);
+  const [dayJobs, allCrew, waiting] = await Promise.all([
+    getJobsForDay(day),
+    listCrew(),
+    // Leads not booked yet, so the board shows what still needs a slot.
+    listJobs({ status: "new", sort: "newest", limit: WAITING_CAP }),
+  ]);
   // Cancelled work isn't on the board.
   const jobs = dayJobs.filter((j) => j.status !== "cancelled");
   const crew = allCrew.filter((c) => c.active);
@@ -48,8 +65,11 @@ export default async function DispatchPage({
   // YYYY-MM-DD after slicing the ISO string.
   const yesterday = new Date(day.getTime() - 24 * 60 * 60 * 1000);
   const tomorrow = new Date(day.getTime() + 24 * 60 * 60 * 1000);
-  const ymdNow = pacificYmd(new Date());
-  const todayIso = `${ymdNow.year}-${String(ymdNow.month).padStart(2, "0")}-${String(ymdNow.day).padStart(2, "0")}`;
+  const isoOf = ({ year, month, day: d }: { year: number; month: number; day: number }) =>
+    `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const todayIso = isoOf(pacificYmd(new Date()));
+  const dayIso = isoOf(pacificYmd(day));
+  const now = new Date();
 
   // A job assigned to someone who is no longer active (or no longer on the
   // crew list) still needs a person, so it lands in the unassigned lane
@@ -100,6 +120,7 @@ export default async function DispatchPage({
           >
             Tomorrow
           </Link>
+          <DispatchDatePicker value={dayIso} />
           <Link
             href="/admin/jobs/new"
             className="inline-flex items-center gap-2 bg-[#F96302] px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602] transition-transform duration-150"
@@ -109,6 +130,10 @@ export default async function DispatchPage({
           </Link>
         </div>
       </header>
+
+      {waiting.count > 0 && (
+        <WaitingPanel rows={waiting.rows} count={waiting.count} now={now} />
+      )}
 
       {/* Unassigned bucket */}
       {unassigned.length > 0 && (
@@ -155,6 +180,82 @@ export default async function DispatchPage({
         )}
       </section>
     </div>
+  );
+}
+
+/**
+ * New leads with no appointment, newest first. Each opens the job at its
+ * schedule block, the one step between a lead and a slot on this board.
+ */
+function WaitingPanel({
+  rows,
+  count,
+  now,
+}: {
+  rows: JobWithRelations[];
+  count: number;
+  now: Date;
+}) {
+  return (
+    <section className="mb-8 border border-line bg-card p-5 md:p-6">
+      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 font-display text-xl font-black uppercase tracking-tight text-ink md:text-2xl">
+            <Inbox className="h-5 w-5 text-[#F96302]" aria-hidden="true" />
+            Waiting to schedule
+            <span className="text-base font-bold text-[#F96302]">({count})</span>
+          </h2>
+          <p className="mt-1 text-sm text-muted">New leads with no appointment yet, newest first.</p>
+        </div>
+        <Link
+          href="/admin/jobs/?status=new"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ink hover:text-[#F96302]"
+        >
+          {count > rows.length ? `See all ${count}` : "See all"}
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </header>
+      <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+        {rows.map((j, i) => {
+          const called = Boolean(j.first_contact_at);
+          const late = !called && isPastOneBusinessDay(j.created_at, now);
+          const place = [j.job_city ?? j.customer?.city, j.job_zip ?? j.customer?.zip]
+            .filter(Boolean)
+            .join(" · ");
+          return (
+            <li key={j.id} className={i >= WAITING_CAP_MOBILE ? "hidden md:block" : undefined}>
+              <Link
+                href={`/admin/jobs/${j.id}#schedule`}
+                className={`group flex h-full items-start justify-between gap-3 border bg-surface px-4 py-3 transition-colors duration-150 hover:border-[#F96302] ${
+                  late ? "border-red-300" : "border-line"
+                }`}
+              >
+                <span className="min-w-0">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="truncate font-bold text-ink group-hover:text-[#F96302]">
+                      {j.customer?.name ?? "New lead"}
+                    </span>
+                    {called && (
+                      <span className="shrink-0 bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                        Called
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-0.5 block truncate text-sm text-muted">{leadProblem(j, 60)}</span>
+                  {place && <span className="mt-0.5 block truncate text-xs text-muted">{place}</span>}
+                </span>
+                <span
+                  title={`Received ${formatPacificDateTime(j.created_at)}`}
+                  className={`shrink-0 whitespace-nowrap text-xs font-bold ${late ? "text-red-700" : "text-muted"}`}
+                >
+                  {formatReceived(j.created_at, { now })}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 
@@ -218,7 +319,7 @@ function JobCard({
       {job.customer?.phone_e164 && (
         <p className="mb-2 flex items-center gap-2 text-sm text-muted">
           <Phone className="h-3.5 w-3.5 text-muted" aria-hidden="true" />
-          {job.customer.phone_e164}
+          {formatPhone(job.customer.phone_e164)}
         </p>
       )}
       {(job.job_address || job.customer?.street_address) && (

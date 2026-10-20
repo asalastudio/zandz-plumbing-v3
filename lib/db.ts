@@ -8,6 +8,10 @@ import {
   pacificMonthsAgo,
   pacificMidnight,
   pacificYmd,
+  pacificWeekday,
+  pacificWallClock,
+  BUSINESS_OPEN_HOUR,
+  BUSINESS_CLOSE_HOUR,
 } from "@/lib/time";
 
 /**
@@ -137,6 +141,14 @@ export interface Job {
   assigned_to: number | null;
   created_at: string;
   updated_at: string;
+  /**
+   * Speed-to-lead columns (migration 012). Stamped by trigger when the job
+   * leaves 'new', or by the office logging a call. Optional so code that
+   * builds a Job by hand doesn't have to know about them.
+   */
+  first_contact_at?: string | null;
+  first_response_seconds?: number | null;
+  sla_alert_level?: number;
 }
 
 export interface JobWithRelations extends Job {
@@ -151,6 +163,10 @@ export interface NewLeadNotification {
   job_city: string | null;
   job_zip: string | null;
   created_at: string;
+  /** The customer's own message from the web form. */
+  customer_notes: string | null;
+  /** Set once the office logged a call (or the job left 'new'). */
+  first_contact_at: string | null;
   customer?: Pick<Customer, "id" | "name" | "phone_e164" | "email"> | null;
 }
 
@@ -692,9 +708,35 @@ export interface ResponseTimeStats {
  * there is no history, so early numbers will be based on a small sample —
  * sampleSize is returned so callers can say so rather than implying precision.
  */
-export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats> {
+export async function getResponseTimeStats(
+  days = 30,
+  opts: {
+    /** Only count breaches on leads received in the last N days. Default: all. */
+    breachSinceDays?: number;
+  } = {}
+): Promise<ResponseTimeStats> {
   const sb = supabase();
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const breachSince = opts.breachSinceDays
+    ? new Date(Date.now() - opts.breachSinceDays * 24 * 60 * 60 * 1000).toISOString()
+    : null;
+  // The list and the exact count must share the same filter.
+  let breachList = sb
+    .from("jobs")
+    .select("id, created_at, service_label, service_type, customers(name)")
+    .eq("status", "new")
+    .is("first_contact_at", null)
+    .gte("sla_alert_level", 3);
+  let breachTotal = sb
+    .from("jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "new")
+    .is("first_contact_at", null)
+    .gte("sla_alert_level", 3);
+  if (breachSince) {
+    breachList = breachList.gte("created_at", breachSince);
+    breachTotal = breachTotal.gte("created_at", breachSince);
+  }
 
   const [responded, { data: waiting }, { count: breachCount }] = await Promise.all([
     selectAllPages<{ first_response_seconds: number | null }>("getResponseTimeStats", (from, to) =>
@@ -706,20 +748,8 @@ export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats
         .order("id", { ascending: true })
         .range(from, to)
     ),
-    sb
-      .from("jobs")
-      .select("id, created_at, service_label, service_type, customers(name)")
-      .eq("status", "new")
-      .is("first_contact_at", null)
-      .gte("sla_alert_level", 3)
-      .order("created_at", { ascending: true })
-      .limit(20),
-    sb
-      .from("jobs")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "new")
-      .is("first_contact_at", null)
-      .gte("sla_alert_level", 3),
+    breachList.order("created_at", { ascending: true }).limit(20),
+    breachTotal,
   ]);
 
   const samples = responded
@@ -747,6 +777,37 @@ export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats
     sampleSize: samples.length,
     breaches,
     breachCount: breachCount ?? breaches.length,
+  };
+}
+
+export interface NeverCalledLeadStats {
+  /** Every lead still in 'new' with no call logged, whatever its age. */
+  count: number;
+  /** When the longest-waiting of them came in. */
+  oldestCreatedAt: string | null;
+  oldestJobId: number | null;
+}
+
+/**
+ * The honest "who still needs a call" number. Unlike breachCount above, which
+ * only covers leads the escalation cron flagged in its 72 hour window, this
+ * counts every uncontacted lead in 'new'. It matches what the cron chases:
+ * status new and first_contact_at null.
+ */
+export async function getNeverCalledLeadStats(): Promise<NeverCalledLeadStats> {
+  const { data, error, count } = await supabase()
+    .from("jobs")
+    .select("id, created_at", { count: "exact" })
+    .eq("status", "new")
+    .is("first_contact_at", null)
+    .order("created_at", { ascending: true })
+    .limit(1);
+  if (error) throw new Error(`getNeverCalledLeadStats: ${error.message}`);
+  const oldest = data?.[0];
+  return {
+    count: count ?? 0,
+    oldestCreatedAt: (oldest?.created_at as string | undefined) ?? null,
+    oldestJobId: oldest ? Number(oldest.id) : null,
   };
 }
 
@@ -1006,6 +1067,8 @@ export interface JobListOpts {
   statuses?: JobStatus[];
   assignedTo?: number;
   search?: string;
+  /** "schedule" (default): soonest appointment first. "newest": latest received first. */
+  sort?: "schedule" | "newest";
   limit?: number;
   offset?: number;
 }
@@ -1026,9 +1089,13 @@ export async function listJobs(opts: JobListOpts = {}): Promise<{
       "*, customer:customers(id, name, phone_e164, street_address, city, zip), assignee:crew!jobs_assigned_to_fkey(id, name, role)",
       { count: "exact" }
     )
-    .order("scheduled_start", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
+  q =
+    opts.sort === "newest"
+      ? q.order("created_at", { ascending: false })
+      : q
+          .order("scheduled_start", { ascending: true, nullsFirst: false })
+          .order("created_at", { ascending: false });
 
   if (opts.statuses && opts.statuses.length > 0) {
     q = q.in("status", opts.statuses);
@@ -1067,7 +1134,7 @@ export async function listNewLeadNotifications(limit = 5): Promise<{
   const { data, error, count } = await sb
     .from("jobs")
     .select(
-      "id, service_type, service_label, job_city, job_zip, created_at, customer:customers(id, name, phone_e164, email)",
+      "id, service_type, service_label, job_city, job_zip, created_at, customer_notes, first_contact_at, customer:customers(id, name, phone_e164, email)",
       { count: "exact" }
     )
     .eq("status", "new")
@@ -1192,6 +1259,177 @@ export function formatDate(iso: string | null): string {
     day: "numeric",
     year: "numeric",
   });
+}
+
+/** "Tue, Oct 20, 3:12 PM PT", with the year only when it isn't this year. */
+export function formatPacificDateTime(iso: string | null): string {
+  if (!iso) return "·";
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "·";
+  const sameYear = pacificYmd(at).year === pacificYmd().year;
+  const text = at.toLocaleString("en-US", {
+    timeZone: PACIFIC_TZ,
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" as const }),
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `${text} PT`;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Lead display helpers (jobs list, job page, dashboard, dispatch)
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Service types sent by the website's catch-all forms: the contact, service
+ * area, services, and city pages ("*-request"), the quick form default
+ * ("general"), and the booking form's "Something else" ("other"). They say
+ * which page the lead used, not what the job is.
+ */
+const GENERIC_SERVICE_TYPES = new Set(["general", "other"]);
+
+export function isGenericLeadService(job: Pick<Job, "service_type" | "service_label">): boolean {
+  const type = (job.service_type ?? "").trim().toLowerCase();
+  if (GENERIC_SERVICE_TYPES.has(type) || type.endsWith("-request")) return true;
+  const label = (job.service_label ?? "").trim().toLowerCase();
+  return label.endsWith(" request") || label === "something else";
+}
+
+/** A job's service as a person would say it: the label, else the slug made readable. */
+export function serviceName(job: Pick<Job, "service_type" | "service_label">): string {
+  const label = job.service_label?.trim();
+  if (label) return label;
+  const words = (job.service_type ?? "").replace(/[-_]+/g, " ").trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : "Service request";
+}
+
+/**
+ * Page title for a job. "Contact page request" tells the office nothing, so a
+ * generic web form lead is named for the person who sent it instead.
+ */
+export function jobTitle(
+  job: Pick<Job, "service_type" | "service_label">,
+  customerName?: string | null
+): string {
+  if (!isGenericLeadService(job)) return serviceName(job);
+  const name = customerName?.trim();
+  return name ? `Web request from ${name}` : "Web request";
+}
+
+/** The first ~`max` characters of free text on one line, cut at a word. */
+export function textSnippet(text: string | null | undefined, max = 80): string | null {
+  const flat = (text ?? "").replace(/\s+/g, " ").trim();
+  if (!flat) return null;
+  if (flat.length <= max) return flat;
+  const cut = flat.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  const trimmed = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${trimmed.replace(/[\s.,;:!?-]+$/, "")}…`;
+}
+
+/** One line on what a lead is about: the customer's words for generic leads, else the service. */
+export function leadProblem(
+  job: Pick<Job, "service_type" | "service_label" | "customer_notes">,
+  max = 80
+): string {
+  if (!isGenericLeadService(job)) return serviceName(job);
+  return textSnippet(job.customer_notes, max) ?? "Web request, no message";
+}
+
+/**
+ * How long ago a lead came in, short enough for a table cell: "Just now",
+ * "12 min", "3 h", then the Pacific date ("Aug 14"). `ago` adds the word for
+ * use in a sentence.
+ */
+export function formatReceived(iso: string, opts: { ago?: boolean; now?: Date } = {}): string {
+  const now = opts.now ?? new Date();
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "·";
+  const mins = Math.max(0, Math.floor((now.getTime() - at.getTime()) / 60000));
+  const ago = opts.ago ? " ago" : "";
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins} min${ago}`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} h${ago}`;
+  const sameYear = pacificYmd(at).year === pacificYmd(now).year;
+  return at.toLocaleDateString("en-US", {
+    timeZone: PACIFIC_TZ,
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" as const }),
+  });
+}
+
+/** "8 min", "3 h 12 min", "2 days 4 h", "16 days". For waits that run from minutes to weeks. */
+export function formatWait(seconds: number | null | undefined): string {
+  if (seconds == null || !Number.isFinite(seconds)) return "·";
+  const mins = Math.max(0, Math.floor(seconds / 60));
+  if (mins < 1) return "under a minute";
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) {
+    const rem = mins % 60;
+    return rem ? `${hours} h ${rem} min` : `${hours} h`;
+  }
+  const days = Math.floor(hours / 24);
+  const remHours = hours % 24;
+  const dayText = `${days} ${days === 1 ? "day" : "days"}`;
+  // Past a few days the hours are noise.
+  return days < 3 && remHours ? `${dayText} ${remHours} h` : dayText;
+}
+
+/** Seconds from `iso` to now (never negative). */
+export function secondsSince(iso: string, now: Date = new Date()): number {
+  const at = new Date(iso).getTime();
+  return Number.isFinite(at) ? Math.max(0, Math.floor((now.getTime() - at) / 1000)) : 0;
+}
+
+const ONE_BUSINESS_DAY_MS = (BUSINESS_CLOSE_HOUR - BUSINESS_OPEN_HOUR) * 60 * 60 * 1000;
+
+/**
+ * Has a lead waited more than one business day? Only staffed office hours
+ * count (Mon-Fri 7am-5pm Pacific), so a lead that lands Friday evening is not
+ * late until Monday at 5pm. Holidays are not modeled.
+ */
+export function isPastOneBusinessDay(createdAt: string, now: Date = new Date()): boolean {
+  const from = new Date(createdAt);
+  if (Number.isNaN(from.getTime())) return false;
+  let officeMs = 0;
+  let day = startOfPacificDay(from);
+  while (day.getTime() < now.getTime()) {
+    const weekday = pacificWeekday(day);
+    if (weekday !== 0 && weekday !== 6) {
+      const { year, month, day: dom } = pacificYmd(day);
+      const open = Math.max(pacificWallClock(year, month, dom, BUSINESS_OPEN_HOUR).getTime(), from.getTime());
+      const close = Math.min(pacificWallClock(year, month, dom, BUSINESS_CLOSE_HOUR).getTime(), now.getTime());
+      if (close > open) officeMs += close - open;
+      if (officeMs >= ONE_BUSINESS_DAY_MS) return true;
+    }
+    // +25h then snap to midnight, so DST days (23h / 25h) don't skip or repeat.
+    day = startOfPacificDay(new Date(day.getTime() + 25 * 60 * 60 * 1000));
+  }
+  return false;
+}
+
+export interface LeadIntake {
+  /** The page the web form was on, e.g. "/contact/". */
+  sourcePage: string | null;
+  preferredCallback: string | null;
+  outOfArea: boolean;
+}
+
+/** Read the web form's intake lines back out of internal_notes (written by lib/leads.ts). */
+export function parseLeadIntake(internalNotes: string | null): LeadIntake {
+  const notes = internalNotes ?? "";
+  const source = notes.match(/^Web lead via (.+)$/m)?.[1]?.trim() ?? null;
+  return {
+    sourcePage: source && source !== "unknown source" ? source : null,
+    preferredCallback: notes.match(/^Preferred callback: (.+)$/m)?.[1]?.trim() ?? null,
+    outOfArea: notes.includes("OUT_OF_AREA"),
+  };
 }
 
 // ──────────────────────────────────────────────────────────────────────────
