@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { getEstimateForView, setEstimateStatus, estimateViewUrl } from "@/lib/estimates";
+import { getEstimateForView, markEstimateSent, estimateViewUrl } from "@/lib/estimates";
 import { sendEstimateEmail } from "@/lib/estimate-email";
 
 export const runtime = "nodejs";
@@ -11,7 +11,8 @@ export const runtime = "nodejs";
  *
  * This is the real "send" — the /status route only flips the flag. Here we
  * render + attach the PDF, email it, and only then move the estimate to 'sent'
- * so the status reflects a delivery that actually happened.
+ * so the status reflects a delivery that actually happened. Resending an
+ * approved estimate keeps it approved.
  */
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   if (!(await isAuthenticated())) {
@@ -62,6 +63,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }
 
   // Only advance the status once the email actually went out.
-  await setEstimateStatus(id, "sent").catch(() => {});
+  await markEstimateSent(id).catch((e) => console.error("[estimate.send] status update failed:", e));
   return back("sent=1");
 }

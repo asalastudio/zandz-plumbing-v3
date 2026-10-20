@@ -16,7 +16,8 @@ export async function GET() {
   }
 
   try {
-    const coupons = await listCoupons({ publishedOnly: true });
+    // Live only: an expired coupon must not stay in the "Current coupon" slot.
+    const coupons = await listCoupons({ liveOnly: true });
     const coupon = coupons[0] ?? null;
     const featured: FeaturedCoupon | null = coupon
       ? {

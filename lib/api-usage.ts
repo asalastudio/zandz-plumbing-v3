@@ -109,14 +109,32 @@ export async function getMonthUsage(): Promise<UsageSummary> {
   let totalMicros = 0;
 
   if (isSupabaseConfigured()) {
-    const { data } = await supabase()
-      .from("api_usage")
-      .select("provider, input_tokens, output_tokens, cost_micros")
-      .gte("created_at", monthStart)
-      .limit(10000);
+    // PostgREST caps every response at 1,000 rows no matter what .limit() asks
+    // for, so a busy month has to be read page by page or the spend undercounts.
+    const PAGE = 1000;
+    const data: Array<{
+      provider: string | null;
+      input_tokens: number | null;
+      output_tokens: number | null;
+      cost_micros: number | null;
+    }> = [];
+    for (let from = 0; ; from += PAGE) {
+      const { data: page, error } = await supabase()
+        .from("api_usage")
+        .select("provider, input_tokens, output_tokens, cost_micros")
+        .gte("created_at", monthStart)
+        .order("id", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (error) {
+        console.error("[api-usage] month read failed:", error.message);
+        break;
+      }
+      data.push(...(page ?? []));
+      if (!page || page.length < PAGE) break;
+    }
 
     const acc = new Map<string, ProviderSpend>();
-    for (const row of data ?? []) {
+    for (const row of data) {
       const key = String(row.provider ?? "unknown");
       const e = acc.get(key) ?? {
         provider: key,

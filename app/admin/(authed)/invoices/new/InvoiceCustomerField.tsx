@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Search, X, UserPlus, AlertTriangle, Check } from "lucide-react";
 
 export interface PickedCustomer {
@@ -34,15 +35,26 @@ function contactLine(c: PickedCustomer): string {
  *  - "new": name/email/phone fields, with a live duplicate warning that mirrors
  *    the server's phone-then-email match so an operator can't accidentally bill
  *    a brand-new "Janan" into an existing "Eric" record.
+ *
+ * Also used by the New Job form as a plain customer picker: `allowNew={false}`
+ * hides the inline new-customer path (that form can't create one),
+ * `allowJobLink={false}` drops the job dropdown, and `required` stops the form
+ * submitting until a customer is picked.
  */
 export default function InvoiceCustomerField({
   presetCustomer = null,
   presetJobs = [],
   presetJobId = null,
+  allowNew = true,
+  allowJobLink = true,
+  required = false,
 }: {
   presetCustomer?: PickedCustomer | null;
   presetJobs?: JobOption[];
   presetJobId?: number | null;
+  allowNew?: boolean;
+  allowJobLink?: boolean;
+  required?: boolean;
 }) {
   const [mode, setMode] = useState<"existing" | "new">("existing");
   const [selected, setSelected] = useState<PickedCustomer | null>(presetCustomer);
@@ -60,6 +72,7 @@ export default function InvoiceCustomerField({
   const [newPhone, setNewPhone] = useState("");
   const [dup, setDup] = useState<PickedCustomer | null>(null);
   const [confirmNew, setConfirmNew] = useState(false);
+  const [missing, setMissing] = useState(false);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const warnRef = useRef<HTMLDivElement>(null);
@@ -100,6 +113,8 @@ export default function InvoiceCustomerField({
     setDup(null);
     setMode("existing");
     setJobId("");
+    setMissing(false);
+    if (!allowJobLink) return;
     try {
       const res = await fetch(`/api/admin/invoices/lookup?customerId=${c.id}`);
       const data = await res.json();
@@ -107,7 +122,7 @@ export default function InvoiceCustomerField({
     } catch {
       setJobs([]);
     }
-  }, []);
+  }, [allowJobLink]);
 
   const clearSelected = useCallback(() => {
     setSelected(null);
@@ -154,6 +169,12 @@ export default function InvoiceCustomerField({
     guardRef.current = blockSubmit;
   }, [blockSubmit]);
 
+  // ── Block submit when a customer is required but none is picked ──
+  const needsPickRef = useRef(false);
+  useEffect(() => {
+    needsPickRef.current = required && !selected;
+  }, [required, selected]);
+
   useEffect(() => {
     const form = rootRef.current?.closest("form");
     if (!form) return;
@@ -161,6 +182,10 @@ export default function InvoiceCustomerField({
       if (guardRef.current) {
         e.preventDefault();
         warnRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else if (needsPickRef.current) {
+        e.preventDefault();
+        setMissing(true);
+        rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     };
     form.addEventListener("submit", onSubmit);
@@ -250,21 +275,35 @@ export default function InvoiceCustomerField({
               {query.trim().length > 0 && !searching && results.length === 0 && (
                 <p className="mt-2 text-xs text-muted">
                   No match.{" "}
-                  <button
-                    type="button"
-                    onClick={switchToNew}
-                    className="font-bold text-[#F96302] hover:underline"
-                  >
-                    Add as a new customer
-                  </button>
+                  {allowNew ? (
+                    <button
+                      type="button"
+                      onClick={switchToNew}
+                      className="font-bold text-[#F96302] hover:underline"
+                    >
+                      Add as a new customer
+                    </button>
+                  ) : (
+                    <Link
+                      href="/admin/customers/new"
+                      className="font-bold text-[#F96302] hover:underline"
+                    >
+                      Create a new customer
+                    </Link>
+                  )}
                   .
+                </p>
+              )}
+              {missing && (
+                <p className="mt-2 text-xs font-bold text-red-700">
+                  Pick a customer to continue.
                 </p>
               )}
             </div>
           )}
 
           {/* Optional job link */}
-          {selected && jobs.length > 0 && (
+          {allowJobLink && selected && jobs.length > 0 && (
             <label className="mt-4 block">
               <span className={labelCls}>Link to a job (optional)</span>
               <select
@@ -280,12 +319,13 @@ export default function InvoiceCustomerField({
                 ))}
               </select>
               <span className="mt-1 block text-xs text-muted">
-                Linking marks that job as invoiced and keeps the customer&apos;s history tidy.
+                Keeps this on the job&apos;s record. A job marked complete moves to invoiced once
+                it is billed.
               </span>
             </label>
           )}
 
-          {!selected && (
+          {allowNew && !selected && (
             <button
               type="button"
               onClick={switchToNew}

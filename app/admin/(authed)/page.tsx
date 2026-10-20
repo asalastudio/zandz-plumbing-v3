@@ -143,12 +143,12 @@ export default async function AdminDashboardPage() {
           Speed to lead
         </h2>
 
-        {responseTime.breaches.length > 0 && (
+        {responseTime.breachCount > 0 && (
           <div className="mb-3 border border-red-300 bg-red-50 p-5">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-red-700">
               <TriangleAlert className="h-5 w-5" aria-hidden="true" />
-              {responseTime.breaches.length} lead
-              {responseTime.breaches.length === 1 ? "" : "s"} still not contacted
+              {responseTime.breachCount} lead
+              {responseTime.breachCount === 1 ? "" : "s"} still not contacted
             </p>
             <ul className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
               {responseTime.breaches.slice(0, 4).map((b) => (

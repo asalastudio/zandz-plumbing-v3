@@ -1,25 +1,24 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { verifyEstimateToken, getEstimateForView } from "@/lib/estimates";
+import {
+  verifyEstimateToken,
+  getEstimateForView,
+  isEstimateExpired,
+  formatEstimateDate,
+} from "@/lib/estimates";
 import { formatMoney } from "@/lib/email";
 import { siteSettings } from "@/content/site-settings";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Estimate · Z and Z Plumbing",
+  title: { absolute: "Estimate · Z and Z Plumbing" },
   robots: { index: false, follow: false },
 };
 
-function fmtDate(iso: string): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", {
-    timeZone: "America/Los_Angeles",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+// valid_until is a date-only column; formatEstimateDate keeps it on the right
+// calendar day instead of sliding back to the evening before in Pacific.
+const fmtDate = (value: string | null) => formatEstimateDate(value, "long");
 
 export default async function PublicEstimatePage({
   params,
@@ -34,6 +33,19 @@ export default async function PublicEstimatePage({
   if (!view) notFound();
 
   const { estimate, customer, jobServiceLabel } = view;
+
+  // Only an estimate that is still open for a decision gets the approve call.
+  // Everything else gets a plain note about where it stands.
+  const closedNote =
+    estimate.status === "converted"
+      ? "This estimate was approved and has been turned into an invoice."
+      : estimate.status === "approved"
+        ? "This estimate is approved. Thank you."
+        : estimate.status === "declined"
+          ? "This estimate was declined. Call us if you would like to revisit it."
+          : isEstimateExpired(estimate)
+            ? "This estimate has expired. Call us for an updated quote."
+            : null;
 
   return (
     <main className="min-h-screen bg-[#F5F5F5] py-10 px-4 text-[#111]">
@@ -107,12 +119,21 @@ export default async function PublicEstimatePage({
                 unforeseen conditions come up once work begins.
                 {estimate.valid_until ? ` Valid through ${fmtDate(estimate.valid_until)}.` : ""}
               </p>
-              <a
-                href={`tel:${siteSettings.phoneTel}`}
-                className="mt-4 inline-block rounded-md bg-[#F96302] px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-white"
-              >
-                Call {siteSettings.phone} to approve
-              </a>
+              {closedNote ? (
+                <p className="mt-4 font-bold text-[#111]">
+                  {closedNote}{" "}
+                  <a href={`tel:${siteSettings.phoneTel}`} className="text-[#F96302] underline">
+                    {siteSettings.phone}
+                  </a>
+                </p>
+              ) : (
+                <a
+                  href={`tel:${siteSettings.phoneTel}`}
+                  className="mt-4 inline-block rounded-md bg-[#F96302] px-5 py-3 text-sm font-extrabold uppercase tracking-[0.08em] text-white"
+                >
+                  Call {siteSettings.phone} to approve
+                </a>
+              )}
             </div>
           </div>
         </div>

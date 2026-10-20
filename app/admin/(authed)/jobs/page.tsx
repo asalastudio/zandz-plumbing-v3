@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, ChevronRight } from "lucide-react";
+import { Plus, ChevronRight, Search } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   listJobs,
@@ -21,6 +21,7 @@ const FILTERS: { label: string; status: JobStatus | "open" | "all" }[] = [
   { label: "Complete", status: "complete" },
   { label: "Invoiced", status: "invoiced" },
   { label: "Paid", status: "paid" },
+  { label: "Cancelled", status: "cancelled" },
   { label: "All", status: "all" },
 ];
 
@@ -33,6 +34,7 @@ export default async function JobsPage({
   const requestedStatus = params.status as JobStatus | "open" | "all" | undefined;
   const validStatuses = new Set(FILTERS.map((f) => f.status));
   const status = requestedStatus && validStatuses.has(requestedStatus) ? requestedStatus : "open";
+  const q = params.q?.trim() ?? "";
 
   if (!isSupabaseConfigured()) {
     return (
@@ -44,7 +46,7 @@ export default async function JobsPage({
 
   const { rows, count } = await listJobs({
     status,
-    search: params.q?.trim() || undefined,
+    search: q || undefined,
   });
 
   return (
@@ -65,6 +67,7 @@ export default async function JobsPage({
                       ? "open"
                       : STATUS_LABEL[status as JobStatus].toLowerCase()
                 }.`}
+            {q && <span className="ml-1">Matching &ldquo;{q}&rdquo;.</span>}
           </p>
         </div>
         <Link
@@ -88,6 +91,39 @@ export default async function JobsPage({
         </div>
       )}
 
+      {/* Search (keeps the current status filter) */}
+      <form action="/admin/jobs" method="GET" className="mb-4 flex max-w-xl gap-2">
+        <input type="hidden" name="status" value={status} />
+        <div className="relative flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+            aria-hidden="true"
+          />
+          <input
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Customer, service, or address"
+            aria-label="Search jobs"
+            className="w-full border border-line bg-card py-2.5 pl-9 pr-3 text-base text-ink outline-none placeholder:text-faint focus:border-[#F96302]"
+          />
+        </div>
+        <button
+          type="submit"
+          className="inline-flex items-center border border-line px-4 py-2 text-sm font-bold uppercase tracking-wide text-muted hover:border-[#F96302] hover:text-[#F96302]"
+        >
+          Search
+        </button>
+        {q && (
+          <Link
+            href={`/admin/jobs?${new URLSearchParams({ status })}`}
+            className="inline-flex items-center px-2 text-sm font-bold uppercase tracking-wide text-muted hover:text-[#F96302]"
+          >
+            Clear
+          </Link>
+        )}
+      </form>
+
       {/* Status filter pills */}
       <nav className="mb-6 flex flex-wrap gap-2 overflow-x-auto">
         {FILTERS.map((f) => {
@@ -95,7 +131,7 @@ export default async function JobsPage({
           return (
             <Link
               key={f.status}
-              href={`/admin/jobs?${new URLSearchParams({ status: f.status })}`}
+              href={`/admin/jobs?${new URLSearchParams(q ? { status: f.status, q } : { status: f.status })}`}
               className={`inline-flex items-center border px-4 py-2 text-sm font-bold uppercase tracking-wide transition-colors duration-150 ${
                 active
                   ? "border-[#F96302] bg-[#F96302] text-white"
@@ -110,7 +146,9 @@ export default async function JobsPage({
 
       {rows.length === 0 ? (
         <div className="border border-dashed border-line bg-raised px-8 py-16 text-center">
-          <p className="text-base text-muted">No jobs in this view.</p>
+          <p className="text-base text-muted">
+            {q ? "No jobs match that search." : "No jobs in this view."}
+          </p>
         </div>
       ) : (
         <div className="overflow-hidden border border-line">

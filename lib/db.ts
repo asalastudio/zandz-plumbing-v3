@@ -6,6 +6,8 @@ import {
   startOfPacificWeek,
   startOfPacificMonth,
   pacificMonthsAgo,
+  pacificMidnight,
+  pacificYmd,
 } from "@/lib/time";
 
 /**
@@ -14,6 +16,39 @@ import {
  * All queries run server-side with the service-role key (bypasses RLS).
  * Callers are server components / API routes inside the auth-gated admin.
  */
+
+/**
+ * Make free text safe to interpolate into a PostgREST `.or()` filter. Commas
+ * and parentheses are the filter grammar itself, `*` and `%` are wildcards,
+ * `:` and quotes change how a value is parsed, and backslash escapes. Any of
+ * them in a search box would otherwise corrupt the filter and 500 the page.
+ */
+function orSafe(term: string): string {
+  return term.replace(/[,()*:%\\"]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Page through a query 1,000 rows at a time (PostgREST's per-request cap), so
+ * an aggregate never quietly stops at the first page. `build` must return the
+ * same consistently ordered query for each range.
+ */
+async function selectAllPages<T>(
+  label: string,
+  build: (
+    from: number,
+    to: number
+  ) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>
+): Promise<T[]> {
+  const PAGE = 1000;
+  const rows: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await build(from, from + PAGE - 1);
+    if (error) throw new Error(`${label}: ${error.message}`);
+    rows.push(...(data ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return rows;
+}
 
 // ──────────────────────────────────────────────────────────────────────────
 // Types (mirror the supabase schema in 002_fsm_core.sql)
@@ -200,9 +235,21 @@ export async function listCustomers(opts: CustomerListOpts = {}): Promise<{
       break;
   }
 
-  if (opts.search) {
-    const s = `%${opts.search}%`;
-    q = q.or(`name.ilike.${s},phone_e164.ilike.${s},email.ilike.${s},street_address.ilike.${s},city.ilike.${s}`);
+  const safe = opts.search ? orSafe(opts.search) : "";
+  if (safe) {
+    const s = `%${safe}%`;
+    const clauses = [
+      `name.ilike.${s}`,
+      `phone_e164.ilike.${s}`,
+      `email.ilike.${s}`,
+      `street_address.ilike.${s}`,
+      `city.ilike.${s}`,
+    ];
+    // Phones are stored as +15105551234, so "(510) 555-01" only matches on
+    // its digits.
+    const digits = safe.replace(/\D/g, "");
+    if (digits.length >= 3) clauses.push(`phone_e164.ilike.%${digits}%`);
+    q = q.or(clauses.join(","));
   }
 
   q = q.range(offset, offset + limit - 1);
@@ -253,7 +300,7 @@ export interface ServiceCatalogItem {
  * interpolation so a stray comma or paren can't corrupt the filter.
  */
 export async function searchServiceCatalog(term: string, limit = 8): Promise<ServiceCatalogItem[]> {
-  const safe = term.replace(/[,()*:%\\]/g, " ").trim();
+  const safe = orSafe(term);
   if (!safe) return [];
   const like = `%${safe}%`;
   const { data, error } = await supabase()
@@ -299,52 +346,211 @@ export async function getServiceMaterials(serviceCode: string): Promise<ServiceM
   });
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// Money rollups
+//
+// Real money lives in `invoices` (raised in Z and Z OS). `invoice_history` only
+// holds ServiceTitan imports and was emptied by migration 007, but it is still
+// folded in so any re-imported legacy rows count. The two sources disagree on
+// meaning, so each is normalized:
+//   - OS invoice:     revenue once paid (dated by paid_at), balance while unpaid.
+//   - Legacy import:  revenue = total (dated by completed_on), balance as imported.
+// ──────────────────────────────────────────────────────────────────────────
+
+interface MoneyRow {
+  customerId: number | null;
+  /** Collected on this invoice (0 while an OS invoice is unpaid). */
+  revenueCents: number;
+  /** Still owed on this invoice. */
+  balanceCents: number;
+  /** When the revenue landed: a timestamp (OS) or a YYYY-MM-DD date (legacy). */
+  revenueOn: string | null;
+  jobType: string;
+}
+
+type OsInvoiceRow = {
+  id: number;
+  customer_id: number | null;
+  job_id: number | null;
+  amount_cents: number | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  job: { service_label: string | null; service_type: string | null } | { service_label: string | null; service_type: string | null }[] | null;
+};
+
+const OS_INVOICE_COLUMNS =
+  "id, customer_id, job_id, amount_cents, sent_at, paid_at, created_at, job:jobs!invoices_job_id_fkey(service_label, service_type)";
+
+function osJobType(row: OsInvoiceRow): string {
+  const job = Array.isArray(row.job) ? row.job[0] : row.job;
+  return job?.service_label ?? job?.service_type ?? "Custom invoice";
+}
+
+function osMoneyRow(row: OsInvoiceRow): MoneyRow {
+  const amount = Number(row.amount_cents ?? 0);
+  const paid = Boolean(row.paid_at);
+  return {
+    customerId: row.customer_id == null ? null : Number(row.customer_id),
+    revenueCents: paid ? amount : 0,
+    balanceCents: paid ? 0 : amount,
+    revenueOn: row.paid_at,
+    jobType: osJobType(row),
+  };
+}
+
+type LegacyInvoiceRow = Pick<
+  InvoiceHistory,
+  "customer_id" | "total_cents" | "balance_cents" | "completed_on" | "job_type"
+>;
+
+function legacyMoneyRow(row: LegacyInvoiceRow): MoneyRow {
+  return {
+    customerId: row.customer_id,
+    revenueCents: row.total_cents ?? 0,
+    balanceCents: row.balance_cents ?? 0,
+    revenueOn: row.completed_on,
+    jobType: row.job_type ?? "Unknown",
+  };
+}
+
+/** Every invoice in both sources, paginated, optionally for one customer. */
+async function loadMoneyRows(customerId?: number): Promise<MoneyRow[]> {
+  const sb = supabase();
+  const [os, legacy] = await Promise.all([
+    selectAllPages<OsInvoiceRow>("invoices", (from, to) => {
+      let q = sb.from("invoices").select(OS_INVOICE_COLUMNS);
+      if (customerId) q = q.eq("customer_id", customerId);
+      return q.order("id", { ascending: true }).range(from, to);
+    }),
+    selectAllPages<LegacyInvoiceRow>("invoice_history", (from, to) => {
+      let q = sb
+        .from("invoice_history")
+        .select("customer_id, total_cents, balance_cents, completed_on, job_type");
+      if (customerId) q = q.eq("customer_id", customerId);
+      return q.order("id", { ascending: true }).range(from, to);
+    }),
+  ]);
+  return [...os.map(osMoneyRow), ...legacy.map(legacyMoneyRow)];
+}
+
+/** Epoch ms for a timestamp, or for Pacific midnight of a bare YYYY-MM-DD date. */
+function moneyDateMs(value: string): number {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split("-").map(Number);
+    return pacificMidnight(y, m, d).getTime();
+  }
+  return new Date(value).getTime();
+}
+
+/** "YYYY-MM" of the Pacific calendar month a money date falls in. */
+function moneyMonthKey(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value.slice(0, 7);
+  const { year, month } = pacificYmd(new Date(value));
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/**
+ * One row of a customer's invoice history. Keeps the InvoiceHistory shape the
+ * assistant already reads, plus enough to link an OS invoice back to its job.
+ */
+export interface CustomerInvoiceRow extends InvoiceHistory {
+  source: "os" | "legacy";
+  /** The Z and Z OS invoice id (null for legacy imports). */
+  invoice_id: number | null;
+  /** The Z and Z OS job the invoice belongs to, if any. */
+  os_job_id: number | null;
+}
+
 export async function getCustomerInvoiceHistory(
   customerId: number,
   limit = 100
-): Promise<InvoiceHistory[]> {
+): Promise<CustomerInvoiceRow[]> {
   const sb = supabase();
-  const { data, error } = await sb
-    .from("invoice_history")
-    .select("*")
-    .eq("customer_id", customerId)
-    .order("completed_on", { ascending: false, nullsFirst: false })
-    .limit(limit);
-  if (error) throw new Error(`getCustomerInvoiceHistory: ${error.message}`);
-  return (data ?? []) as InvoiceHistory[];
+  const [osRes, legacyRes] = await Promise.all([
+    sb
+      .from("invoices")
+      .select(OS_INVOICE_COLUMNS)
+      .eq("customer_id", customerId)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+    sb
+      .from("invoice_history")
+      .select("*")
+      .eq("customer_id", customerId)
+      .order("completed_on", { ascending: false, nullsFirst: false })
+      .limit(limit),
+  ]);
+  if (osRes.error) throw new Error(`getCustomerInvoiceHistory invoices: ${osRes.error.message}`);
+  if (legacyRes.error) throw new Error(`getCustomerInvoiceHistory: ${legacyRes.error.message}`);
+
+  const os: CustomerInvoiceRow[] = ((osRes.data ?? []) as OsInvoiceRow[]).map((r) => {
+    const amount = Number(r.amount_cents ?? 0);
+    return {
+      id: Number(r.id),
+      customer_id: r.customer_id == null ? null : Number(r.customer_id),
+      servicetitan_invoice_id: null,
+      servicetitan_job_id: null,
+      job_number: null,
+      // The date that matters on the list: when it was paid, else when raised.
+      completed_on: r.paid_at ?? r.created_at,
+      invoiced_on: r.sent_at,
+      job_type: osJobType(r),
+      business_unit: null,
+      technician: null,
+      subtotal_cents: amount,
+      tax_cents: 0,
+      total_cents: amount,
+      balance_cents: r.paid_at ? 0 : amount,
+      status: r.paid_at ? "Paid" : r.sent_at ? "Sent" : "Draft",
+      raw_customer_name: null,
+      raw_location: null,
+      source: "os",
+      invoice_id: Number(r.id),
+      os_job_id: r.job_id == null ? null : Number(r.job_id),
+    };
+  });
+  const legacy: CustomerInvoiceRow[] = ((legacyRes.data ?? []) as InvoiceHistory[]).map((r) => ({
+    ...r,
+    source: "legacy",
+    invoice_id: null,
+    os_job_id: null,
+  }));
+
+  return [...os, ...legacy]
+    .sort((a, b) => moneyDateMs(b.completed_on ?? "1970-01-01") - moneyDateMs(a.completed_on ?? "1970-01-01"))
+    .slice(0, limit);
 }
 
 export async function getCustomerLifetimeStats(customerId: number): Promise<{
   totalRevenueCents: number;
   totalBalanceCents: number;
+  /** Invoices that brought in money (paid OS invoices plus legacy imports). */
   invoiceCount: number;
   firstCompletedOn: string | null;
   lastCompletedOn: string | null;
 }> {
-  const sb = supabase();
-  const { data, error } = await sb
-    .from("invoice_history")
-    .select("total_cents, balance_cents, completed_on")
-    .eq("customer_id", customerId);
-  if (error) throw new Error(`getCustomerLifetimeStats: ${error.message}`);
+  const rows = await loadMoneyRows(customerId);
 
-  const rows = (data ?? []) as Pick<InvoiceHistory, "total_cents" | "balance_cents" | "completed_on">[];
   let totalRevenueCents = 0;
   let totalBalanceCents = 0;
+  let invoiceCount = 0;
   let firstCompletedOn: string | null = null;
   let lastCompletedOn: string | null = null;
   for (const r of rows) {
-    totalRevenueCents += r.total_cents ?? 0;
-    totalBalanceCents += r.balance_cents ?? 0;
-    if (r.completed_on) {
-      if (!firstCompletedOn || r.completed_on < firstCompletedOn) firstCompletedOn = r.completed_on;
-      if (!lastCompletedOn || r.completed_on > lastCompletedOn) lastCompletedOn = r.completed_on;
+    totalRevenueCents += r.revenueCents;
+    totalBalanceCents += r.balanceCents;
+    if (r.revenueCents > 0) invoiceCount += 1;
+    if (r.revenueOn) {
+      const ms = moneyDateMs(r.revenueOn);
+      if (!firstCompletedOn || ms < moneyDateMs(firstCompletedOn)) firstCompletedOn = r.revenueOn;
+      if (!lastCompletedOn || ms > moneyDateMs(lastCompletedOn)) lastCompletedOn = r.revenueOn;
     }
   }
   return {
     totalRevenueCents,
     totalBalanceCents,
-    invoiceCount: rows.length,
+    invoiceCount,
     firstCompletedOn,
     lastCompletedOn,
   };
@@ -373,33 +579,16 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   const now = new Date();
   // Anchor all boundaries to Pacific so a California business sees correct
   // "this month / this week / last 12 months" buckets on the UTC runtime.
-  const startOfMonth = startOfPacificMonth(now).toISOString();
+  const startOfMonthMs = startOfPacificMonth(now).getTime();
   const startOfWeek = startOfPacificWeek(now);
   const twelveMoAgo = pacificMonthsAgo(12, now).toISOString();
-  const twentyFourMoAgo = pacificMonthsAgo(24, now).toISOString();
+  const twelveMoAgoMs = new Date(twelveMoAgo).getTime();
+  const twentyFourMoAgoMs = pacificMonthsAgo(24, now).getTime();
 
-  // Pull every invoice in one shot, paginating since Supabase caps each
-  // request at 1000 rows. Aggregates are done in JS.
-  const allInv: Array<{
-    total_cents: number | null;
-    balance_cents: number | null;
-    completed_on: string | null;
-    job_type: string | null;
-  }> = [];
-  {
-    const PAGE = 1000;
-    let from = 0;
-    while (true) {
-      const { data, error } = await sb
-        .from("invoice_history")
-        .select("total_cents, balance_cents, completed_on, job_type")
-        .range(from, from + PAGE - 1);
-      if (error) throw new Error(`getDashboardKpis invoices: ${error.message}`);
-      allInv.push(...(data ?? []));
-      if (!data || data.length < PAGE) break;
-      from += PAGE;
-    }
-  }
+  // Every invoice from both sources (paginated past the 1,000-row cap).
+  // Revenue is bucketed by when it was paid; open balance is whatever is
+  // still unpaid. Aggregates are done in JS.
+  const allInv = await loadMoneyRows();
 
   let lifetimeRevenueCents = 0;
   let revenueThisMonthCents = 0;
@@ -410,24 +599,23 @@ export async function getDashboardKpis(): Promise<DashboardKpis> {
   const jobTypesThisMonth = new Map<string, { count: number; revenueCents: number }>();
 
   for (const i of allInv) {
-    const total = i.total_cents ?? 0;
+    const total = i.revenueCents;
     lifetimeRevenueCents += total;
-    const balance = i.balance_cents ?? 0;
-    if (balance > 0) {
-      unpaidBalanceCents += balance;
+    if (i.balanceCents > 0) {
+      unpaidBalanceCents += i.balanceCents;
       unpaidInvoiceCount += 1;
     }
-    if (i.completed_on) {
-      if (i.completed_on >= startOfMonth) {
+    if (i.revenueOn && total > 0) {
+      const at = moneyDateMs(i.revenueOn);
+      if (at >= startOfMonthMs) {
         revenueThisMonthCents += total;
-        const t = i.job_type ?? "Unknown";
-        const cur = jobTypesThisMonth.get(t) ?? { count: 0, revenueCents: 0 };
+        const cur = jobTypesThisMonth.get(i.jobType) ?? { count: 0, revenueCents: 0 };
         cur.count += 1;
         cur.revenueCents += total;
-        jobTypesThisMonth.set(t, cur);
+        jobTypesThisMonth.set(i.jobType, cur);
       }
-      if (i.completed_on >= twelveMoAgo) revenueLast12MoCents += total;
-      else if (i.completed_on >= twentyFourMoAgo) revenuePrev12MoCents += total;
+      if (at >= twelveMoAgoMs) revenueLast12MoCents += total;
+      else if (at >= twentyFourMoAgoMs) revenuePrev12MoCents += total;
     }
   }
 
@@ -487,8 +675,13 @@ export interface ResponseTimeStats {
   /** 90th percentile — the tail is what loses jobs, so show it next to the median. */
   p90Seconds: number | null;
   sampleSize: number;
-  /** Leads sitting in 'new' that have already blown through the escalation ladder. */
+  /**
+   * Leads sitting in 'new' that have already blown through the escalation
+   * ladder, oldest first. Capped for display; use breachCount for the total.
+   */
   breaches: SlaBreachJob[];
+  /** Exact number of breached leads, not limited by the display cap. */
+  breachCount: number;
 }
 
 /**
@@ -503,12 +696,16 @@ export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats
   const sb = supabase();
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data: responded }, { data: waiting }] = await Promise.all([
-    sb
-      .from("jobs")
-      .select("first_response_seconds")
-      .not("first_response_seconds", "is", null)
-      .gte("first_contact_at", cutoff),
+  const [responded, { data: waiting }, { count: breachCount }] = await Promise.all([
+    selectAllPages<{ first_response_seconds: number | null }>("getResponseTimeStats", (from, to) =>
+      sb
+        .from("jobs")
+        .select("first_response_seconds")
+        .not("first_response_seconds", "is", null)
+        .gte("first_contact_at", cutoff)
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
     sb
       .from("jobs")
       .select("id, created_at, service_label, service_type, customers(name)")
@@ -517,9 +714,15 @@ export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats
       .gte("sla_alert_level", 3)
       .order("created_at", { ascending: true })
       .limit(20),
+    sb
+      .from("jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "new")
+      .is("first_contact_at", null)
+      .gte("sla_alert_level", 3),
   ]);
 
-  const samples = (responded ?? [])
+  const samples = responded
     .map((r) => r.first_response_seconds as number)
     .filter((n) => Number.isFinite(n))
     .sort((a, b) => a - b);
@@ -543,6 +746,7 @@ export async function getResponseTimeStats(days = 30): Promise<ResponseTimeStats
     p90Seconds: percentile(samples, 0.9),
     sampleSize: samples.length,
     breaches,
+    breachCount: breachCount ?? breaches.length,
   };
 }
 
@@ -610,61 +814,36 @@ export interface AnalyticsData {
 export async function getAnalytics(): Promise<AnalyticsData> {
   const sb = supabase();
 
-  // Pull all invoices (paginated)
-  const allInv: Array<{
-    customer_id: number | null;
-    total_cents: number | null;
-    completed_on: string | null;
-    job_type: string | null;
-  }> = [];
-  {
-    const PAGE = 1000;
-    let from = 0;
-    while (true) {
-      const { data, error } = await sb
-        .from("invoice_history")
-        .select("customer_id, total_cents, completed_on, job_type")
-        .range(from, from + PAGE - 1);
-      if (error) throw new Error(`getAnalytics invoices: ${error.message}`);
-      allInv.push(...(data ?? []));
-      if (!data || data.length < PAGE) break;
-      from += PAGE;
-    }
-  }
-
-  // Pull all customers (paginated)
-  const allCust: Array<{
-    id: number;
-    name: string;
-    city: string | null;
-    phone_e164: string | null;
-    created_at: string;
-    last_job_completed_at: string | null;
-  }> = [];
-  {
-    const PAGE = 1000;
-    let from = 0;
-    while (true) {
-      const { data, error } = await sb
+  // Revenue only: paid OS invoices (dated by paid_at) plus any legacy imports.
+  // Unpaid invoices are open balance, not revenue, so they're left out here.
+  const [moneyRows, allCust] = await Promise.all([
+    loadMoneyRows(),
+    selectAllPages<{
+      id: number;
+      name: string;
+      city: string | null;
+      phone_e164: string | null;
+      created_at: string;
+      last_job_completed_at: string | null;
+    }>("getAnalytics customers", (from, to) =>
+      sb
         .from("customers")
         .select("id, name, city, phone_e164, created_at, last_job_completed_at")
-        .range(from, from + PAGE - 1);
-      if (error) throw new Error(`getAnalytics customers: ${error.message}`);
-      allCust.push(...(data ?? []));
-      if (!data || data.length < PAGE) break;
-      from += PAGE;
-    }
-  }
+        .order("id", { ascending: true })
+        .range(from, to)
+    ),
+  ]);
+  const allInv = moneyRows.filter((i) => i.revenueCents > 0);
 
   const custById = new Map(allCust.map((c) => [c.id, c]));
 
-  // ── Monthly revenue rollup (last 24 months) ──
+  // ── Monthly revenue rollup (last 24 months, Pacific calendar months) ──
   const monthlyMap = new Map<string, { revenueCents: number; invoiceCount: number }>();
   for (const i of allInv) {
-    if (!i.completed_on) continue;
-    const month = i.completed_on.slice(0, 7); // YYYY-MM
+    if (!i.revenueOn) continue;
+    const month = moneyMonthKey(i.revenueOn); // YYYY-MM
     const cur = monthlyMap.get(month) ?? { revenueCents: 0, invoiceCount: 0 };
-    cur.revenueCents += i.total_cents ?? 0;
+    cur.revenueCents += i.revenueCents;
     cur.invoiceCount += 1;
     monthlyMap.set(month, cur);
   }
@@ -680,25 +859,27 @@ export async function getAnalytics(): Promise<AnalyticsData> {
   >();
   const jobTypeMap = new Map<string, { count: number; revenueCents: number }>();
   for (const i of allInv) {
-    if (i.customer_id != null) {
-      const cur = perCustomer.get(i.customer_id) ?? {
+    if (i.customerId != null) {
+      const cur = perCustomer.get(i.customerId) ?? {
         revenueCents: 0,
         jobCount: 0,
         lastCompletedOn: null,
       };
-      cur.revenueCents += i.total_cents ?? 0;
+      cur.revenueCents += i.revenueCents;
       cur.jobCount += 1;
-      if (i.completed_on && (!cur.lastCompletedOn || i.completed_on > cur.lastCompletedOn)) {
-        cur.lastCompletedOn = i.completed_on;
+      if (
+        i.revenueOn &&
+        (!cur.lastCompletedOn || moneyDateMs(i.revenueOn) > moneyDateMs(cur.lastCompletedOn))
+      ) {
+        cur.lastCompletedOn = i.revenueOn;
       }
-      perCustomer.set(i.customer_id, cur);
+      perCustomer.set(i.customerId, cur);
     }
 
-    const jt = i.job_type ?? "Unknown";
-    const jtCur = jobTypeMap.get(jt) ?? { count: 0, revenueCents: 0 };
+    const jtCur = jobTypeMap.get(i.jobType) ?? { count: 0, revenueCents: 0 };
     jtCur.count += 1;
-    jtCur.revenueCents += i.total_cents ?? 0;
-    jobTypeMap.set(jt, jtCur);
+    jtCur.revenueCents += i.revenueCents;
+    jobTypeMap.set(i.jobType, jtCur);
   }
 
   // ── Top 20 customers ──
@@ -821,6 +1002,8 @@ export function formatMoneyShort(cents: number): string {
 
 export interface JobListOpts {
   status?: JobStatus | "open" | "all";
+  /** Match any of these statuses. Takes precedence over `status`. */
+  statuses?: JobStatus[];
   assignedTo?: number;
   search?: string;
   limit?: number;
@@ -847,15 +1030,28 @@ export async function listJobs(opts: JobListOpts = {}): Promise<{
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (opts.status === "open") {
+  if (opts.statuses && opts.statuses.length > 0) {
+    q = q.in("status", opts.statuses);
+  } else if (opts.status === "open") {
     q = q.in("status", OPEN_STATUSES);
   } else if (opts.status && opts.status !== "all") {
     q = q.eq("status", opts.status);
   }
   if (opts.assignedTo) q = q.eq("assigned_to", opts.assignedTo);
-  if (opts.search) {
-    const s = `%${opts.search}%`;
-    q = q.or(`service_label.ilike.${s},service_type.ilike.${s},job_address.ilike.${s}`);
+  const safe = opts.search ? orSafe(opts.search) : "";
+  if (safe) {
+    const s = `%${safe}%`;
+    const clauses = [`service_label.ilike.${s}`, `service_type.ilike.${s}`, `job_address.ilike.${s}`];
+    // Most searches are a customer's name, which lives on the customers table.
+    // Resolve matching customers first and pull their jobs in by id.
+    const { data: matches } = await sb
+      .from("customers")
+      .select("id")
+      .ilike("name", s)
+      .limit(200);
+    const ids = (matches ?? []).map((c) => Number(c.id)).filter(Number.isFinite);
+    if (ids.length > 0) clauses.push(`customer_id.in.(${ids.join(",")})`);
+    q = q.or(clauses.join(","));
   }
 
   const { data, error, count } = await q;
@@ -950,14 +1146,20 @@ export const STATUS_COLOR: Record<JobStatus, string> = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+/**
+ * Manual status moves (the job page's "Move to" buttons and the field app).
+ * Invoiced and paid are deliberately absent: they are reached only by
+ * creating an invoice and recording its payment, which is where the money
+ * side effects (final amount, customer lifetime totals, receipt) happen.
+ */
 export const STATUS_TRANSITIONS: Record<JobStatus, JobStatus[]> = {
   new: ["scheduled", "cancelled"],
   scheduled: ["en_route", "on_site", "cancelled", "paused"],
   en_route: ["on_site", "paused", "cancelled"],
   on_site: ["complete", "paused"],
   paused: ["en_route", "on_site", "scheduled", "cancelled"],
-  complete: ["invoiced"],
-  invoiced: ["paid"],
+  complete: [],
+  invoiced: [],
   paid: [],
   cancelled: [],
 };
@@ -980,8 +1182,12 @@ export function formatDateTime(iso: string | null): string {
 
 export function formatDate(iso: string | null): string {
   if (!iso) return "·";
-  return new Date(iso).toLocaleDateString("en-US", {
-    timeZone: PACIFIC_TZ,
+  // A bare YYYY-MM-DD (a `date` column) has no time zone. new Date() would read
+  // it as UTC midnight, the evening before in Pacific, so format it on the UTC
+  // calendar to keep the day it names.
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  return new Date(dateOnly ? `${iso}T00:00:00Z` : iso).toLocaleDateString("en-US", {
+    timeZone: dateOnly ? "UTC" : PACIFIC_TZ,
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -1099,17 +1305,99 @@ export interface Coupon {
 
 export const MAX_PUBLISHED_COUPONS = 3;
 
-export async function listCoupons(opts: { publishedOnly?: boolean } = {}): Promise<Coupon[]> {
+/**
+ * Coupons for the admin (everything) or the public site.
+ *
+ * `liveOnly` is what public callers want: published AND inside the coupon's
+ * valid-from / valid-until window by today's Pacific date. The window check
+ * runs in JS (the table holds a handful of rows) so it can read both the
+ * current and the older way dates were stored; see couponDay.
+ */
+export async function listCoupons(
+  opts: { publishedOnly?: boolean; liveOnly?: boolean } = {}
+): Promise<Coupon[]> {
   const sb = supabase();
   let q = sb
     .from("coupons")
     .select("*")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
-  if (opts.publishedOnly) q = q.eq("published", true);
+  if (opts.publishedOnly || opts.liveOnly) q = q.eq("published", true);
   const { data, error } = await q;
   if (error) throw new Error(`listCoupons: ${error.message}`);
-  return (data ?? []) as Coupon[];
+  const rows = (data ?? []) as Coupon[];
+  return opts.liveOnly ? rows.filter((c) => isCouponLive(c)) : rows;
+}
+
+function isoDay(year: number, month: number, day: number): string {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/**
+ * The calendar day (YYYY-MM-DD) a coupon date was set to in the admin form.
+ *
+ * Saves now store valid_from as the start and valid_until as the end of the
+ * picked day in Pacific. Older saves stored the picked date as UTC midnight,
+ * which reads as the evening before in Pacific, so an exact UTC midnight is
+ * taken as that UTC date instead.
+ */
+export function couponDay(value: string | null): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  const utcMidnight =
+    d.getUTCHours() === 0 &&
+    d.getUTCMinutes() === 0 &&
+    d.getUTCSeconds() === 0 &&
+    d.getUTCMilliseconds() === 0;
+  if (utcMidnight) return d.toISOString().slice(0, 10);
+  const { year, month, day } = pacificYmd(d);
+  return isoDay(year, month, day);
+}
+
+/** Where a coupon stands against today's Pacific date. */
+export function couponState(
+  c: Pick<Coupon, "published" | "valid_from" | "valid_until">,
+  now: Date = new Date()
+): "draft" | "upcoming" | "live" | "expired" {
+  if (!c.published) return "draft";
+  const { year, month, day } = pacificYmd(now);
+  const today = isoDay(year, month, day);
+  const from = couponDay(c.valid_from);
+  const until = couponDay(c.valid_until);
+  if (until && until < today) return "expired";
+  if (from && from > today) return "upcoming";
+  return "live";
+}
+
+/** Published and inside its date window, judged by today's Pacific date. */
+export function isCouponLive(
+  c: Pick<Coupon, "published" | "valid_from" | "valid_until">,
+  now: Date = new Date()
+): boolean {
+  return couponState(c, now) === "live";
+}
+
+/** "Oct 31, 2026" for a coupon date, on the day the operator picked. */
+export function formatCouponDate(value: string | null): string {
+  return formatDate(couponDay(value));
+}
+
+/**
+ * Turn the admin form's date-only input into the stored timestamp: the start
+ * of that day in Pacific for valid_from, the last millisecond of it for
+ * valid_until. Storing UTC midnight instead ended a coupon at 5pm the day
+ * before its "valid until" date.
+ */
+export function couponBoundaryIso(input: string | null, edge: "start" | "end"): string | null {
+  if (!input) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input);
+  if (m) {
+    const start = pacificMidnight(Number(m[1]), Number(m[2]), Number(m[3]));
+    return (edge === "start" ? start : endOfPacificDay(start)).toISOString();
+  }
+  const d = new Date(input);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
 export async function getCoupon(id: number): Promise<Coupon | null> {

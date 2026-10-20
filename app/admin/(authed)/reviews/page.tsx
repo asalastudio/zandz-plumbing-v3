@@ -84,7 +84,7 @@ export default async function AdminReviewsPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-base text-muted md:text-lg">
           Customers who said yes to SMS get a review-request text 48 hours after their job is
-          marked Won in HubSpot. Pipeline, sends, and opt-outs all live here.
+          marked complete. Pipeline, sends, and opt-outs all live here.
         </p>
       </header>
 

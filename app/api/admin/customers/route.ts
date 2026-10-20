@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { isAuthenticated } from "@/lib/auth";
+import { normalizeNanpToE164 } from "@/lib/phone";
 
 export const runtime = "nodejs";
 
@@ -18,11 +19,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL("/admin/customers/new?error=missing_name", req.url), 303);
   }
 
+  // Store phones as E.164 so lookups, dedupe, and texting all match. A typed
+  // number that can't be read as a US phone is refused rather than saved raw.
+  const phoneRaw = emptyToNull(form.get("phone_e164"));
+  const phoneE164 = phoneRaw ? normalizeNanpToE164(phoneRaw) : null;
+  if (phoneRaw && !phoneE164) {
+    return NextResponse.redirect(new URL("/admin/customers/new?error=bad_phone", req.url), 303);
+  }
+
   const data: Record<string, string | null> = {
     name,
-    phone_e164: emptyToNull(form.get("phone_e164")),
+    phone_e164: phoneE164,
     email: emptyToNull(form.get("email")),
-    hubspot_contact_id: emptyToNull(form.get("hubspot_contact_id")),
     street_address: emptyToNull(form.get("street_address")),
     city: emptyToNull(form.get("city")),
     state: emptyToNull(form.get("state")) ?? "CA",

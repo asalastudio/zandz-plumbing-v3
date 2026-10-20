@@ -13,11 +13,13 @@ import { supabase } from "@/lib/supabase";
 import {
   createCustomInvoice,
   invoiceTotalCents,
+  syncJobAfterInvoice,
   type InvoiceLineItem,
   type InvoiceRecord,
   type PostalAddress,
 } from "@/lib/invoices";
 import { siteOrigin } from "@/lib/url";
+import { pacificYmd } from "@/lib/time";
 
 export type EstimateStatus =
   | "draft"
@@ -141,11 +143,78 @@ export async function updateEstimate(
   return normalize(data);
 }
 
+/**
+ * Move an estimate through its lifecycle. A converted estimate is terminal:
+ * moving it back to draft or sent would let it be converted a second time.
+ */
 export async function setEstimateStatus(id: number, status: EstimateStatus): Promise<void> {
   const patch: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
   if (status === "sent") patch.sent_at = new Date().toISOString();
-  const { error } = await supabase().from("estimates").update(patch).eq("id", id);
+  const { data, error } = await supabase()
+    .from("estimates")
+    .update(patch)
+    .eq("id", id)
+    .neq("status", "converted")
+    .select("id");
   if (error) throw new Error(`setEstimateStatus: ${error.message}`);
+  if (!data || data.length === 0) {
+    throw new EstimateError("This estimate was converted to an invoice and can no longer change status.");
+  }
+}
+
+/**
+ * Stamp an estimate as emailed. Only a draft (or a declined one being
+ * re-offered) becomes "sent"; resending an approved or converted estimate must
+ * not knock it back down the lifecycle.
+ */
+export async function markEstimateSent(id: number): Promise<void> {
+  const sb = supabase();
+  const { data: current, error: fetchErr } = await sb
+    .from("estimates")
+    .select("status")
+    .eq("id", id)
+    .maybeSingle();
+  if (fetchErr) throw new Error(`markEstimateSent: ${fetchErr.message}`);
+  if (!current) return;
+
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = { sent_at: now, updated_at: now };
+  if (current.status === "draft" || current.status === "declined") patch.status = "sent";
+
+  const { error } = await sb.from("estimates").update(patch).eq("id", id);
+  if (error) throw new Error(`markEstimateSent: ${error.message}`);
+}
+
+/** Today's date in Pacific as YYYY-MM-DD, to compare against a date-only valid_until. */
+function pacificTodayIso(): string {
+  const { year, month, day } = pacificYmd();
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** True once the estimate's valid-through date has passed (Pacific calendar). */
+export function isEstimateExpired(estimate: Pick<EstimateRecord, "valid_until">): boolean {
+  const until = estimate.valid_until?.slice(0, 10);
+  return Boolean(until && until < pacificTodayIso());
+}
+
+/**
+ * Format a date-only value ("2026-11-01", as stored in estimates.valid_until)
+ * as a calendar date. new Date() reads a bare date as UTC midnight, which is
+ * the previous evening in Pacific, so the day is formatted on the UTC calendar
+ * instead. Full timestamps fall through to the normal Pacific formatting.
+ */
+export function formatEstimateDate(
+  value: string | null,
+  month: "long" | "short" = "long"
+): string {
+  if (!value) return "";
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  return new Date(dateOnly ? `${value}T00:00:00Z` : value).toLocaleDateString("en-US", {
+    timeZone: dateOnly ? "UTC" : "America/Los_Angeles",
+    year: "numeric",
+    month,
+    day: "numeric",
+  });
 }
 
 export async function getEstimate(id: number): Promise<EstimateRecord | null> {
@@ -258,19 +327,35 @@ export async function listJobEstimates(jobId: number): Promise<EstimateRecord[]>
   return (data ?? []).map(normalize);
 }
 
+/** Only an estimate the customer has seen (or approved) can become an invoice. */
+const CONVERTIBLE_STATUSES: EstimateStatus[] = ["sent", "approved"];
+
 /**
  * The bridge: turn an approved estimate into an invoice.
  *
- * One-way and one-time — an estimate already converted throws. The new invoice
- * carries the estimate's exact line items, customer, and job, so nothing is
- * retyped and the numbers can't drift between the two documents.
+ * One-way and one-time. The new invoice carries the estimate's exact line
+ * items, customer, and job, so nothing is retyped and the numbers can't drift
+ * between the two documents.
+ *
+ * Safe against a double click: the estimate is first claimed with a
+ * conditional update (still unconverted, still sent/approved) that flips it to
+ * "converted". Only the request that wins the claim creates an invoice; the
+ * loser finds nothing to update and stops. If the invoice insert then fails,
+ * the claim is released so the operator can try again.
  */
 export async function convertEstimateToInvoice(estimateId: number): Promise<InvoiceRecord> {
   const sb = supabase();
   const estimate = await getEstimate(estimateId);
   if (!estimate) throw new EstimateError("Estimate not found.");
-  if (estimate.converted_invoice_id) {
+  if (estimate.converted_invoice_id || estimate.status === "converted") {
     throw new EstimateError("This estimate has already been converted to an invoice.");
+  }
+  if (!CONVERTIBLE_STATUSES.includes(estimate.status)) {
+    throw new EstimateError(
+      estimate.status === "declined"
+        ? "This estimate was declined, so it can't become an invoice."
+        : "Send the estimate or mark it approved before converting it to an invoice."
+    );
   }
   if (!estimate.customer_id) {
     throw new EstimateError("This estimate has no customer, so it cannot become an invoice.");
@@ -279,26 +364,52 @@ export async function convertEstimateToInvoice(estimateId: number): Promise<Invo
     throw new EstimateError("This estimate has no line items.");
   }
 
-  const invoice = await createCustomInvoice({
-    customerId: estimate.customer_id,
-    jobId: estimate.job_id,
-    lineItems: estimate.line_items,
-    notes: estimate.notes,
-  });
+  const claimedAt = new Date().toISOString();
+  const { data: claimed, error: claimError } = await sb
+    .from("estimates")
+    .update({ status: "converted", converted_at: claimedAt, updated_at: claimedAt })
+    .eq("id", estimateId)
+    .is("converted_invoice_id", null)
+    .in("status", CONVERTIBLE_STATUSES)
+    .select("id");
+  if (claimError) throw new Error(`convertEstimateToInvoice claim: ${claimError.message}`);
+  if (!claimed || claimed.length === 0) {
+    throw new EstimateError("This estimate has already been converted to an invoice.");
+  }
+
+  let invoice: InvoiceRecord;
+  try {
+    invoice = await createCustomInvoice({
+      customerId: estimate.customer_id,
+      jobId: estimate.job_id,
+      lineItems: estimate.line_items,
+      notes: estimate.notes,
+    });
+  } catch (err) {
+    await sb
+      .from("estimates")
+      .update({ status: estimate.status, converted_at: null, updated_at: new Date().toISOString() })
+      .eq("id", estimateId)
+      .is("converted_invoice_id", null);
+    throw err;
+  }
 
   const { error } = await sb
     .from("estimates")
-    .update({
-      status: "converted",
-      converted_invoice_id: invoice.id,
-      converted_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
+    .update({ converted_invoice_id: invoice.id, updated_at: new Date().toISOString() })
     .eq("id", estimateId);
   if (error) {
     // The invoice exists; surface the link failure so it can be reconciled
     // rather than silently orphaning the estimate.
     throw new Error(`Invoice ${invoice.id} created, but linking the estimate failed: ${error.message}`);
+  }
+
+  // Same job rules as any other invoice: a completed job moves to invoiced,
+  // unfinished work keeps its status.
+  if (invoice.job_id) {
+    await syncJobAfterInvoice(invoice.job_id).catch((e) =>
+      console.error("[convertEstimateToInvoice] job sync failed:", e)
+    );
   }
 
   return invoice;

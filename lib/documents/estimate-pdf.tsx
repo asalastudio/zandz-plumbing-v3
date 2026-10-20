@@ -9,7 +9,7 @@ import {
   renderToBuffer,
 } from "@react-pdf/renderer";
 import { siteSettings } from "@/content/site-settings";
-import type { EstimateDocumentData } from "@/lib/estimates";
+import { formatEstimateDate, type EstimateDocumentData } from "@/lib/estimates";
 import type { InvoiceLineItem, PostalAddress } from "@/lib/invoices";
 
 /**
@@ -154,14 +154,10 @@ function money(cents: number): string {
   })}`;
 }
 
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", {
-    timeZone: "America/Los_Angeles",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+// Handles both timestamps and the date-only valid_until without the UTC slip
+// that printed the day before.
+function formatDate(value: string | null): string {
+  return formatEstimateDate(value, "short");
 }
 
 function AddressBlock({ address }: { address: PostalAddress }) {

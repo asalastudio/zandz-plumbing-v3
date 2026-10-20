@@ -3,7 +3,20 @@ import { ChevronLeft } from "lucide-react";
 
 export const metadata = { title: "New Customer · Z and Z OS" };
 
-export default function NewCustomerPage() {
+const ERRORS: Record<string, string> = {
+  missing_name: "Enter the customer's name.",
+  bad_phone: "That phone number is not a valid US number. Use 10 digits, like (510) 555-0100.",
+  db: "Could not save the customer. Try again.",
+};
+
+export default async function NewCustomerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const errorMsg = error ? ERRORS[error] ?? "Could not save the customer." : null;
+
   return (
     <div className="pb-24 lg:pb-0">
       <Link
@@ -24,15 +37,20 @@ export default function NewCustomerPage() {
         </p>
       </header>
 
+      {errorMsg && (
+        <div className="mb-6 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      )}
+
       <form
         action="/api/admin/customers"
         method="POST"
         className="grid grid-cols-1 gap-6 md:grid-cols-2"
       >
         <Field label="Full name *" name="name" required />
-        <Field label="Phone (E.164 e.g. +15105551234)" name="phone_e164" type="tel" />
+        <Field label="Phone" name="phone_e164" type="tel" placeholder="(510) 555-0100" />
         <Field label="Email" name="email" type="email" />
-        <Field label="HubSpot contact ID (optional)" name="hubspot_contact_id" />
         <Field label="Street address" name="street_address" full />
         <Field label="City" name="city" defaultValue="Oakland" />
         <Field label="ZIP" name="zip" />
@@ -72,6 +90,7 @@ function Field({
   name,
   type = "text",
   defaultValue,
+  placeholder,
   required = false,
   full = false,
 }: {
@@ -79,6 +98,7 @@ function Field({
   name: string;
   type?: string;
   defaultValue?: string;
+  placeholder?: string;
   required?: boolean;
   full?: boolean;
 }) {
@@ -91,6 +111,7 @@ function Field({
         type={type}
         name={name}
         defaultValue={defaultValue}
+        placeholder={placeholder}
         required={required}
         className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
       />

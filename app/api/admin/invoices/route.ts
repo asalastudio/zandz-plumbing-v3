@@ -28,7 +28,8 @@ export const runtime = "nodejs";
  *    operator passed confirm_new, so the old "Janan billed as Eric" merge
  *    can't happen by accident.
  *
- * An optional job_id links the invoice to a job and marks that job invoiced.
+ * An optional job_id links the invoice to a job. The job only moves to
+ * invoiced if its work is already complete; see syncJobAfterInvoice.
  */
 export async function POST(req: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
     }
 
     const invoice = await createCustomInvoice({ customerId, jobId, lineItems, notes });
-    if (jobId) await syncJobAfterInvoice(jobId, invoice.amount_cents);
+    if (jobId) await syncJobAfterInvoice(jobId);
 
     if (!sendNow || (!channelEmail && !channelText)) {
       return NextResponse.redirect(new URL("/admin/invoices?status=created", req.url), 303);

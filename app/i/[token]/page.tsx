@@ -7,7 +7,7 @@ import { siteSettings } from "@/content/site-settings";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Invoice · Z and Z Plumbing",
+  title: { absolute: "Invoice · Z and Z Plumbing" },
   robots: { index: false, follow: false },
 };
 

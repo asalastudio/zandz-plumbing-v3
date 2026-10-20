@@ -61,7 +61,15 @@ function descriptionHtml(description: string): string {
 }
 
 function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  // valid_until is a date-only string; read as UTC midnight it would show the
+  // previous day in Pacific. Same rule as formatEstimateDate in lib/estimates.
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(iso);
+  return new Date(dateOnly ? `${iso}T00:00:00Z` : iso).toLocaleDateString("en-US", {
+    timeZone: dateOnly ? "UTC" : "America/Los_Angeles",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export async function sendEstimateEmail(input: SendEstimateEmailInput): Promise<EmailResult> {

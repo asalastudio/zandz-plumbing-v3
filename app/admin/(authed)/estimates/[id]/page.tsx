@@ -31,6 +31,8 @@ export default async function EstimateDetailPage({
   const items = estimate.line_items ?? [];
   const isConverted = estimate.status === "converted";
   const canEdit = !isConverted;
+  // Conversion needs a customer-facing estimate: sent, or approved by phone.
+  const canConvert = estimate.status === "sent" || estimate.status === "approved";
 
   return (
     <div className="mx-auto max-w-3xl pb-24 lg:pb-0">
@@ -130,7 +132,7 @@ export default async function EstimateDetailPage({
           <StatusButton id={estimate.id} status="declined" icon="x" label="Declined" />
         )}
 
-        {!isConverted && (
+        {canConvert && (
           <form action={`/api/admin/estimates/${estimate.id}/convert`} method="POST">
             <button
               type="submit"

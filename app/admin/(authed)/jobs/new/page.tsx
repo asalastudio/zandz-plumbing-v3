@@ -1,29 +1,51 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { listCustomers, listCrew, getCustomer } from "@/lib/db";
+import { listCrew, getCustomer } from "@/lib/db";
 import { services } from "@/content/services";
 import { ScheduleTimeFields } from "../../_components/ScheduleTimeFields";
+import InvoiceCustomerField, { type PickedCustomer } from "../../invoices/new/InvoiceCustomerField";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "New Job · Z and Z OS" };
 
+const ERRORS: Record<string, string> = {
+  missing: "Pick a customer and a service type.",
+  db: "Could not save the job. Try again.",
+};
+
 export default async function NewJobPage({
   searchParams,
 }: {
-  searchParams: Promise<{ customer_id?: string }>;
+  searchParams: Promise<{ customer_id?: string; customer?: string; error?: string }>;
 }) {
   const params = await searchParams;
-  const presetCustomerId = params.customer_id ? parseInt(params.customer_id, 10) : null;
+  // ?customer_id= is what the customer page links with; ?customer= is accepted too.
+  const presetRaw = params.customer_id ?? params.customer;
+  const presetCustomerId = presetRaw ? parseInt(presetRaw, 10) : null;
+  const errorMsg = params.error ? ERRORS[params.error] ?? "Could not create the job." : null;
 
   const configured = isSupabaseConfigured();
-  const [customers, crew, presetCustomer] = configured
+  const [crew, presetCustomer] = configured
     ? await Promise.all([
-        listCustomers({ limit: 500 }),
         listCrew({ activeOnly: true }),
-        presetCustomerId ? getCustomer(presetCustomerId) : Promise.resolve(null),
+        presetCustomerId && !Number.isNaN(presetCustomerId)
+          ? getCustomer(presetCustomerId)
+          : Promise.resolve(null),
       ])
-    : [{ rows: [], count: 0 }, [], null];
+    : [[], null];
+
+  // The picker searches all customers server-side, so the form no longer has
+  // to ship (and silently cap) the whole customer list.
+  const pickedCustomer: PickedCustomer | null = presetCustomer
+    ? {
+        id: presetCustomer.id,
+        name: presetCustomer.name,
+        phone_e164: presetCustomer.phone_e164,
+        email: presetCustomer.email,
+        city: presetCustomer.city,
+      }
+    : null;
 
   return (
     <div className="pb-24 lg:pb-0">
@@ -46,6 +68,12 @@ export default async function NewJobPage({
           </p>
         )}
       </header>
+
+      {errorMsg && (
+        <div className="mb-6 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      )}
 
       {!configured ? (
         <div className="border-l-4 border-[#F96302] bg-[#F96302]/10 p-6">
@@ -77,21 +105,12 @@ export default async function NewJobPage({
           </Field>
 
           <Field label="Customer *" required full>
-            <select
-              name="customer_id"
+            <InvoiceCustomerField
+              presetCustomer={pickedCustomer}
+              allowNew={false}
+              allowJobLink={false}
               required
-              defaultValue={presetCustomerId ?? ""}
-              className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
-            >
-              <option value="">· Select customer ·</option>
-              {customers.rows.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.phone_e164 ? ` · ${c.phone_e164}` : ""}
-                  {c.city ? ` · ${c.city}` : ""}
-                </option>
-              ))}
-            </select>
+            />
             <p className="mt-2 text-xs text-muted">
               Don&apos;t see them?{" "}
               <Link href="/admin/customers/new" className="text-[#F96302] underline">

@@ -31,10 +31,11 @@ export default async function DispatchPage({
     );
   }
 
-  const [jobs, crew] = await Promise.all([
-    getJobsForDay(day),
-    listCrew({ activeOnly: true }),
-  ]);
+  const [dayJobs, allCrew] = await Promise.all([getJobsForDay(day), listCrew()]);
+  // Cancelled work isn't on the board.
+  const jobs = dayJobs.filter((j) => j.status !== "cancelled");
+  const crew = allCrew.filter((c) => c.active);
+  const inactiveCrew = new Map(allCrew.filter((c) => !c.active).map((c) => [c.id, c]));
 
   const dayLabel = day.toLocaleDateString("en-US", {
     timeZone: PACIFIC_TZ,
@@ -50,14 +51,16 @@ export default async function DispatchPage({
   const ymdNow = pacificYmd(new Date());
   const todayIso = `${ymdNow.year}-${String(ymdNow.month).padStart(2, "0")}-${String(ymdNow.day).padStart(2, "0")}`;
 
-  const unassigned = jobs.filter((j) => !j.assigned_to);
+  // A job assigned to someone who is no longer active (or no longer on the
+  // crew list) still needs a person, so it lands in the unassigned lane
+  // instead of disappearing with their column.
+  const unassigned: JobWithRelations[] = [];
   const byCrew = new Map<number, JobWithRelations[]>();
   for (const c of crew) byCrew.set(c.id, []);
   for (const j of jobs) {
-    if (j.assigned_to) {
-      const list = byCrew.get(j.assigned_to);
-      if (list) list.push(j);
-    }
+    const list = j.assigned_to ? byCrew.get(j.assigned_to) : undefined;
+    if (list) list.push(j);
+    else unassigned.push(j);
   }
 
   return (
@@ -112,13 +115,21 @@ export default async function DispatchPage({
         <section className="mb-8 border-2 border-[#F96302]/40 bg-[#F96302]/5 p-5 md:p-6">
           <header className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-xl font-black uppercase tracking-tight text-ink md:text-2xl">
-              Unassigned
+              Unassigned / inactive
               <span className="ml-3 text-base font-bold text-[#F96302]">({unassigned.length})</span>
             </h2>
           </header>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {unassigned.map((j) => (
-              <JobCard key={j.id} job={j} />
+              <JobCard
+                key={j.id}
+                job={j}
+                note={
+                  j.assigned_to
+                    ? `Assigned to ${inactiveCrew.get(j.assigned_to)?.name ?? j.assignee?.name ?? "a former crew member"}, who is inactive. Reassign.`
+                    : undefined
+                }
+              />
             ))}
           </div>
         </section>
@@ -171,7 +182,15 @@ function CrewColumn({ crew, jobs }: { crew: Crew; jobs: JobWithRelations[] }) {
   );
 }
 
-function JobCard({ job, compact = false }: { job: JobWithRelations; compact?: boolean }) {
+function JobCard({
+  job,
+  compact = false,
+  note,
+}: {
+  job: JobWithRelations;
+  compact?: boolean;
+  note?: string;
+}) {
   return (
     <Link
       href={`/admin/jobs/${job.id}`}
@@ -211,6 +230,12 @@ function JobCard({ job, compact = false }: { job: JobWithRelations; compact?: bo
               <span className="text-muted">, {job.job_city ?? job.customer?.city}</span>
             )}
           </span>
+        </p>
+      )}
+      {note && (
+        <p className="mt-2 flex items-start gap-2 text-xs font-bold text-amber-800">
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+          {note}
         </p>
       )}
       <footer className="mt-3 flex items-center justify-end text-[#F96302]/70 group-hover:text-[#F96302]">

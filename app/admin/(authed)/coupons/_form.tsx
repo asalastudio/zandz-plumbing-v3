@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Coupon } from "@/lib/db";
+import { couponDay, type Coupon } from "@/lib/db";
 
 interface Props {
   action: string;
@@ -7,13 +7,10 @@ interface Props {
   submitLabel: string;
 }
 
+// The day the operator picked, read back on the Pacific calendar (a UTC
+// slice of an end-of-day Pacific timestamp would show the next day).
 function toDateInput(iso: string | null | undefined): string {
-  if (!iso) return "";
-  try {
-    return new Date(iso).toISOString().slice(0, 10);
-  } catch {
-    return "";
-  }
+  return couponDay(iso ?? null) ?? "";
 }
 
 export function CouponForm({ action, coupon, submitLabel }: Props) {

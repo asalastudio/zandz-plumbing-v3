@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { Phone, Tag, Scissors } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
 import { Button } from "@/components/Button";
 import { TrustStrip } from "@/components/TrustStrip";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { listCoupons, MAX_PUBLISHED_COUPONS, formatDate, type Coupon } from "@/lib/db";
+import { listCoupons, MAX_PUBLISHED_COUPONS, formatCouponDate, type Coupon } from "@/lib/db";
 import { siteSettings } from "@/content/site-settings";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Plumbing Coupons & Specials | Z and Z Plumbing",
+const baseMetadata: Metadata = {
+  title: "Plumbing Coupons & Specials",
   description:
     "Current coupons and special deals from Z and Z Plumbing. Save on sewer lateral, drain cleaning, water heater, and other East Bay plumbing service. Call (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/coupons/` },
@@ -24,14 +25,26 @@ export const metadata: Metadata = {
   },
 };
 
-async function loadCoupons(): Promise<Coupon[]> {
+// Live coupons only: published and inside their dates (Pacific). Cached per
+// request so the metadata and the page share one query.
+const loadCoupons = cache(async (): Promise<Coupon[]> => {
   if (!isSupabaseConfigured()) return [];
   try {
-    const all = await listCoupons({ publishedOnly: true });
-    return all.slice(0, MAX_PUBLISHED_COUPONS);
+    const live = await listCoupons({ liveOnly: true });
+    return live.slice(0, MAX_PUBLISHED_COUPONS);
   } catch {
     return [];
   }
+});
+
+// With nothing running, the page is an empty shell that promises deals it
+// doesn't have. Keep it out of the index until a coupon is live again, but let
+// crawlers keep following its links.
+export async function generateMetadata(): Promise<Metadata> {
+  const coupons = await loadCoupons();
+  return coupons.length > 0
+    ? baseMetadata
+    : { ...baseMetadata, robots: { index: false, follow: true } };
 }
 
 export default async function CouponsPage() {
@@ -198,8 +211,8 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
         {(coupon.valid_from || coupon.valid_until) && (
           <p className="mt-4 text-sm text-[#666666]">
             Valid{" "}
-            {coupon.valid_from ? `from ${formatDate(coupon.valid_from)}` : "now"}
-            {coupon.valid_until ? ` through ${formatDate(coupon.valid_until)}` : ""}
+            {coupon.valid_from ? `from ${formatCouponDate(coupon.valid_from)}` : "now"}
+            {coupon.valid_until ? ` through ${formatCouponDate(coupon.valid_until)}` : ""}
           </p>
         )}
 

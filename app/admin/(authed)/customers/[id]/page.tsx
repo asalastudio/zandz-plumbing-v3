@@ -21,10 +21,18 @@ import {
   getCustomerLifetimeStats,
   STATUS_LABEL,
   STATUS_COLOR,
+  formatDate,
   formatDateTime,
   formatMoney,
   formatMoneyShort,
 } from "@/lib/db";
+import { formatPhone } from "@/lib/phone";
+
+const CONTACT_ERRORS: Record<string, string> = {
+  missing_name: "The customer needs a name.",
+  bad_phone: "That phone number is not a valid US number. Use 10 digits, like (510) 555-0100.",
+  update: "Could not save. Try again.",
+};
 
 export const dynamic = "force-dynamic";
 
@@ -33,10 +41,10 @@ export default async function CustomerDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; contact_error?: string }>;
 }) {
   const { id: idStr } = await params;
-  const { saved, error: errorParam } = await searchParams;
+  const { saved, error: errorParam, contact_error: contactError } = await searchParams;
   const id = parseInt(idStr, 10);
   if (!id || Number.isNaN(id)) notFound();
 
@@ -151,7 +159,7 @@ export default async function CustomerDetailPage({
               icon={DollarSign}
             />
             <SummaryStat
-              label="Jobs completed"
+              label="Paid invoices"
               value={stats.invoiceCount.toLocaleString()}
               icon={Briefcase}
             />
@@ -162,15 +170,7 @@ export default async function CustomerDetailPage({
             />
             <SummaryStat
               label="Last service"
-              value={
-                stats.lastCompletedOn
-                  ? new Date(stats.lastCompletedOn).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "·"
-              }
+              value={formatDate(stats.lastCompletedOn)}
               icon={Calendar}
             />
           </div>
@@ -190,8 +190,8 @@ export default async function CustomerDetailPage({
                 {formatMoney(stats.totalBalanceCents)}
               </p>
               <p className="mt-2 text-sm text-muted">
-                Across one or more invoices. May reflect stale ServiceTitan statuses. Verify
-                payment before following up.
+                Unpaid invoices for this customer. Check the invoice list before following up, in
+                case a payment came in and was not recorded yet.
               </p>
             </div>
           </div>
@@ -230,6 +230,57 @@ export default async function CustomerDetailPage({
             )}
           </div>
         </Card>
+      </section>
+
+      {/* Contact info editor */}
+      <section id="contact" className="mb-10 scroll-mt-6 border border-line bg-card p-6 md:p-7">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-xl font-black uppercase tracking-tight text-ink md:text-2xl">
+            Contact info
+          </h2>
+          {saved === "contact" && (
+            <span className="inline-flex items-center bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">
+              ✓ Saved
+            </span>
+          )}
+        </div>
+        {contactError && (
+          <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {CONTACT_ERRORS[contactError] ?? CONTACT_ERRORS.update}
+          </div>
+        )}
+        <form
+          action={`/api/admin/customers/${id}/update`}
+          method="POST"
+          className="grid grid-cols-1 gap-4 md:grid-cols-2"
+        >
+          <input type="hidden" name="section" value="contact" />
+          <ContactField label="Name *" name="name" defaultValue={customer.name} required full />
+          <ContactField
+            label="Phone"
+            name="phone_e164"
+            type="tel"
+            defaultValue={customer.phone_e164 ? formatPhone(customer.phone_e164) : ""}
+            placeholder="(510) 555-0100"
+          />
+          <ContactField label="Email" name="email" type="email" defaultValue={customer.email ?? ""} />
+          <ContactField
+            label="Street address"
+            name="street_address"
+            defaultValue={customer.street_address ?? ""}
+            full
+          />
+          <ContactField label="City" name="city" defaultValue={customer.city ?? ""} />
+          <ContactField label="ZIP" name="zip" defaultValue={customer.zip ?? ""} />
+          <div className="flex justify-end md:col-span-2">
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 bg-[#F96302] px-5 py-3 text-sm font-bold uppercase tracking-wide text-white transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-lg hover:bg-[#e05602]"
+            >
+              Save contact info
+            </button>
+          </div>
+        </form>
       </section>
 
       {/* Notes editor */}
@@ -345,7 +396,7 @@ export default async function CustomerDetailPage({
         </section>
       )}
 
-      {/* Invoice history (from ServiceTitan archive) */}
+      {/* Invoice history: Z and Z OS invoices, plus any ServiceTitan imports */}
       <section>
         <h2 className="mb-4 font-display text-2xl font-black uppercase tracking-tight md:text-3xl">
           Invoice history
@@ -381,9 +432,9 @@ export default async function CustomerDetailPage({
             <table className="w-full text-left">
               <thead className="bg-card">
                 <tr>
-                  <Th>Completed</Th>
-                  <Th>Job type</Th>
-                  <Th>Tech</Th>
+                  <Th>Date</Th>
+                  <Th>Service</Th>
+                  <Th>Invoice</Th>
                   <Th>Total</Th>
                   <Th>Balance</Th>
                 </tr>
@@ -391,20 +442,29 @@ export default async function CustomerDetailPage({
               <tbody>
                 {invoiceHistory.map((inv) => (
                   <tr
-                    key={inv.id}
+                    key={`${inv.source}-${inv.id}`}
                     className="border-t border-line transition-colors duration-150 hover:bg-raised"
                   >
-                    <td className="px-5 py-4 text-sm text-muted">
-                      {inv.completed_on
-                        ? new Date(inv.completed_on).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "·"}
-                    </td>
+                    <td className="px-5 py-4 text-sm text-muted">{formatDate(inv.completed_on)}</td>
                     <td className="px-5 py-4 text-sm text-ink">{inv.job_type ?? "·"}</td>
-                    <td className="px-5 py-4 text-sm text-muted">{inv.technician ?? "·"}</td>
+                    <td className="px-5 py-4 text-sm text-muted">
+                      {inv.source === "os" ? (
+                        inv.os_job_id ? (
+                          <Link
+                            href={`/admin/jobs/${inv.os_job_id}#invoice`}
+                            className="hover:text-[#F96302]"
+                          >
+                            #{inv.invoice_id} · {inv.status}
+                          </Link>
+                        ) : (
+                          <Link href="/admin/invoices" className="hover:text-[#F96302]">
+                            #{inv.invoice_id} · {inv.status}
+                          </Link>
+                        )
+                      ) : (
+                        (inv.technician ?? "ServiceTitan")
+                      )}
+                    </td>
                     <td className="px-5 py-4 font-display text-base font-black tracking-tight text-ink">
                       {formatMoney(inv.total_cents)}
                     </td>
@@ -477,5 +537,39 @@ function Card({
       </div>
       <div className="text-base md:text-lg">{children}</div>
     </div>
+  );
+}
+
+function ContactField({
+  label,
+  name,
+  type = "text",
+  defaultValue,
+  placeholder,
+  required = false,
+  full = false,
+}: {
+  label: string;
+  name: string;
+  type?: string;
+  defaultValue?: string;
+  placeholder?: string;
+  required?: boolean;
+  full?: boolean;
+}) {
+  return (
+    <label className={`block ${full ? "md:col-span-2" : ""}`}>
+      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.12em] text-muted">
+        {label}
+      </span>
+      <input
+        name={name}
+        type={type}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        required={required}
+        className="w-full border border-line bg-card px-4 py-3 text-base text-ink outline-none focus:border-[#F96302]"
+      />
+    </label>
   );
 }

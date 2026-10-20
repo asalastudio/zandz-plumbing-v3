@@ -342,6 +342,7 @@ export default async function JobDetailPage({
         defaultDescription={`${job.service_label ?? job.service_type} service`}
         defaultAmountCents={job.final_amount_cents ?? job.estimated_amount_cents}
         customerEmail={job.customer?.email ?? null}
+        customerId={job.customer?.id ?? null}
         canInvoice={["complete", "invoiced", "paid"].includes(job.status)}
       />
 
@@ -370,12 +371,16 @@ export default async function JobDetailPage({
 }
 
 function InvoiceFlash({ status }: { status: string }) {
-  const isGood = ["created", "sent", "paid", "deleted"].includes(status);
+  const isGood = ["created", "sent", "paid", "deleted", "updated", "from_estimate"].includes(status);
   const message: Record<string, string> = {
     created: "Invoice created. You can send it when the customer is ready.",
     sent: "Invoice sent to the customer.",
     paid: "Invoice marked paid.",
     deleted: "Invoice deleted.",
+    updated: "Invoice updated. Send it again so the customer has the new total.",
+    from_estimate: "Estimate converted to an invoice. Review it below, then send it.",
+    paid_locked: "That invoice is marked paid, so it can't be deleted.",
+    delete_failed: "We could not delete that invoice. Please try again.",
     invalid: "Add at least one invoice line with a description, quantity, and price.",
     no_customer: "This job needs a customer before an invoice can be created.",
     not_complete: "Mark this job Complete before invoicing it.",
@@ -404,6 +409,7 @@ function InvoiceSection({
   defaultDescription,
   defaultAmountCents,
   customerEmail,
+  customerId,
   canInvoice,
 }: {
   jobId: number;
@@ -411,6 +417,7 @@ function InvoiceSection({
   defaultDescription: string;
   defaultAmountCents: number | null;
   customerEmail: string | null;
+  customerId: number | null;
   canInvoice: boolean;
 }) {
   const defaultPrice = defaultAmountCents ? (defaultAmountCents / 100).toFixed(2) : "";
@@ -480,7 +487,15 @@ function InvoiceSection({
         </div>
         {!customerEmail && (
           <p className="mt-3 text-sm text-muted">
-            Add an email address to the customer profile before sending invoices by email.
+            Add an email address to the{" "}
+            {customerId ? (
+              <Link href={`/admin/customers/${customerId}#contact`} className="text-[#F96302] underline">
+                customer profile
+              </Link>
+            ) : (
+              "customer profile"
+            )}{" "}
+            before sending invoices by email.
           </p>
         )}
       </form>
@@ -571,7 +586,10 @@ function InvoiceSection({
                       </form>
                     </>
                   )}
-                  <DeleteInvoiceButton invoiceId={invoice.id} next={`/admin/jobs/${jobId}`} compact />
+                  {/* Paid invoices are settled money and can't be deleted. */}
+                  {!invoice.paid_at && (
+                    <DeleteInvoiceButton invoiceId={invoice.id} next={`/admin/jobs/${jobId}`} compact />
+                  )}
                 </div>
               </div>
 

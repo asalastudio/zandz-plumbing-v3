@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus, Eye, EyeOff, Tag, ChevronRight, AlertCircle } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
-import { listCoupons, MAX_PUBLISHED_COUPONS, formatDate } from "@/lib/db";
+import { listCoupons, MAX_PUBLISHED_COUPONS, couponState, formatCouponDate } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -93,11 +93,17 @@ export default async function CouponsAdminPage({
               <Link href={`/admin/coupons/${c.id}`} className="block flex-1 p-6 md:p-7">
                 <div className="mb-3 flex items-center justify-between">
                   <Tag className="h-5 w-5 text-[#F96302]" aria-hidden="true" />
-                  {c.published && (
-                    <span className="inline-flex items-center bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                      Live
-                    </span>
-                  )}
+                  {/* Published but outside its dates: not on the website. */}
+                  {c.published &&
+                    (couponState(c) === "live" ? (
+                      <span className="inline-flex items-center bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                        Live
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                        {couponState(c) === "expired" ? "Expired" : "Not started"}
+                      </span>
+                    ))}
                 </div>
                 <h3 className="font-display text-2xl font-black uppercase leading-tight tracking-tight text-ink md:text-3xl">
                   {c.headline}
@@ -112,8 +118,8 @@ export default async function CouponsAdminPage({
                 )}
                 {(c.valid_from || c.valid_until) && (
                   <p className="mt-3 text-xs text-muted">
-                    {c.valid_from ? formatDate(c.valid_from) : "Now"} →{" "}
-                    {c.valid_until ? formatDate(c.valid_until) : "no end date"}
+                    {c.valid_from ? formatCouponDate(c.valid_from) : "Now"} →{" "}
+                    {c.valid_until ? formatCouponDate(c.valid_until) : "no end date"}
                   </p>
                 )}
               </Link>

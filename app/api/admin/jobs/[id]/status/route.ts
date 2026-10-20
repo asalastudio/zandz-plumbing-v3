@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { isAuthenticated } from "@/lib/auth";
 import { STATUS_TRANSITIONS, type JobStatus } from "@/lib/db";
+import { syncJobAfterInvoice } from "@/lib/invoices";
 import {
   scheduleReviewRequestForJob,
   REVIEW_TRIGGER_STATUSES,
@@ -63,6 +64,15 @@ export async function POST(
   const { error: updateErr } = await sb.from("jobs").update({ status: next }).eq("id", id);
   if (updateErr) {
     return redirectBack(req, id, "error=db");
+  }
+
+  // Invoices raised before the work finished (a deposit, say) don't move the
+  // job on their own. Once it is complete, let them: open invoices make it
+  // invoiced, all paid makes it paid. Invoiced and paid can't be set by hand.
+  if (next === "complete") {
+    await syncJobAfterInvoice(id).catch((err) =>
+      console.error("[jobs.status] invoice sync failed for job", id, err)
+    );
   }
 
   // Queue the review-request text once the work is done. This is the trigger
