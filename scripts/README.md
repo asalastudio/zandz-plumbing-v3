@@ -17,6 +17,21 @@ Install dependencies from the lockfile:
 npm install
 ```
 
+## reset-admin-password.mjs
+
+Sets a new password for the Z and Z OS (office and field). Prompts for it
+twice with hidden input, bcrypt-hashes it, and writes only the hash to
+`ADMIN_PASSWORD_HASH` on Vercel production. Use it whenever the password is
+lost or someone with access leaves.
+
+```
+node scripts/reset-admin-password.mjs
+```
+
+Prerequisites:
+- Vercel CLI logged in to the Asala team (`vercel whoami`)
+- The new password works after the next production deploy
+
 ## import-servicetitan-invoices.mjs
 
 Loads a ServiceTitan invoice export into Supabase. Dedupes customers by

@@ -142,22 +142,35 @@ async function ensurePhotoBucket(bucket: string): Promise<void> {
   }
 }
 
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif"]);
+
+function nameExtension(file: File): string | undefined {
+  return file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function validatePhoto(file: File): void {
   if (file.size > MAX_PHOTO_BYTES) {
     throw new Error("Photo must be 8MB or smaller.");
   }
 
+  // Exact types only. A bare `image/*` check let SVG through, and SVG can carry
+  // script. Some phones send HEIC with no type at all, so fall back to the
+  // file extension when the type is empty.
   const type = file.type.toLowerCase();
-  if (type && !ALLOWED_TYPES.has(type) && !type.startsWith("image/")) {
-    throw new Error("Please upload an image file.");
+  const allowed = type ? ALLOWED_TYPES.has(type) : ALLOWED_EXTENSIONS.has(nameExtension(file) ?? "");
+  if (!allowed) {
+    throw new Error("Please upload a JPEG, PNG, WebP, or HEIC photo.");
   }
 }
 
 function extensionFor(file: File): string {
-  const fromName = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (fromName && fromName.length <= 5) return fromName;
+  // Derive from the validated type, not the uploaded filename.
+  if (!file.type) {
+    const fromName = nameExtension(file);
+    if (fromName && ALLOWED_EXTENSIONS.has(fromName)) return fromName === "jpeg" ? "jpg" : fromName;
+  }
 
-  switch (file.type) {
+  switch (file.type.toLowerCase()) {
     case "image/png":
       return "png";
     case "image/webp":

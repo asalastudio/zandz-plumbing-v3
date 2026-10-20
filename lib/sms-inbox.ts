@@ -95,6 +95,9 @@ export async function getThread(phoneE164: string): Promise<{
 }> {
   const empty = { phoneE164, customerName: null, customerId: null, messages: [] as SmsMessage[] };
   if (!isSupabaseConfigured()) return empty;
+  // The number is interpolated into a PostgREST filter, so only a plain E.164
+  // value may reach it; anything with commas or parens could rewrite the filter.
+  if (!/^\+\d{10,15}$/.test(phoneE164)) return empty;
 
   const { data, error } = await supabase()
     .from("sms_log")

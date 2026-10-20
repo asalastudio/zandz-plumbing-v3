@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { getIronSession, type SessionOptions } from "iron-session";
+import { getIronSession, unsealData, type SessionOptions } from "iron-session";
 import bcrypt from "bcryptjs";
 
 /**
@@ -26,9 +26,11 @@ function sessionPassword(): string {
   return p;
 }
 
+export const ADMIN_SESSION_COOKIE = "zz_admin";
+
 const sessionOptions: SessionOptions = {
   password: "", // populated lazily via getter
-  cookieName: "zz_admin",
+  cookieName: ADMIN_SESSION_COOKIE,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
@@ -48,6 +50,24 @@ export async function isAuthenticated(): Promise<boolean> {
   try {
     const session = await getSession();
     return session.authenticated === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verify a raw session cookie value without going through `next/headers`.
+ * Used by proxy.ts, which gates every /admin and /field request before any
+ * layout or page renders. The (authed) layout check alone is not enough:
+ * on a client-side navigation Next only renders the segments that changed,
+ * so a layout's redirect never runs and a crafted RSC request can reach the
+ * page directly.
+ */
+export async function isValidAdminSessionCookie(sealed: string | undefined): Promise<boolean> {
+  if (!sealed) return false;
+  try {
+    const data = await unsealData<AdminSession>(sealed, { password: sessionPassword() });
+    return data.authenticated === true;
   } catch {
     return false;
   }
