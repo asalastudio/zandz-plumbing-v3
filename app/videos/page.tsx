@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { Phone, Play, Image as ImageIcon } from "lucide-react";
 import { Section, SectionHeading } from "@/components/Section";
@@ -17,27 +18,37 @@ import { siteSettings } from "@/content/site-settings";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Plumbing Videos & Guides | Z and Z Plumbing",
-  description:
-    "Plumbing videos, photo guides, and quick how-tos from Z and Z Plumbing. Sewer lateral, water heater, emergency, and maintenance tips for East Bay homeowners.",
-  alternates: { canonical: `${siteSettings.siteUrl}/videos/` },
-  openGraph: {
-    title: "Plumbing Videos & Guides | Z and Z Plumbing",
-    description:
-      "Videos and photo guides from a licensed East Bay plumber. Sewer lateral, water heater, emergency, maintenance.",
-    url: `${siteSettings.siteUrl}/videos/`,
-    type: "website",
-  },
-};
+const TITLE = "Plumbing Videos & How-To Guides";
 
-async function loadVideos(): Promise<LearningResource[]> {
+// cache() so generateMetadata and the page share one query per request.
+const loadVideos = cache(async (): Promise<LearningResource[]> => {
   if (!isSupabaseConfigured()) return [];
   try {
     return await listLearningResources({ publishedOnly: true });
   } catch {
     return [];
   }
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const resources = await loadVideos();
+  return {
+    title: TITLE,
+    description:
+      "Plumbing videos, photo guides, and quick how-tos from Z and Z Plumbing. Sewer lateral, water heater, emergency, and maintenance tips for East Bay homes.",
+    alternates: { canonical: `${siteSettings.siteUrl}/videos/` },
+    openGraph: {
+      title: `${TITLE} | ${siteSettings.name}`,
+      description:
+        "Videos and photo guides from a licensed East Bay plumber. Sewer lateral, water heater, emergency, maintenance.",
+      url: `${siteSettings.siteUrl}/videos/`,
+      type: "website",
+    },
+    // With nothing published the page is a thin empty state, so keep it out of
+    // the index (links still followed). It flips to indexable on its own as
+    // soon as the first learning resource is published.
+    robots: resources.length > 0 ? { index: true, follow: true } : { index: false, follow: true },
+  };
 }
 
 export default async function VideosPage() {

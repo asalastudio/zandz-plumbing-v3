@@ -11,7 +11,7 @@ import type { FaqItem } from "@/components/FaqAccordion";
 import { QuickLeadForm } from "@/components/QuickLeadForm";
 import { TestimonialCard } from "@/components/TestimonialCard";
 import { siteSettings } from "@/content/site-settings";
-import { featuredServices } from "@/content/services";
+import { featuredServices, oaklandServicePages } from "@/content/services";
 import { serviceAreas } from "@/content/service-areas";
 import { testimonials } from "@/content/testimonials";
 
@@ -24,17 +24,45 @@ export async function generateMetadata({ params }: { params: Promise<{ cityslug:
   const area = serviceAreas.find((a) => a.slug === cityslug);
   if (!area) return {};
 
-  const title = `Plumber in ${area.city}, CA | Z and Z Plumbing | (510) 708-4237`;
-  const description = `Licensed plumber serving ${area.city}, California. Z and Z Plumbing covers sewer lateral, drain cleaning, water heater, repipe, and 24/7 emergency work across ${area.city} and the East Bay. CSLB #896116.`;
+  const title = buildCityTitle(area.city);
+  const description = buildCityDescription(area.city, area.isHQ);
   const url = `${siteSettings.siteUrl}/${area.slug}/`;
 
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "article" },
+    openGraph: { title: `${title} | ${siteSettings.name}`, description, url, type: "article" },
   };
 }
+
+// The layout template appends " | Z and Z Plumbing" (19 characters). Keep the
+// full title at or under 60: long names like "Contra Costa County" drop the
+// "Licensed" lead-in.
+const TITLE_SUFFIX_LENGTH = ` | ${siteSettings.name}`.length;
+
+function buildCityTitle(city: string): string {
+  const preferred = `Licensed Plumber in ${city}, CA`;
+  return preferred.length + TITLE_SUFFIX_LENGTH <= 60 ? preferred : `Plumber in ${city}, CA`;
+}
+
+// Meta descriptions should land at 140-155 characters. Take the first variant
+// that fits; every current service area lands in range (checked 2026-10-20).
+function buildCityDescription(city: string, isHQ: boolean): string {
+  const base = isHQ ? "Same-day service from our local HQ." : "Same-day service from San Leandro.";
+  const variants = [
+    `Licensed ${city} plumber for sewer laterals, drains, water heaters, repipes, and 24/7 emergencies. ${base} Call ${siteSettings.phone}.`,
+    `Licensed ${city} plumber for sewer laterals, drains, water heaters, and 24/7 emergencies. ${base} Call ${siteSettings.phone}.`,
+    `${city} plumber for sewer laterals, drains, water heaters, and 24/7 emergencies. ${base} Call ${siteSettings.phone}.`,
+  ];
+  return variants.find((d) => d.length <= 155) ?? variants[variants.length - 1];
+}
+
+// City-specific landing pages surfaced on that city's hub. Oakland is the only
+// city with dedicated service pages today.
+const cityServicePages: Record<string, typeof oaklandServicePages> = {
+  "plumber-oakland-ca": oaklandServicePages,
+};
 
 function buildCityFaqs(city: string, isHQ: boolean): FaqItem[] {
   return [
@@ -72,6 +100,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
   const otherAreas = serviceAreas.filter((a) => a.slug !== area.slug);
   const featuredForCity = featuredServices;
   const faqs = buildCityFaqs(area.city, area.isHQ);
+  const localServicePages = cityServicePages[area.slug] ?? [];
   const areaSchemaType = area.city.includes("County") ? "AdministrativeArea" : "City";
 
   const url = `${siteSettings.siteUrl}/${area.slug}/`;
@@ -93,20 +122,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
     name: `Plumber in ${area.city}`,
     description: area.intro,
     url,
-    provider: {
-      "@type": "Plumber",
-      name: siteSettings.name,
-      telephone: siteSettings.phoneTel,
-      url: siteSettings.siteUrl,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: siteSettings.address.street,
-        addressLocality: siteSettings.address.city,
-        addressRegion: siteSettings.address.state,
-        postalCode: siteSettings.address.zip,
-        addressCountry: "US",
-      },
-    },
+    provider: { "@id": `${siteSettings.siteUrl}/#organization` },
     areaServed: {
       "@type": areaSchemaType,
       name: area.city,
@@ -305,6 +321,33 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
             <ServiceCard key={service.slug} service={service} />
           ))}
         </div>
+        {localServicePages.length > 0 && (
+          <div className="mt-12">
+            <h3 className="font-display text-3xl font-black uppercase leading-tight tracking-tight text-black md:text-4xl">
+              {area.city} Services
+            </h3>
+            <p className="mt-3 max-w-3xl font-sans text-lg leading-relaxed text-[#333333]">
+              Dedicated pages for the work we run most in {area.city}, from EBMUD lateral compliance to
+              24/7 emergency calls.
+            </p>
+            <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {localServicePages.map((page) => (
+                <li key={page.href}>
+                  <Link
+                    href={page.href}
+                    className="flex h-full min-h-20 flex-col justify-between gap-3 border border-[#D8D8D8] bg-white px-5 py-5 transition-colors duration-150 hover:border-[#F96302] md:px-6"
+                  >
+                    <span className="flex items-start justify-between gap-3 font-sans text-lg font-extrabold leading-snug text-black">
+                      {page.label}
+                      <ChevronRight className="mt-1 h-5 w-5 flex-shrink-0 text-[#F96302]" aria-hidden="true" />
+                    </span>
+                    <span className="text-sm leading-snug text-[#666666]">{page.detail}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="mt-8">
           <Link
             href="/services/"

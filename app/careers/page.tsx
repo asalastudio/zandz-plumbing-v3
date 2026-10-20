@@ -20,12 +20,12 @@ import { siteSettings } from "@/content/site-settings";
 const CAREERS_EMAIL = "careers@zandzplumbing.com";
 
 export const metadata: Metadata = {
-  title: "Careers at Z and Z Plumbing | East Bay Plumber Jobs",
+  title: "Plumber Jobs & Careers in the East Bay",
   description:
-    "Z and Z Plumbing hires licensed plumbers, apprentices, and helpers for residential and commercial work across the East Bay. CSLB-licensed crew, San Leandro base. Call (510) 708-4237.",
+    "Z and Z Plumbing hires licensed plumbers, apprentices, and helpers for East Bay residential and commercial work. San Leandro base. Call (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/careers/` },
   openGraph: {
-    title: "Careers at Z and Z Plumbing",
+    title: "Plumber Jobs & Careers in the East Bay | Z and Z Plumbing",
     description:
       "Join an East Bay crew that runs real licensed plumbing work. C-36 + A General Engineering jobs available.",
     url: `${siteSettings.siteUrl}/careers/`,

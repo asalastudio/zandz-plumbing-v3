@@ -31,10 +31,14 @@ export const siteSettings: SiteSettings = {
     // even after the HQ moves to San Leandro because Yelp keeps the slug stable.
     // See address-transition-strategy-2026-05-11.md for the SAB-first conversion plan.
     yelp: "https://www.yelp.com/biz/z-and-z-plumbing-oakland-3",
+    // Google search URL, used only as the "Read on Google" button target on
+    // /reviews/. It is NOT a Business Profile URL, so app/layout.tsx keeps it
+    // out of the schema sameAs list. Swap in the Maps CID URL once confirmed.
     google: "https://www.google.com/search?q=Z+and+Z+Plumbing",
     bbb: "https://www.bbb.org/us/ca/oakland/profile/plumber/z-z-plumbing-1116-486229",
     nextdoor: "https://nextdoor.com/pages/z-and-z-plumbing-oakland-ca/",
-    homeAdvisor: "https://www.homeadvisor.com/sp/z-and-z-plumbing",
+    // HomeAdvisor removed 2026-10-20: the old /sp/z-and-z-plumbing URL now
+    // 301s to an unrelated business, which poisons entity reconciliation.
     chamberOfCommerce:
       "https://www.chamberofcommerce.com/business-directory/california/oakland/plumber/32393621-z-and-z-plumbing",
   },

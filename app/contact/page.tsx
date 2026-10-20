@@ -9,12 +9,12 @@ import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
 export const metadata: Metadata = {
-  title: "Contact Z and Z Plumbing | Call (510) 708-4237 | San Leandro, CA",
+  title: "Contact Our San Leandro Plumbing Team",
   description:
-    "Call (510) 708-4237 for same-day East Bay plumbing service. Z and Z Plumbing is headquartered at 3057 Teagarden Street in San Leandro. 24/7 emergency response across Oakland, Berkeley, Alameda, and the East Bay.",
+    "Call (510) 708-4237 for same-day East Bay plumbing. Z and Z Plumbing is at 3057 Teagarden Street, San Leandro. 24/7 emergency response across the East Bay.",
   alternates: { canonical: `${siteSettings.siteUrl}/contact/` },
   openGraph: {
-    title: "Contact Z and Z Plumbing",
+    title: "Contact Our San Leandro Plumbing Team | Z and Z Plumbing",
     description: `Call ${siteSettings.phone} or visit our San Leandro headquarters. 24/7 emergency plumbing service across the East Bay.`,
     url: `${siteSettings.siteUrl}/contact/`,
     type: "website",
@@ -27,21 +27,8 @@ const contactPageSchema = {
   url: `${siteSettings.siteUrl}/contact/`,
   name: `Contact ${siteSettings.name}`,
   description: `Contact details for ${siteSettings.name}, an East Bay plumber headquartered in San Leandro.`,
-  mainEntity: {
-    "@type": "Plumber",
-    name: siteSettings.name,
-    telephone: siteSettings.phoneTel,
-    email: siteSettings.email,
-    url: siteSettings.siteUrl,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: siteSettings.address.street,
-      addressLocality: siteSettings.address.city,
-      addressRegion: siteSettings.address.state,
-      postalCode: siteSettings.address.zip,
-      addressCountry: "US",
-    },
-  },
+  // The full Plumber node (NAP, hours, credentials) lives in app/layout.tsx.
+  mainEntity: { "@id": `${siteSettings.siteUrl}/#organization` },
 };
 
 const breadcrumbSchema = {

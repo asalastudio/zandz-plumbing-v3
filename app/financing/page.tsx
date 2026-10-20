@@ -9,12 +9,12 @@ import { TrustStrip } from "@/components/TrustStrip";
 import { siteSettings } from "@/content/site-settings";
 
 export const metadata: Metadata = {
-  title: "Plumbing Financing in the East Bay | Z and Z Plumbing",
+  title: "Plumbing Financing in the East Bay",
   description:
-    "Z and Z Plumbing offers financing on major East Bay plumbing projects, including water heater replacement, whole-house repipes, sewer lateral work, and gas line installations. Call (510) 708-4237 to discuss options.",
+    "Financing for major East Bay plumbing projects: water heater replacement, whole-house repipes, sewer laterals, and gas lines. Call (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/financing/` },
   openGraph: {
-    title: "Plumbing Financing | Z and Z Plumbing",
+    title: "Plumbing Financing in the East Bay | Z and Z Plumbing",
     description:
       "Financing options for water heater, repipe, sewer lateral, and gas line projects across the East Bay.",
     url: `${siteSettings.siteUrl}/financing/`,

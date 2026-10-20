@@ -124,3 +124,50 @@ export const services: Service[] = [
 ];
 
 export const featuredServices = services.filter((s) => s.featured);
+
+export interface OaklandServicePage {
+  label: string;
+  href: string;
+  detail: string;
+  /** The /services/{slug}/ hub this Oakland page sits under. */
+  serviceSlug: string;
+}
+
+/**
+ * Oakland priority landing pages. Linked from the footer, the header Services
+ * menu, the Oakland city page, the matching /services/{slug}/ hubs, and the
+ * homepage so none of them depend on a single inbound link. Keep every href
+ * exactly as it is: these URLs carry redirects and rankings.
+ */
+export const oaklandServicePages: OaklandServicePage[] = [
+  {
+    label: "Sewer Lateral Oakland",
+    href: "/sewer-lateral-oakland/",
+    detail: "Repair, replacement, and street-side lateral work.",
+    serviceSlug: "sewer-lateral",
+  },
+  {
+    label: "EBMUD PSL Compliance",
+    href: "/ebmud-compliance/",
+    detail: "Private sewer lateral inspection, testing, and repair.",
+    serviceSlug: "sewer-lateral",
+  },
+  {
+    label: "Emergency Plumber Oakland",
+    href: "/emergency-plumber-oakland/",
+    detail: "24/7 for burst pipes, sewer backups, and active leaks.",
+    serviceSlug: "emergency",
+  },
+  {
+    label: "Water Heater Oakland",
+    href: "/water-heater-oakland/",
+    detail: "Tank and tankless repair, replacement, and installs.",
+    serviceSlug: "water-heater",
+  },
+  {
+    label: "Drain Cleaning Oakland",
+    href: "/drain-cleaning-oakland/",
+    detail: "Snaking, camera inspection, and hydrojetting.",
+    serviceSlug: "drain-cleaning",
+  },
+];

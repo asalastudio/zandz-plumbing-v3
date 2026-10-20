@@ -25,12 +25,15 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteSettings.siteUrl),
+  // Pages set only the keyword part of their title; the template appends the
+  // brand once. Never put "Z and Z Plumbing" in a child page's `title` (it
+  // doubles up), and keep the full rendered title at or under ~60 characters.
   title: {
-    default: "Z and Z Plumbing | East Bay Plumber | San Leandro, CA",
+    default: "East Bay Plumber in San Leandro, CA | Z and Z Plumbing",
     template: "%s | Z and Z Plumbing",
   },
   description:
-    "Licensed East Bay plumber headquartered in San Leandro. C-36 + A General Engineering. Same-day service across Oakland, Berkeley, Alameda, and the East Bay. Call (510) 708-4237.",
+    "Z and Z Plumbing is a licensed East Bay plumber in San Leandro. C-36 and A General Engineering, same-day service, and 24/7 emergencies. (510) 708-4237.",
   openGraph: {
     siteName: "Z and Z Plumbing",
     locale: "en_US",
@@ -41,16 +44,21 @@ export const metadata: Metadata = {
 
 // Citation profiles AI agents use for entity reconciliation. Order: most
 // authoritative for plumbing first, then social, then directory tier 2.
+// Only real profile URLs belong here. The Google search URL in
+// siteSettings.social.google is not a Business Profile, so it stays out until
+// a confirmed Maps CID URL (https://maps.google.com/?cid=...) replaces it.
+// HomeAdvisor was dropped because its URL now 301s to an unrelated business.
 const sameAsProfiles = [
-  siteSettings.social.google,
   siteSettings.social.yelp,
   siteSettings.social.bbb,
   siteSettings.social.facebook,
   siteSettings.social.instagram,
   siteSettings.social.nextdoor,
-  siteSettings.social.homeAdvisor,
   siteSettings.social.chamberOfCommerce,
 ].filter((url): url is string => Boolean(url));
+
+const ORGANIZATION_ID = `${siteSettings.siteUrl}/#organization`;
+const WEBSITE_ID = `${siteSettings.siteUrl}/#website`;
 
 const cslbAuthority = {
   "@type": "GovernmentOrganization" as const,
@@ -60,13 +68,17 @@ const cslbAuthority = {
 };
 
 const localBusinessSchema = {
-  "@context": "https://schema.org",
   "@type": ["Plumber", "LocalBusiness"],
-  "@id": `${siteSettings.siteUrl}/#organization`,
+  "@id": ORGANIZATION_ID,
   name: siteSettings.name,
   legalName: siteSettings.legalName,
   alternateName: "Z & Z Plumbing",
   url: siteSettings.siteUrl,
+  // Dark-text wordmark so the logo reads on Google's white surfaces. The
+  // image is the generated 1200x630 brand card from app/opengraph-image.tsx
+  // (trailing slash: trailingSlash:true 308s the bare path).
+  logo: `${siteSettings.siteUrl}/logo-wordmark.svg`,
+  image: `${siteSettings.siteUrl}/opengraph-image/`,
   telephone: siteSettings.phoneTel,
   email: siteSettings.email,
   slogan: siteSettings.supportingLine,
@@ -118,7 +130,7 @@ const localBusinessSchema = {
     "@type": "Person",
     name: siteSettings.owner,
     jobTitle: "Owner and Master Plumber",
-    worksFor: { "@id": `${siteSettings.siteUrl}/#organization` },
+    worksFor: { "@id": ORGANIZATION_ID },
   },
   // Two distinct CSLB classifications under one license number. Surfaced as
   // two credential entries so AI agents see both the C-36 plumbing license
@@ -145,6 +157,22 @@ const localBusinessSchema = {
   ],
 };
 
+const websiteSchema = {
+  "@type": "WebSite",
+  "@id": WEBSITE_ID,
+  name: siteSettings.name,
+  url: `${siteSettings.siteUrl}/`,
+  inLanguage: "en-US",
+  publisher: { "@id": ORGANIZATION_ID },
+};
+
+// One graph for the site-wide entities. Page-level Service nodes reference the
+// organization by ORGANIZATION_ID instead of redefining it inline.
+const siteSchema = {
+  "@context": "https://schema.org",
+  "@graph": [localBusinessSchema, websiteSchema],
+};
+
 // Analytics IDs come from env so we never hardcode tracking IDs and can keep
 // them out of non-production builds. Set in Vercel project settings:
 //   NEXT_PUBLIC_GA_ID       e.g. "G-XXXXXXXXXX"  (GA4 Measurement ID)
@@ -158,7 +186,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchema) }}
         />
       </head>
       <body className="font-sans antialiased bg-white text-black">

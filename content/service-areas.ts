@@ -10,7 +10,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Z and Z Plumbing is headquartered in San Leandro. We know the neighborhoods, the housing stock, and the older cast-iron and galvanized systems that need attention.",
     localContext:
-      "San Leandro is home base — our shop sits at 3057 Teagarden Street, so this is the fastest-response city in our whole map. Much of the housing here went up in the post-war boom: the Washington Manor and Broadmoor tracts from the 1940s and 50s, plus the older homes around Estudillo Estates and Bay-O-Vista. That era means a lot of galvanized supply lines reaching the end of their life and cast-iron drains that have been corroding for decades. The city is inside EBMUD's service area, so sewer laterals fall under the same private-lateral rules as Oakland and Berkeley.",
+      "San Leandro is home base. Our shop sits at 3057 Teagarden Street, so this is the fastest-response city in our whole map. Much of the housing here went up in the post-war boom: the Washington Manor and Broadmoor tracts from the 1940s and 50s, plus the older homes around Estudillo Estates and Bay-O-Vista. That era means a lot of galvanized supply lines reaching the end of their life and cast-iron drains that have been corroding for decades. The city is inside EBMUD's service area, so sewer laterals fall under the same private-lateral rules as Oakland and Berkeley.",
     commonIssues: [
       "Galvanized supply lines (1940s-50s tracts) corroding and dropping water pressure",
       "Cast-iron drain and waste line corrosion in older homes",
@@ -56,7 +56,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Oakland is our largest service market. We run calls across all Oakland neighborhoods daily. Residential, commercial, and street-side lateral work.",
     localContext:
-      "Oakland is our biggest market and some of the oldest housing stock we touch: West Oakland and Temescal Victorians, Rockridge and Dimond Craftsman bungalows, and the hillside homes up in Montclair. A huge share of these predate 1960, which means galvanized supply lines and clay sewer laterals that mature street trees have been working their roots into for years. Oakland also enforces EBMUD's Private Sewer Lateral (PSL) ordinance — when a property sells or undergoes major work, the lateral often has to be tested and certified, and that's exactly the street-side work our A General Engineering license lets us handle.",
+      "Oakland is our biggest market and some of the oldest housing stock we touch: West Oakland and Temescal Victorians, Rockridge and Dimond Craftsman bungalows, and the hillside homes up in Montclair. A huge share of these predate 1960, which means galvanized supply lines and clay sewer laterals that mature street trees have been working their roots into for years. Oakland also enforces EBMUD's Private Sewer Lateral (PSL) ordinance. When a property sells or undergoes major work, the lateral often has to be tested and certified, and that's exactly the street-side work our A General Engineering license lets us handle.",
     commonIssues: [
       "EBMUD Private Sewer Lateral (PSL) compliance at sale or remodel",
       "Galvanized-to-copper or PEX repipes in pre-1960 homes",
@@ -158,7 +158,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "We serve Fremont for sewer lateral, drain cleaning, water heater, repipe, and emergency plumbing calls from Centerville and Niles to Irvington, Mission San Jose, and Warm Springs.",
     localContext:
-      "Fremont is large and varied, which means the plumbing work changes neighborhood to neighborhood. The historic districts — Niles and Centerville especially — have older homes that run on galvanized pipe and clay sewer lines, while Mission San Jose and Warm Springs trend newer and lean toward tankless installs and fixture work. We cover all five of Fremont's old townships, so we size the job to the housing era in front of us.",
+      "Fremont is large and varied, which means the plumbing work changes neighborhood to neighborhood. The historic districts, Niles and Centerville especially, have older homes that run on galvanized pipe and clay sewer lines, while Mission San Jose and Warm Springs trend newer and lean toward tankless installs and fixture work. We cover all five of Fremont's old townships, so we size the job to the housing era in front of us.",
     commonIssues: [
       "Galvanized repipes and clay-line work in older Niles / Centerville homes",
       "Tankless and tank water heater installs in newer Warm Springs / Mission tracts",
@@ -176,7 +176,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Newark homes and businesses are inside our south East Bay response area. We cover drain cleaning, sewer work, repipes, water heaters, and emergency service across the city.",
     localContext:
-      "Newark is a flat, largely residential city built out mostly between the 1950s and 70s, with the older core around Old Town and newer development near NewPark. Homes from that build-out era are now at the point where original galvanized supply lines, water heaters, and sewer lines start failing, and the flat terrain means sewer lines rely on consistent grade — when roots or bellies interrupt that, backups follow.",
+      "Newark is a flat, largely residential city built out mostly between the 1950s and 70s, with the older core around Old Town and newer development near NewPark. Homes from that build-out era are now at the point where original galvanized supply lines, water heaters, and sewer lines start failing, and the flat terrain means sewer lines rely on consistent grade. When roots or bellies interrupt that, backups follow.",
     commonIssues: [
       "Aging galvanized supply lines in 1950s-70s homes",
       "Sewer line root intrusion and low-grade backups",
@@ -194,7 +194,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Castro Valley hillside homes see a lot of root intrusion in their sewer lines. We run camera inspections, hydrojetting, and lateral work across the full Castro Valley ZIP area.",
     localContext:
-      "Castro Valley is largely unincorporated hill country, and the combination of sloped lots and heavy mature-tree cover makes it one of the worst areas we serve for sewer-line root intrusion. Homes up in Five Canyons, Palomares Hills, and around Lake Chabot sit on grades that complicate both drainage and lateral access. This is camera-inspection and hydrojetting territory — we spend a lot of time clearing root masses and scoping lines here before they back up.",
+      "Castro Valley is largely unincorporated hill country, and the combination of sloped lots and heavy mature-tree cover makes it one of the worst areas we serve for sewer-line root intrusion. Homes up in Five Canyons, Palomares Hills, and around Lake Chabot sit on grades that complicate both drainage and lateral access. This is camera-inspection and hydrojetting territory. We spend a lot of time clearing root masses and scoping lines here before they back up.",
     commonIssues: [
       "Heavy root intrusion in hillside sewer laterals",
       "Hydrojetting and camera inspection for recurring backups",
@@ -230,7 +230,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Pleasanton is inside our expanded East Bay service corridor. We serve homes and light commercial properties for sewer, drain, water heater, repipe, and emergency plumbing work.",
     localContext:
-      "Pleasanton pairs a historic downtown — older Victorians and early-1900s homes along Main Street — with large newer subdivisions out toward Stoneridge and Birdland. That split drives the work: the downtown-area homes bring repipe, sewer lateral, and galvanized-line jobs, while the newer tracts lean toward water heater service and fixture work. We cover both sides for residential and light commercial.",
+      "Pleasanton pairs a historic downtown (older Victorians and early-1900s homes along Main Street) with large newer subdivisions out toward Stoneridge and Birdland. That split drives the work: the downtown-area homes bring repipe, sewer lateral, and galvanized-line jobs, while the newer tracts lean toward water heater service and fixture work. We cover both sides for residential and light commercial.",
     commonIssues: [
       "Repipes and sewer work in older downtown Pleasanton homes",
       "Water heater service in newer Stoneridge / Birdland subdivisions",
@@ -248,7 +248,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Z and Z serves Richmond for drain cleaning, sewer lateral, gas line, and water heater work. We cover the whole city.",
     localContext:
-      "Richmond runs from the Victorians of Point Richmond and the older Iron Triangle out to the mid-century homes up on Hilltop. The older neighborhoods carry the familiar pre-war problems — galvanized supply lines and corroding cast-iron drains — while the mid-century stock is now old enough that original sewer lines and water heaters are failing. We cover the whole city for drain, sewer, gas line, and water heater work.",
+      "Richmond runs from the Victorians of Point Richmond and the older Iron Triangle out to the mid-century homes up on Hilltop. The older neighborhoods carry the familiar pre-war problems (galvanized supply lines and corroding cast-iron drains), while the mid-century stock is now old enough that original sewer lines and water heaters are failing. We cover the whole city for drain, sewer, gas line, and water heater work.",
     commonIssues: [
       "Galvanized repipes and cast-iron drain corrosion in older neighborhoods",
       "Aging sewer laterals and root intrusion",
@@ -266,7 +266,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Emeryville commercial and residential clients call us for fast, licensed plumbing service. We're usually on-site within the hour.",
     localContext:
-      "Emeryville is small and dense, with a high mix of live/work lofts, mid-rise condos, and light commercial around Bay Street and the Watergate. The work here skews more commercial and multi-unit than most of our map — shared stacks, condo and loft repairs, and businesses that need fast turnaround. It's close to our base, so we're usually on-site within the hour.",
+      "Emeryville is small and dense, with a high mix of live/work lofts, mid-rise condos, and light commercial around Bay Street and the Watergate. The work here skews more commercial and multi-unit than most of our map: shared stacks, condo and loft repairs, and businesses that need fast turnaround. It's close to our base, so we're usually on-site within the hour.",
     commonIssues: [
       "Commercial and multi-unit plumbing service",
       "Condo and live/work loft repairs (shared stacks and lines)",
@@ -302,7 +302,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Lafayette homeowners call us for sewer lateral inspections and repipe work. We handle larger residential projects across Contra Costa.",
     localContext:
-      "Lafayette is larger-lot Contra Costa country — mid-century and custom homes tucked into Burton Valley, Happy Valley, and Reliez Valley, many on slopes and wooded parcels. The terrain and tree cover make sewer laterals a recurring project, and the higher-end housing tends toward larger repipe and whole-system jobs. This is exactly the kind of bigger residential work our two-license crew is built for.",
+      "Lafayette is larger-lot Contra Costa country: mid-century and custom homes tucked into Burton Valley, Happy Valley, and Reliez Valley, many on slopes and wooded parcels. The terrain and tree cover make sewer laterals a recurring project, and the higher-end housing tends toward larger repipe and whole-system jobs. This is exactly the kind of bigger residential work our two-license crew is built for.",
     commonIssues: [
       "Sewer lateral inspection and replacement on wooded, sloped lots",
       "Whole-house repipes in mid-century and custom homes",
@@ -338,7 +338,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "Z and Z covers Alameda County from the inner East Bay through the Tri-Valley corridor. If your ZIP is in Alameda County and not listed under a specific city page, the request still routes as in-area.",
     localContext:
-      "Alameda County is our home county, and our coverage runs from the dense, older inner East Bay — Oakland, Berkeley, Alameda, San Leandro — out through the Tri-Valley. That's an enormous range of housing eras, from pre-1900 Victorians to brand-new subdivisions, and we carry the licenses and equipment for all of it. If your ZIP is in the county but doesn't have its own city page, the request still routes to us as in-area.",
+      "Alameda County is our home county, and our coverage runs from the dense, older inner East Bay (Oakland, Berkeley, Alameda, San Leandro) out through the Tri-Valley. That's an enormous range of housing eras, from pre-1900 Victorians to brand-new subdivisions, and we carry the licenses and equipment for all of it. If your ZIP is in the county but doesn't have its own city page, the request still routes to us as in-area.",
     commonIssues: [
       "Full residential plumbing menu across every housing era",
       "EBMUD sewer lateral compliance in the inner East Bay",
@@ -356,7 +356,7 @@ export const serviceAreas: ServiceArea[] = [
     intro:
       "For larger projects and qualified calls, Z and Z covers Contra Costa County, including the I-680 corridor from San Ramon and Danville up through Alamo and Walnut Creek.",
     localContext:
-      "On the Contra Costa side we focus on the I-680 corridor — San Ramon, Danville, Alamo, the Lamorinda communities, and Walnut Creek. The housing here skews toward larger lots and higher-end homes, often on slopes and wooded parcels, which is why this side of the map tends to bring bigger sewer lateral and repipe projects rather than quick service calls. We take qualified calls and larger projects throughout the county.",
+      "On the Contra Costa side we focus on the I-680 corridor: San Ramon, Danville, Alamo, the Lamorinda communities, and Walnut Creek. The housing here skews toward larger lots and higher-end homes, often on slopes and wooded parcels, which is why this side of the map tends to bring bigger sewer lateral and repipe projects rather than quick service calls. We take qualified calls and larger projects throughout the county.",
     commonIssues: [
       "Sewer lateral inspection and replacement on large, sloped lots",
       "Whole-house repipes in higher-end homes",

@@ -21,12 +21,12 @@ import { siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
-  title: "24/7 Emergency Plumber Oakland CA | Same Crew | Z and Z Plumbing",
+  title: "24/7 Emergency Plumber in Oakland, CA",
   description:
-    "24/7 emergency plumber in Oakland. Burst pipes, sewer backups, water heater failure, gas leaks. Z and Z answers the phone, dispatches from San Leandro, and runs both licenses. Call (510) 708-4237.",
+    "24/7 emergency plumber in Oakland for burst pipes, sewer backups, and water heater failures. A plumber answers the phone. Call (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/emergency-plumber-oakland/` },
   openGraph: {
-    title: "24/7 Emergency Plumber in Oakland | Z and Z Plumbing",
+    title: "24/7 Emergency Plumber in Oakland, CA | Z and Z Plumbing",
     description:
       "A plumber answers the phone. Two California licenses, one crew, same number 24 hours a day across Oakland.",
     url: `${siteSettings.siteUrl}/emergency-plumber-oakland/`,
@@ -55,20 +55,7 @@ const serviceSchema = {
   description:
     "24/7 emergency plumbing service in Oakland, California. Burst pipes, sewer backups, water heater failure, gas leaks, and main water line breaks. Z and Z Plumbing dispatches from San Leandro under CSLB #896116 with C-36 and A General Engineering licenses.",
   url: PAGE_URL,
-  provider: {
-    "@type": "Plumber",
-    name: siteSettings.name,
-    telephone: siteSettings.phoneTel,
-    url: siteSettings.siteUrl,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: siteSettings.address.street,
-      addressLocality: siteSettings.address.city,
-      addressRegion: siteSettings.address.state,
-      postalCode: siteSettings.address.zip,
-      addressCountry: "US",
-    },
-  },
+  provider: { "@id": `${siteSettings.siteUrl}/#organization` },
   areaServed: {
     "@type": "City",
     name: "Oakland",

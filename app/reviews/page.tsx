@@ -10,12 +10,12 @@ import { siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
-  title: "Z and Z Plumbing Reviews | 4.6 Stars, 257+ Reviews | East Bay",
+  title: "Reviews: 4.6 Stars on Google, 4.5 on Yelp",
   description:
-    "Read what East Bay homeowners and contractors say about Z and Z Plumbing. 4.6 stars on Google, 4.5 stars on Yelp, with 257+ verified reviews across Oakland, San Leandro, Berkeley, and the rest of the East Bay.",
+    "See what East Bay homeowners and contractors say about Z and Z Plumbing: 4.6 stars on Google, 4.5 on Yelp, and 257+ reviews across both platforms.",
   alternates: { canonical: `${siteSettings.siteUrl}/reviews/` },
   openGraph: {
-    title: "Reviews | Z and Z Plumbing",
+    title: "Reviews: 4.6 Stars on Google, 4.5 on Yelp | Z and Z Plumbing",
     description:
       "4.6 stars on Google. 4.5 stars on Yelp. 257+ East Bay customers reviewing Z and Z Plumbing.",
     url: `${siteSettings.siteUrl}/reviews/`,

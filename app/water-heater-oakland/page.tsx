@@ -22,12 +22,12 @@ import { siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
-  title: "Water Heater Repair & Install Oakland CA | Same-Day | Z and Z Plumbing",
+  title: "Water Heater Repair & Install in Oakland",
   description:
-    "Same-day water heater repair and install in Oakland. Tank and tankless, gas and electric. Z and Z Plumbing diagnoses, sources, and installs with both California licenses on the truck. Call (510) 708-4237.",
+    "Same-day water heater repair and installation in Oakland. Tank and tankless, gas and electric, CSLB #896116. Call Z and Z Plumbing at (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/water-heater-oakland/` },
   openGraph: {
-    title: "Water Heater Oakland | Repair & Install | Z and Z Plumbing",
+    title: "Water Heater Repair & Install in Oakland | Z and Z Plumbing",
     description:
       "Same-day water heater service in Oakland. Tank or tankless, gas or electric. CSLB #896116.",
     url: `${siteSettings.siteUrl}/water-heater-oakland/`,
@@ -56,20 +56,7 @@ const serviceSchema = {
   description:
     "Water heater repair, replacement, and installation in Oakland, California. Tank and tankless units, gas and electric. Z and Z Plumbing handles diagnosis, brand sourcing, permit work, install, and haul-away under CSLB #896116.",
   url: PAGE_URL,
-  provider: {
-    "@type": "Plumber",
-    name: siteSettings.name,
-    telephone: siteSettings.phoneTel,
-    url: siteSettings.siteUrl,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: siteSettings.address.street,
-      addressLocality: siteSettings.address.city,
-      addressRegion: siteSettings.address.state,
-      postalCode: siteSettings.address.zip,
-      addressCountry: "US",
-    },
-  },
+  provider: { "@id": `${siteSettings.siteUrl}/#organization` },
   areaServed: {
     "@type": "City",
     name: "Oakland",

@@ -5,12 +5,12 @@ import { siteSettings } from "@/content/site-settings";
 import BookBookingFormClient from "./BookBookingFormClient";
 
 export const metadata: Metadata = {
-  title: "Book a Plumber | Z and Z Plumbing | East Bay",
+  title: "Book a Plumber Online in the East Bay",
   description:
-    "Book a licensed East Bay plumber in 60 seconds. Enter your ZIP, pick your issue, and we'll call you back within 15 minutes during business hours.",
+    "Book a licensed East Bay plumber in 60 seconds. Enter your ZIP and pick your issue, and we call back within 15 minutes during business hours.",
   alternates: { canonical: "https://www.zandzplumbing.com/book/" },
   openGraph: {
-    title: "Book a Plumber | Z and Z Plumbing",
+    title: "Book a Plumber Online in the East Bay | Z and Z Plumbing",
     description:
       "Same-day East Bay plumbing service. Two licenses, one crew. Call (510) 708-4237 or book online.",
     url: "https://www.zandzplumbing.com/book/",
@@ -64,7 +64,7 @@ export default function BookPage() {
                   C-36 Plumbing + A General Engineering
                 </p>
                 <p className="mt-2 text-sm text-[#333]">
-                  We&apos;re licensed for the whole job — from house plumbing to street-side
+                  We&apos;re licensed for the whole job, from house plumbing to street-side
                   sewer lateral work. {siteSettings.cslb}.
                 </p>
               </div>

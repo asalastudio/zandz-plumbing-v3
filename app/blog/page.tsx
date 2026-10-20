@@ -7,12 +7,12 @@ import { TrustStrip } from "@/components/TrustStrip";
 import { siteSettings } from "@/content/site-settings";
 
 export const metadata: Metadata = {
-  title: "Z and Z Plumbing Blog | East Bay Plumbing Articles",
+  title: "East Bay Plumbing Blog & Guides",
   description:
-    "Articles, guides, and answers from Z and Z Plumbing. New blog posts are landing soon. In the meantime, browse our service pages for guidance on sewer lateral, water heater, drain cleaning, and emergency plumbing work in the East Bay.",
+    "Plumbing articles from Z and Z Plumbing are coming soon. Until then, browse our East Bay guides to sewer laterals, water heaters, drains, and emergencies.",
   alternates: { canonical: `${siteSettings.siteUrl}/blog/` },
   openGraph: {
-    title: "Z and Z Plumbing Blog",
+    title: "East Bay Plumbing Blog & Guides | Z and Z Plumbing",
     description: "Plumbing guides and articles from Z and Z Plumbing in the East Bay.",
     url: `${siteSettings.siteUrl}/blog/`,
     type: "website",

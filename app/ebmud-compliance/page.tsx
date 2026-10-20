@@ -21,12 +21,12 @@ import type { FaqItem } from "@/components/FaqAccordion";
 import { siteSettings } from "@/content/site-settings";
 
 export const metadata: Metadata = {
-  title: "EBMUD PSL Compliance · Sewer Lateral Contractor | Z and Z Plumbing",
+  title: "EBMUD PSL Sewer Lateral Compliance",
   description:
-    "Listed on EBMUD's PSL Contractor List with full coverage across all five service categories. C-36 plumbing plus A General Engineering. Inspection, repair, certificate-ready. Call (510) 708-4237.",
+    "Listed on EBMUD's PSL Contractor List in all five service categories. Sewer lateral inspection, testing, and repair for compliance. (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/ebmud-compliance/` },
   openGraph: {
-    title: "EBMUD PSL Compliance Hub | Z and Z Plumbing",
+    title: "EBMUD PSL Sewer Lateral Compliance | Z and Z Plumbing",
     description:
       "Z and Z Plumbing is listed on the official EBMUD PSL Contractor List with full coverage across all five rated service categories. Serving the EBMUD wastewater service area since 2003.",
     url: `${siteSettings.siteUrl}/ebmud-compliance/`,
