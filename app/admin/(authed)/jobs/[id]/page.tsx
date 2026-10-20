@@ -473,7 +473,9 @@ function LeadSummaryCard({
   const waitingSeconds =
     job.status === "new" && !job.first_contact_at ? secondsSince(job.created_at) : null;
   const late = waitingSeconds !== null && isPastOneBusinessDay(job.created_at);
-  const sourceIsPath = intake.sourcePage?.startsWith("/") ?? false;
+  // sourcePage comes from the public lead form. Link it only when it is a
+  // site-relative path: "//host" and "/\\host" resolve to another site.
+  const sourceIsPath = /^\/(?![\/\\])/.test(intake.sourcePage ?? "");
 
   return (
     <section aria-label="Lead summary" className={`border border-line bg-card p-5 md:p-6 ${className}`}>

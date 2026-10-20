@@ -31,15 +31,17 @@ const headers = { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer 
 async function all(table, select) {
   const out = [];
   for (let from = 0; ; from += 1000) {
-    const r = await fetch(`${base}/${table}?select=${select}`, { headers: { ...headers, Range: `${from}-${from + 999}` } });
+    // A stable order is required for paging: without it Postgres may repeat or
+    // skip rows between pages, and --apply would write wrong totals.
+    const r = await fetch(`${base}/${table}?select=${select}&order=id.asc`, { headers: { ...headers, Range: `${from}-${from + 999}` } });
     if (!r.ok) throw new Error(`${table}: ${r.status} ${await r.text()}`);
     const rows = await r.json(); out.push(...rows);
     if (rows.length < 1000) return out;
   }
 }
 
-const archive = await all("invoice_history_archive", "customer_id,total_cents,invoiced_on,completed_on");
-const paid = await all("invoices", "customer_id,job_id,amount_cents,paid_at");
+const archive = await all("invoice_history_archive", "id,customer_id,total_cents,invoiced_on,completed_on");
+const paid = await all("invoices", "id,customer_id,job_id,amount_cents,paid_at");
 const customers = await all("customers", "id,lifetime_revenue_cents,lifetime_jobs,last_job_completed_at");
 
 const roll = new Map();

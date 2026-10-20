@@ -242,7 +242,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               hours (Mon to Fri, 7am to 5pm) to confirm the address, scope, and schedule.
             </p>
             <ul className="mt-6 space-y-3 text-base font-semibold text-white/80">
-              <li className="border-l-2 border-[#F96302] pl-3">First name, last name, phone, and email.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">Name and phone. Email is optional.</li>
               <li className="border-l-2 border-[#F96302] pl-3">Optional note so the call starts faster.</li>
               <li className="border-l-2 border-[#F96302] pl-3">For emergencies, call {siteSettings.phone}.</li>
             </ul>

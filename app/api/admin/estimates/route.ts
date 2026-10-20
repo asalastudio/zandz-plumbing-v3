@@ -28,6 +28,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL("/admin/estimates/new?error=bad_request", req.url), 303);
   }
 
+  // Validate the line items before anything is written, so a bad line can't
+  // leave behind a new customer record that then blocks the retry as a duplicate.
+  let lineItems;
+  try {
+    lineItems = parseInvoiceLineItems(form);
+  } catch (e) {
+    const msg = e instanceof InvoiceInputError ? e.message : "Could not create the estimate.";
+    return NextResponse.redirect(
+      new URL("/admin/estimates/new?error=" + encodeURIComponent(msg), req.url),
+      303
+    );
+  }
+
   let customerId = parseInt(str(form.get("customer_id")), 10);
   if (!customerId || Number.isNaN(customerId)) {
     // "New customer instead" in the picker posts typed fields rather than an
@@ -49,7 +62,6 @@ export async function POST(req: NextRequest) {
   const returnTo = str(form.get("return_to"));
 
   try {
-    const lineItems = parseInvoiceLineItems(form);
     const estimate = await createEstimate({ customerId, jobId, lineItems, notes, validUntil });
     const dest = returnTo && returnTo.startsWith("/admin") ? returnTo : `/admin/estimates/${estimate.id}`;
     return NextResponse.redirect(new URL(`${dest}?estimate=created`, req.url), 303);

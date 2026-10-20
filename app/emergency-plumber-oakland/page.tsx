@@ -23,12 +23,12 @@ import { testimonials } from "@/content/testimonials";
 export const metadata: Metadata = {
   title: "24/7 Emergency Plumber in Oakland, CA",
   description:
-    "24/7 emergency plumber in Oakland for burst pipes, sewer backups, and water heater failures. A plumber answers the phone. Call (510) 708-4237.",
+    "24/7 emergency plumber in Oakland for burst pipes, sewer backups, and water heater failures. Emergency calls answered 24/7. Call (510) 708-4237.",
   alternates: { canonical: `${siteSettings.siteUrl}/emergency-plumber-oakland/` },
   openGraph: {
     title: "24/7 Emergency Plumber in Oakland, CA | Z and Z Plumbing",
     description:
-      "A plumber answers the phone. Two California licenses, one crew, same number 24 hours a day across Oakland.",
+      "Emergency calls answered 24/7. Two California licenses, one crew, same number 24 hours a day across Oakland.",
     url: `${siteSettings.siteUrl}/emergency-plumber-oakland/`,
     type: "website",
   },

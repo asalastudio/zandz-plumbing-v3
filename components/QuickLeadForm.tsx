@@ -282,10 +282,9 @@ export function QuickLeadForm({
               placeholder="(510) 555-0123"
             />
             <QuickField
-              label="Email"
+              label="Email (optional)"
               value={form.email}
               onChange={(value) => update("email", value)}
-              required
               type="email"
               autoComplete="email"
               placeholder="you@example.com"

@@ -495,10 +495,11 @@ export default async function CustomerDetailPage({
         <section className="mt-10">
           <h2 className="mb-1 font-display text-2xl font-black uppercase tracking-tight md:text-3xl">
             Past work
-            <span className="ml-3 text-base font-bold text-muted">({archived.rows.length})</span>
+            <span className="ml-3 text-base font-bold text-muted">({archived.totalCount})</span>
           </h2>
           <p className="mb-4 text-sm text-muted">
-            {`From ServiceTitan, 2021 to 2023: ${formatMoney(archived.totalCents)} billed. For reference on calls; it doesn't count toward OS revenue.`}
+            {`From ServiceTitan, 2021 to 2023: ${formatMoney(archived.totalCents)} billed across ${archived.totalCount} ${archived.totalCount === 1 ? "invoice" : "invoices"}. For reference on calls; it doesn't count toward OS revenue.`}
+            {archived.truncated && ` Showing the ${archived.rows.length} most recent.`}
           </p>
           <div className="overflow-x-auto border border-line">
             <table className="w-full text-left">

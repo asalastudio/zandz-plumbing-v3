@@ -289,7 +289,7 @@ export default async function CityPage({ params }: { params: Promise<{ cityslug:
               hours (Mon to Fri, 7am to 5pm).
             </p>
             <ul className="mt-6 space-y-3 text-base font-semibold text-white/80">
-              <li className="border-l-2 border-[#F96302] pl-3">Name, phone, email, and a short note.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">Name, phone, and a short note. Email is optional.</li>
               <li className="border-l-2 border-[#F96302] pl-3">No account. No long questionnaire.</li>
               <li className="border-l-2 border-[#F96302] pl-3">Emergency? Call {siteSettings.phone} now.</li>
             </ul>
