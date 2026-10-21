@@ -12,15 +12,25 @@ import {
   FileText,
   Timer,
   TriangleAlert,
+  PhoneMissed,
 } from "lucide-react";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import {
   getDashboardKpis,
   getResponseTimeStats,
+  getNeverCalledLeadStats,
   listNewLeadNotifications,
   formatMoneyShort,
   formatDuration,
+  formatReceived,
+  formatWait,
+  isPastOneBusinessDay,
+  leadProblem,
+  secondsSince,
 } from "@/lib/db";
+
+/** Breaches older than this are still in the never-called count, just not "recent". */
+const RECENT_BREACH_DAYS = 7;
 
 export const dynamic = "force-dynamic";
 
@@ -29,11 +39,15 @@ export default async function AdminDashboardPage() {
     return <NotConfigured />;
   }
 
-  const [kpis, newLeads, responseTime] = await Promise.all([
+  const [kpis, newLeads, responseTime, neverCalled] = await Promise.all([
     getDashboardKpis(),
     listNewLeadNotifications(4),
-    getResponseTimeStats(30),
+    getResponseTimeStats(30, { breachSinceDays: RECENT_BREACH_DAYS }),
+    getNeverCalledLeadStats(),
   ]);
+  const now = new Date();
+  const oldestLate =
+    neverCalled.oldestCreatedAt !== null && isPastOneBusinessDay(neverCalled.oldestCreatedAt, now);
 
   const today = new Date().toLocaleDateString("en-US", {
     timeZone: "America/Los_Angeles",
@@ -102,31 +116,44 @@ export default async function AdminDashboardPage() {
 
           {newLeads.rows.length > 0 ? (
             <ul className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2">
-              {newLeads.rows.map((lead) => (
-                <li
-                  key={lead.id}
-                  className="flex items-center justify-between gap-3 border border-line bg-card px-4 py-3"
-                >
-                  <Link href={`/admin/jobs/${lead.id}`} className="group min-w-0">
-                    <p className="truncate text-base font-bold text-ink group-hover:text-[#F96302]">
-                      {lead.customer?.name ?? "New lead"}
-                    </p>
-                    <p className="mt-0.5 truncate text-sm text-muted">
-                      {lead.service_label ?? lead.service_type}
-                      {lead.job_zip ? ` · ${lead.job_zip}` : ""}
-                    </p>
-                  </Link>
-                  {lead.customer?.phone_e164 && (
-                    <a
-                      href={`tel:${lead.customer.phone_e164}`}
-                      className="inline-flex shrink-0 items-center gap-1.5 bg-[#F96302] px-3 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
-                    >
-                      <Phone className="h-4 w-4" aria-hidden="true" />
-                      Call
-                    </a>
-                  )}
-                </li>
-              ))}
+              {newLeads.rows.map((lead) => {
+                const called = Boolean(lead.first_contact_at);
+                const late = !called && isPastOneBusinessDay(lead.created_at, now);
+                const received = formatReceived(lead.created_at, { ago: true, now });
+                return (
+                  <li
+                    key={lead.id}
+                    className="flex items-center justify-between gap-3 border border-line bg-card px-4 py-3"
+                  >
+                    <Link href={`/admin/jobs/${lead.id}`} className="group min-w-0 flex-1">
+                      <p className="flex min-w-0 items-center gap-2">
+                        <span className="truncate text-base font-bold text-ink group-hover:text-[#F96302]">
+                          {lead.customer?.name ?? "New lead"}
+                        </span>
+                        {called && (
+                          <span className="shrink-0 bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                            Called
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-0.5 line-clamp-2 text-sm text-muted">{leadProblem(lead)}</p>
+                      <p className={`mt-1 text-xs font-bold ${late ? "text-red-700" : "text-muted"}`}>
+                        {received === "Just now" ? "Received just now" : `Received ${received}`}
+                        {lead.job_zip ? ` · ${lead.job_zip}` : ""}
+                      </p>
+                    </Link>
+                    {lead.customer?.phone_e164 && (
+                      <a
+                        href={`tel:${lead.customer.phone_e164}`}
+                        className="inline-flex shrink-0 items-center gap-1.5 bg-[#F96302] px-3 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-[#e05602]"
+                      >
+                        <Phone className="h-4 w-4" aria-hidden="true" />
+                        Call
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="mt-2 text-sm text-muted">
@@ -136,19 +163,64 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* Speed to lead — how fast leads actually get called back, plus anything
-          that has already blown through the escalation ladder. */}
+      {/* Speed to lead: every lead still waiting on a first call (all ages),
+          then the recent ones that went through the whole alert ladder, then
+          how fast calls actually happen. */}
       <section className="mb-8">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-muted">
           Speed to lead
         </h2>
 
+        {neverCalled.count > 0 ? (
+          <Link
+            href="/admin/jobs?status=new"
+            className={`group mb-3 flex items-center justify-between gap-4 border p-5 transition-colors duration-150 hover:border-[#F96302] ${
+              oldestLate ? "border-red-300 bg-red-50" : "border-[#F96302] bg-[#F96302]/5"
+            }`}
+          >
+            <span className="min-w-0">
+              <span
+                className={`flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] ${
+                  oldestLate ? "text-red-700" : "text-[#F96302]"
+                }`}
+              >
+                <PhoneMissed className="h-5 w-5" aria-hidden="true" />
+                Waiting on a first call
+              </span>
+              <span className="mt-1 block font-display text-2xl font-black uppercase tracking-tight text-ink md:text-3xl">
+                {neverCalled.count} new {neverCalled.count === 1 ? "lead" : "leads"} never called
+              </span>
+              {neverCalled.oldestCreatedAt && (
+                <span className="mt-1 block text-sm text-muted">
+                  {neverCalled.count === 1 ? "It has" : "The oldest has"} waited{" "}
+                  <span className={`font-bold ${oldestLate ? "text-red-700" : "text-ink"}`}>
+                    {formatWait(secondsSince(neverCalled.oldestCreatedAt, now))}
+                  </span>
+                  . Call and log it, or mark junk as spam.
+                </span>
+              )}
+            </span>
+            <ChevronRight
+              className="h-5 w-5 shrink-0 text-muted group-hover:text-[#F96302]"
+              aria-hidden="true"
+            />
+          </Link>
+        ) : (
+          <p className="mb-3 border border-line bg-card px-5 py-4 text-sm text-muted">
+            Every new lead has had a first call.
+          </p>
+        )}
+
         {responseTime.breachCount > 0 && (
           <div className="mb-3 border border-red-300 bg-red-50 p-5">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-red-700">
               <TriangleAlert className="h-5 w-5" aria-hidden="true" />
-              {responseTime.breachCount} lead
-              {responseTime.breachCount === 1 ? "" : "s"} still not contacted
+              {responseTime.breachCount} recent{" "}
+              {responseTime.breachCount === 1 ? "lead" : "leads"} missed the callback window
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Received in the last {RECENT_BREACH_DAYS} days, sent every text and email alert, and
+              still no call logged.
             </p>
             <ul className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
               {responseTime.breaches.slice(0, 4).map((b) => (
@@ -166,7 +238,7 @@ export default async function AdminDashboardPage() {
                       </span>
                     </span>
                     <span className="shrink-0 text-sm font-bold text-red-700">
-                      {formatDuration(b.waitingMinutes * 60)}
+                      {formatWait(b.waitingMinutes * 60)}
                     </span>
                   </Link>
                 </li>

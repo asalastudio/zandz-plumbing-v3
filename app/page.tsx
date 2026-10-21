@@ -15,6 +15,7 @@ import {
 import { Container } from "@/components/Container";
 import { Button } from "@/components/Button";
 import HeroZipForm from "@/components/HeroZipForm";
+import { StarRating } from "@/components/TestimonialCard";
 import { siteSettings } from "@/content/site-settings";
 import { serviceAreas } from "@/content/service-areas";
 
@@ -66,9 +67,14 @@ const reviewPlatforms = [
   },
 ];
 
+// Review figures come from the platform data above: Google 4.6 (19 reviews),
+// Yelp 4.5 (238 reviews). Weighted together that is 4.5 across 257 reviews.
+// Never round the combined figure up or show five full stars for it.
+const combinedRating = 4.5;
+
 const heroStats = [
   { value: "23", label: "Years in Business", detail: "Since 2003" },
-  { value: "Five-Star", label: "Reviews", detail: "Yelp & Google", star: true },
+  { value: String(combinedRating), label: "Star Rating", detail: "257+ Google and Yelp reviews", star: true },
   { value: "2", label: "Licenses Held", detail: `${siteSettings.cslb} · C-36 + A-Gen` },
   { value: "24/7", label: "Emergency Response", detail: "East Bay Area" },
 ];
@@ -123,7 +129,7 @@ const secondaryServiceCards = [
 
 const coverageStats = [
   { value: "120+", label: "East Bay ZIPs" },
-  { value: "30-60", label: "min nearby response" },
+  { value: "Same-day", label: "service" },
   { value: "2003", label: "serving the East Bay" },
 ];
 
@@ -183,15 +189,14 @@ export default function HomePage() {
               {/* The eyebrow is the H1 so the page heading carries the service
                   and location keywords; the tagline below keeps its display
                   styling as the visual headline. One H1 per page. */}
-              <h1 className="mb-3 font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-[#F96302] animate-fade-up md:mb-4 md:text-xs">
+              <h1 className="mb-3 font-sans text-xs font-bold uppercase tracking-[0.12em] text-[#F96302] animate-fade-up md:mb-4">
                 East Bay Plumbers, Headquartered in San Leandro.
               </h1>
               <p
                 className="mb-4 font-display text-[3.35rem] font-black uppercase leading-[0.96] tracking-tight text-black animate-fade-up md:mb-6 md:text-7xl lg:text-[6.5rem]"
                 style={{ animationDelay: "0.12s" }}
               >
-                <span className="md:hidden">The Pros Plumbers Call.</span>
-                <span className="hidden md:inline">The Pros Other Plumbers Call.</span>
+                The Pros Other Plumbers Call.
               </p>
               <p
                 className="mb-4 max-w-[290px] font-sans text-[15px] leading-snug text-[#333333] animate-fade-up sm:max-w-lg sm:text-lg md:mb-6 md:leading-relaxed"
@@ -205,14 +210,14 @@ export default function HomePage() {
                 className="mb-5 animate-fade-up md:mb-6"
                 style={{ animationDelay: "0.36s" }}
               >
-                <p className="mb-2 max-w-[300px] text-[10px] font-bold uppercase leading-snug tracking-[0.12em] text-[#666] md:text-[11px]">
+                <p className="mb-2 max-w-[300px] text-xs font-bold uppercase leading-snug tracking-[0.1em] text-[#555555]">
                   Enter your ZIP and we&apos;ll route you to the nearest crew
                 </p>
                 <HeroZipForm variant="light" />
               </div>
 
               <div
-                className="hidden gap-4 md:flex md:flex-row animate-fade-up"
+                className="flex flex-col gap-3 animate-fade-up md:flex-row md:gap-4"
                 style={{ animationDelay: "0.44s" }}
               >
                 <Button
@@ -222,10 +227,12 @@ export default function HomePage() {
                   icon={<Phone className="h-5 w-5" />}
                   iconPosition="left"
                   external
+                  className="w-full max-w-md px-6 py-4 md:w-auto md:px-10 md:py-5"
                 >
                   Call {siteSettings.phone}
                 </Button>
-                <Button variant="ghost" size="xl" href="/book/">
+                {/* Phones already get Schedule in the sticky bar and the ZIP form above. */}
+                <Button variant="ghost" size="xl" href="/book/" className="hidden md:inline-flex">
                   Schedule online
                 </Button>
               </div>
@@ -240,17 +247,16 @@ export default function HomePage() {
               <div
                 key={stat.label}
                 className={[
-                  "border-r border-white/10 px-6 py-6 text-center last:border-r-0 md:flex md:items-center md:justify-center md:gap-5 md:border-b-0 md:px-10 md:py-8 lg:gap-6 lg:px-12 xl:px-16 animate-fade-in",
+                  // Stacked on tablets (the side-by-side nowrap row overflowed the
+                  // viewport at 768-1279px); side by side from xl up.
+                  "border-r border-white/10 px-6 py-6 text-center last:border-r-0 md:flex md:flex-col md:items-center md:justify-center md:gap-2 md:border-b-0 md:px-6 md:py-8 xl:flex-row xl:gap-6 xl:px-16 animate-fade-in",
                   i > 1 ? "hidden md:flex" : "",
                 ].join(" ")}
                 style={{ animationDelay: `${0.6 + i * 0.1}s` }}
               >
                 <div className="flex items-center justify-center gap-2">
                   <p
-                    className={[
-                      "font-display font-black uppercase leading-none text-white whitespace-nowrap",
-                      stat.star ? "text-4xl md:text-5xl" : "text-5xl md:text-6xl",
-                    ].join(" ")}
+                    className="font-display text-5xl font-black uppercase leading-none text-white whitespace-nowrap md:text-6xl"
                   >
                     {stat.value}
                   </p>
@@ -258,11 +264,11 @@ export default function HomePage() {
                     <Star className="h-5 w-5 text-[#F96302] md:h-7 md:w-7" fill="#F96302" aria-hidden="true" />
                   )}
                 </div>
-                <div className="md:text-left">
-                  <p className="mt-2 text-sm font-semibold leading-snug text-white/75 md:mt-0 md:text-base md:whitespace-nowrap">
+                <div className="xl:text-left">
+                  <p className="mt-2 text-sm font-semibold leading-snug text-white/75 md:text-base xl:mt-0 xl:whitespace-nowrap">
                     {stat.label}
                   </p>
-                  <p className="text-sm leading-snug text-white/50 md:whitespace-nowrap">
+                  <p className="text-sm leading-snug text-white/50 xl:whitespace-nowrap">
                     {stat.detail}
                   </p>
                 </div>
@@ -384,13 +390,14 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="mt-8 grid grid-cols-3 border border-[#E5E5E5] bg-white">
+              {/* Middle column is wider so "Same-day" stays on one line. */}
+              <div className="mt-8 grid grid-cols-[1fr_1.35fr_1fr] border border-[#E5E5E5] bg-white">
                 {coverageStats.map((stat) => (
-                  <div key={stat.label} className="border-r border-[#E5E5E5] p-4 last:border-r-0 md:p-5">
-                    <p className="font-display text-4xl font-black uppercase leading-none text-black">
+                  <div key={stat.label} className="border-r border-[#E5E5E5] p-3 last:border-r-0 sm:p-4 md:p-5">
+                    <p className="whitespace-nowrap font-display text-3xl font-black uppercase leading-none text-black sm:text-4xl lg:text-3xl xl:text-4xl">
                       {stat.value}
                     </p>
-                    <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">
+                    <p className="mt-2 text-xs font-bold uppercase tracking-[0.1em] text-[#666666]">
                       {stat.label}
                     </p>
                   </div>
@@ -569,7 +576,7 @@ export default function HomePage() {
                     </span>
                     <span
                       className={[
-                        "absolute block whitespace-nowrap border px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] shadow-lg transition-colors duration-150 group-hover:border-[#F96302] sm:hidden",
+                        "absolute block whitespace-nowrap border px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] shadow-lg transition-colors duration-150 group-hover:border-[#F96302] sm:hidden",
                         labelColorClasses,
                       ].join(" ")}
                       style={{
@@ -586,15 +593,15 @@ export default function HomePage() {
 
               <div className="absolute bottom-0 left-0 right-0 z-10 grid grid-cols-3 border-t border-[#E5E5E5] bg-white/95 backdrop-blur">
                 <div className="border-r border-[#E5E5E5] p-3 sm:p-4">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#666666] sm:text-[11px]">Primary market</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.04em] text-[#666666] sm:tracking-[0.12em]">Primary market</p>
                   <p className="mt-1 font-display text-lg font-black uppercase leading-none text-black sm:text-2xl">Oakland</p>
                 </div>
                 <div className="border-r border-[#E5E5E5] p-3 sm:p-4">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#666666] sm:text-[11px]">Home base</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.04em] text-[#666666] sm:tracking-[0.12em]">Home base</p>
                   <p className="mt-1 font-display text-lg font-black uppercase leading-none text-black sm:text-2xl">San Leandro</p>
                 </div>
                 <div className="p-3 sm:p-4">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#666666] sm:text-[11px]">Coverage</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.04em] text-[#666666] sm:tracking-[0.12em]">Coverage</p>
                   <p className="mt-1 font-display text-lg font-black uppercase leading-none text-black sm:text-2xl">Alameda + Contra Costa</p>
                 </div>
               </div>
@@ -615,13 +622,12 @@ export default function HomePage() {
               <h2 className="font-display text-5xl md:text-6xl font-black uppercase leading-tight text-white mb-6">
                 Proven by Results.
               </h2>
-              <div className="flex items-center gap-3 mb-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-6 w-6 text-[#F96302]" fill="#F96302" aria-hidden="true" />
-                ))}
-              </div>
-              <p className="text-sm font-semibold text-white/60 uppercase tracking-wide">
-                4.6 Google. 4.5 Yelp. 257+ combined reviews.
+              <StarRating rating={combinedRating} starClassName="h-6 w-6" className="mb-3 gap-2" />
+              <p className="text-sm font-semibold text-white/80 uppercase tracking-wide">
+                {combinedRating} stars from 257+ Google and Yelp reviews
+              </p>
+              <p className="mt-1 text-sm text-white/55">
+                Google 4.6 (19 reviews). Yelp 4.5 (238 reviews).
               </p>
             </div>
 
@@ -662,7 +668,7 @@ export default function HomePage() {
                 Need Help Now?
               </h2>
               <p className="font-sans text-base text-white/80 mt-2">
-                Call us or schedule online. We respond within 30 minutes during business hours.
+                Call us or schedule online. We call back within 30 minutes during business hours (Mon to Fri, 7am to 5pm).
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 flex-shrink-0">
@@ -684,8 +690,6 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* Bottom padding for mobile sticky CTA */}
-      <div className="h-16 md:hidden" aria-hidden="true" />
     </>
   );
 }

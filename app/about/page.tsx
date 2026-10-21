@@ -309,7 +309,7 @@ export default function AboutPage() {
               Ready When You Are.
             </h2>
             <p className="mt-3 max-w-2xl font-sans text-lg text-white/90 md:text-xl">
-              Call us or schedule online. We respond within 30 minutes during business hours.
+              Call us or schedule online. We call back within 30 minutes during business hours (Mon to Fri, 7am to 5pm).
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">

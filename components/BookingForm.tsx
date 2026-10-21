@@ -26,7 +26,6 @@ import {
   Pipette,
   Thermometer,
   Wrench,
-  Flame,
   Zap,
   HelpCircle,
 } from "lucide-react";
@@ -49,6 +48,14 @@ type ServiceOption = {
 };
 
 const SERVICE_OPTIONS: ServiceOption[] = [
+  // Emergency first: someone with water on the floor shouldn't have to scroll.
+  {
+    id: "emergency",
+    label: "Emergency",
+    icon: Zap,
+    emergency: true,
+    description: "Flooding, sewage backup, no water",
+  },
   {
     id: "leak",
     label: "Leak",
@@ -65,26 +72,13 @@ const SERVICE_OPTIONS: ServiceOption[] = [
     id: "water-heater",
     label: "Water Heater",
     icon: Thermometer,
-    description: "No hot water, replacement, install",
+    description: "No hot water, repair, replacement",
   },
   {
     id: "sewer-lateral",
     label: "Sewer Line",
     icon: Wrench,
     description: "Lateral, mainline, camera inspection",
-  },
-  {
-    id: "no-hot-water",
-    label: "No Hot Water",
-    icon: Flame,
-    description: "Heater out, pilot won't light",
-  },
-  {
-    id: "emergency",
-    label: "Emergency",
-    icon: Zap,
-    emergency: true,
-    description: "Active flooding, no water, gas smell",
   },
   {
     id: "other",
@@ -231,8 +225,10 @@ export default function BookingForm({
       setSubmitError("Please enter a valid US phone number.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      setSubmitError("Please enter a valid email address.");
+    // Email is optional (an emergency caller shouldn't have to type one), but
+    // if they give one it has to be usable for the confirmation.
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setSubmitError("That email doesn't look right. Fix it or leave it blank.");
       return;
     }
 
@@ -242,7 +238,7 @@ export default function BookingForm({
       const payload = new FormData();
       payload.set("firstName", form.firstName.trim());
       payload.set("lastName", form.lastName.trim());
-      payload.set("email", form.email.trim());
+      if (form.email.trim()) payload.set("email", form.email.trim());
       payload.set("phone", phoneDigits);
       payload.set("zip", form.zip);
       payload.set("serviceInterest", form.service);
@@ -530,10 +526,10 @@ function StepService({
           <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-600" />
           <div>
             <p className="text-sm font-bold text-emerald-900">
-              Yes — we serve {serviceArea.city} ({zip}).
+              Yes, we serve {serviceArea.city} ({zip}).
             </p>
             <p className="mt-1 text-xs text-emerald-700">
-              Typical response: 30–60 minutes during business hours.
+              We call back within 30 minutes during business hours.
             </p>
           </div>
         </div>
@@ -547,7 +543,7 @@ function StepService({
               {zip} is outside our regular East Bay service area.
             </p>
             <p className="mt-1 text-xs text-amber-800">
-              We can still take your info — for some jobs we travel further. Or you can call us
+              We can still take your info. For some jobs we travel further. Or you can call us
               directly to discuss.
             </p>
           </div>
@@ -613,7 +609,10 @@ function StepService({
         <div className="rounded-2xl border-2 border-red-600 bg-red-600 p-5 text-white">
           <p className="font-display text-xl font-black uppercase">Active emergency?</p>
           <p className="mt-2 text-sm text-white/90">
-            Call us right now — same-day, 24/7. Don&apos;t wait on the form.
+            Call us right now. Emergency calls are answered 24/7, so don&apos;t wait on the form.
+          </p>
+          <p className="mt-2 text-sm font-bold text-white">
+            Smell gas? Leave the house first, then call PG&amp;E at 1-800-743-5000 or 911.
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <a
@@ -678,7 +677,7 @@ function StepContact({
           We&apos;ll call to confirm details and book the appointment.
         </p>
         <p className="mt-3 inline-flex rounded-full bg-[#FFF7F2] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#F96302]">
-          Required: name, phone, email
+          Required: name and phone
         </p>
         {(form.serviceLabel || form.zip) && (
           <p className="mt-3 rounded-xl bg-[#F5F5F5] px-3 py-2 text-xs font-semibold text-[#333]">
@@ -726,10 +725,9 @@ function StepContact({
       />
 
       <Field
-        label="Email"
+        label="Email (optional, for your confirmation)"
         value={form.email}
         onChange={(v) => update("email", v)}
-        required
         type="email"
         autoComplete="email"
         placeholder="you@example.com"
@@ -933,8 +931,8 @@ function StepConfirmation({
         </h2>
         <p className="mt-3 text-base text-[#333]">
           {form.outOfArea
-            ? "We received your request — even though we don't regularly serve your area, the crew will review and reach out if we can help."
-            : `Someone from Z and Z will call you at ${form.phone} within ~15 minutes during business hours. ${form.smsConsent ? "We'll also text you a confirmation." : ""}`}
+            ? "We received your request. We don't regularly serve your area, but the crew will review it and reach out if we can help."
+            : `Someone from Z and Z will call you at ${form.phone} within 30 minutes during business hours (Mon to Fri, 7am to 5pm). ${form.smsConsent ? "We'll also text you a confirmation." : ""}`}
         </p>
       </div>
 

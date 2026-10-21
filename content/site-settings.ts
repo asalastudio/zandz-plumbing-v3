@@ -47,3 +47,8 @@ export const siteSettings: SiteSettings = {
   },
   siteUrl: "https://www.zandzplumbing.com",
 };
+
+// CSLB license detail page for #896116 (both classifications on one record).
+// Link here, not to the generic CheckLicense search form.
+export const cslbLicenseUrl =
+  "https://www.cslb.ca.gov/OnlineServices/CheckLicenseII/LicenseDetail.aspx?LicNum=896116";

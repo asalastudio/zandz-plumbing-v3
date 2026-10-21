@@ -189,13 +189,14 @@ function StandaloneActions({ invoiceId, sent }: { invoiceId: number; sent: boole
         </button>
       </form>
       <form action={`/api/admin/invoices/${invoiceId}/paid`} method="POST" className="flex items-center gap-1.5">
+        <span className="text-xs text-muted">Paid by</span>
         <select
           name="payment_method"
           defaultValue="manual"
-          aria-label={`Payment method for invoice #${invoiceId}`}
+          aria-label={`How invoice #${invoiceId} was paid`}
           className="border border-line bg-card px-2 py-1 text-xs text-ink outline-none focus:border-[#F96302]"
         >
-          <option value="manual">Manual</option>
+          <option value="manual">Other</option>
           <option value="card">Card</option>
           <option value="cash">Cash</option>
           <option value="check">Check</option>

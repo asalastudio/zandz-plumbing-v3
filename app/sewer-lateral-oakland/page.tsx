@@ -17,7 +17,7 @@ import { TrustStrip } from "@/components/TrustStrip";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import type { FaqItem } from "@/components/FaqAccordion";
 import { TestimonialCard } from "@/components/TestimonialCard";
-import { siteSettings } from "@/content/site-settings";
+import { cslbLicenseUrl, siteSettings } from "@/content/site-settings";
 import { testimonials } from "@/content/testimonials";
 
 export const metadata: Metadata = {
@@ -254,7 +254,7 @@ export default function SewerLateralOaklandPage() {
           >
             Call {siteSettings.phone}
           </Button>
-          <Button variant="inverse" size="xl" href="/book/?zip=94601&service=sewer-lateral">
+          <Button variant="inverse" size="xl" href="/book/?service=sewer-lateral">
             Get a quote in 24 hours
           </Button>
         </div>
@@ -373,7 +373,7 @@ export default function SewerLateralOaklandPage() {
         <p className="mt-8 font-sans text-xl leading-relaxed text-[#333333] md:text-lg">
           Z and Z Plumbing has held both since 2012. {siteSettings.cslb}. You can verify directly at{" "}
           <a
-            href="https://www.cslb.ca.gov/onlineservices/checklicenseII/checklicense.aspx"
+            href={cslbLicenseUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[#F96302] underline hover:text-[#e05602]"
@@ -586,7 +586,7 @@ export default function SewerLateralOaklandPage() {
             >
               Call now
             </Button>
-            <Button variant="inverse" size="lg" href="/book/?zip=94601&service=sewer-lateral">
+            <Button variant="inverse" size="lg" href="/book/?service=sewer-lateral">
               Get a quote
             </Button>
           </div>

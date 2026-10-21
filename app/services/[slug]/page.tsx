@@ -85,7 +85,7 @@ function buildFaqs(serviceTitle: string): FaqItem[] {
   return [
     {
       question: `How fast can Z and Z get a plumber out for ${serviceTitle.toLowerCase()}?`,
-      answer: `Z and Z dispatches from San Leandro and typically responds within 30 to 60 minutes inside our core East Bay service corridor. Emergency calls run 24/7 every day of the year.`,
+      answer: `Z and Z dispatches from San Leandro, and same-day service is typical inside our core East Bay service corridor. Emergency calls are answered 24/7, every day of the year.`,
     },
     {
       question: `Are your plumbers licensed and insured?`,
@@ -211,18 +211,18 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             <p className="mt-1 text-sm text-[#333333]">C-36 + A General Engineering.</p>
           </div>
           <div className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5">
-            <p className="font-display text-3xl font-black uppercase leading-none text-black">30-60</p>
+            <p className="font-display text-3xl font-black uppercase leading-none text-black">Same-day</p>
             <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">
-              min response window
+              service
             </p>
-            <p className="mt-1 text-sm text-[#333333]">Same-day across the East Bay.</p>
+            <p className="mt-1 text-sm text-[#333333]">Across our East Bay service area.</p>
           </div>
           <div className="rounded-2xl border border-[#E5E5E5] bg-[#F5F5F5] p-5">
             <p className="font-display text-3xl font-black uppercase leading-none text-black">24/7</p>
             <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#666666]">
               emergency response
             </p>
-            <p className="mt-1 text-sm text-[#333333]">A plumber answers the phone.</p>
+            <p className="mt-1 text-sm text-[#333333]">Emergency calls are answered 24/7.</p>
           </div>
         </div>
       </Section>
@@ -238,11 +238,11 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               Send the Basics. We&apos;ll Call.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
-              This short form creates a new lead in Z and Z&apos;s dashboard for {service.title.toLowerCase()}.
-              The crew can confirm the address, scope, and schedule on the callback.
+              Tell us who to call and what&apos;s going on. We&apos;ll call you back within 30 minutes during business
+              hours (Mon to Fri, 7am to 5pm) to confirm the address, scope, and schedule.
             </p>
             <ul className="mt-6 space-y-3 text-base font-semibold text-white/80">
-              <li className="border-l-2 border-[#F96302] pl-3">First name, last name, phone, and email.</li>
+              <li className="border-l-2 border-[#F96302] pl-3">Name and phone. Email is optional.</li>
               <li className="border-l-2 border-[#F96302] pl-3">Optional note so the call starts faster.</li>
               <li className="border-l-2 border-[#F96302] pl-3">For emergencies, call {siteSettings.phone}.</li>
             </ul>
@@ -330,7 +330,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               Need {service.shortTitle} Now?
             </h2>
             <p className="mt-2 font-sans text-base text-white/85">
-              Call us or book online. A plumber answers the phone.
+              Call us or book online. Emergency calls are answered 24/7.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">

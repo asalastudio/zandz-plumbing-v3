@@ -95,17 +95,20 @@ export default function ServiceAreasHubPage() {
               emergency response.
             </p>
 
-            <div className="mt-8 grid grid-cols-3 border border-[#E5E5E5]">
-              <div className="border-r border-[#E5E5E5] p-4">
-                <p className="font-display text-4xl font-black uppercase leading-none text-black">120+</p>
+            {/* Middle column is wider so "Same-day" stays on one line. */}
+            <div className="mt-8 grid grid-cols-[1fr_1.35fr_1fr] border border-[#E5E5E5]">
+              <div className="border-r border-[#E5E5E5] p-3 sm:p-4">
+                <p className="font-display text-3xl font-black uppercase leading-none text-black sm:text-4xl">120+</p>
                 <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">East Bay ZIPs</p>
               </div>
-              <div className="border-r border-[#E5E5E5] p-4">
-                <p className="font-display text-4xl font-black uppercase leading-none text-black">30-60</p>
-                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">min nearby response</p>
+              <div className="border-r border-[#E5E5E5] p-3 sm:p-4">
+                <p className="whitespace-nowrap font-display text-3xl font-black uppercase leading-none text-black sm:text-4xl lg:text-3xl xl:text-4xl">
+                  Same-day
+                </p>
+                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">service</p>
               </div>
-              <div className="p-4">
-                <p className="font-display text-4xl font-black uppercase leading-none text-black">24/7</p>
+              <div className="p-3 sm:p-4">
+                <p className="font-display text-3xl font-black uppercase leading-none text-black sm:text-4xl">24/7</p>
                 <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#666666]">emergency</p>
               </div>
             </div>
@@ -169,8 +172,8 @@ export default function ServiceAreasHubPage() {
               Send a Quick Request.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/75">
-              We can verify the service area when we call. Your request still lands in the dashboard so the team can
-              follow up clearly.
+              Tell us who to call and what&apos;s going on. We&apos;ll confirm we cover your address when we call you
+              back, within 30 minutes during business hours (Mon to Fri, 7am to 5pm).
             </p>
           </div>
           <QuickLeadForm

@@ -9,6 +9,7 @@ import {
   formatDuration,
 } from "@/lib/db";
 import { getMonthUsage, formatMicros } from "@/lib/api-usage";
+import { formatPhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -226,7 +227,7 @@ export default async function AnalyticsPage() {
         <SectionHead
           icon={Wrench}
           title="What kind of work makes you money"
-          subtitle="Sorted by revenue. Click any row to see the underlying invoices someday — not yet wired."
+          subtitle="Sorted by revenue."
         />
         <div className="overflow-hidden border border-line">
           <table className="w-full text-left">
@@ -387,7 +388,7 @@ export default async function AnalyticsPage() {
                         className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-[#F96302]"
                       >
                         <Phone className="h-3.5 w-3.5" aria-hidden="true" />
-                        {c.phone_e164}
+                        {formatPhone(c.phone_e164)}
                       </a>
                     ) : (
                       <span className="text-faint">·</span>

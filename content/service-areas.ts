@@ -120,7 +120,7 @@ export const serviceAreas: ServiceArea[] = [
     state: "CA",
     zips: ["94540", "94541", "94542", "94543", "94544", "94545", "94557"],
     intro:
-      "We serve Hayward residential and light commercial. Fast response from our San Leandro base, typically 30 to 60 minutes.",
+      "We serve Hayward residential and light commercial, with same-day service from our nearby San Leandro base.",
     localContext:
       "Hayward sits right next door to our San Leandro base, so it's one of our quickest-response cities. The housing is a mix: post-war tract homes across the flats around Fairway Park and Southgate, older homes near Downtown, and the foothill properties up in the Hayward Hills. The flatland tracts bring the usual aging-supply-line and slab-leak work, while the hill homes add grade and access considerations for sewer and drain jobs. We handle both residential and light commercial here.",
     commonIssues: [

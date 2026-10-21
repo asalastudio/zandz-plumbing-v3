@@ -69,17 +69,17 @@ export default function ContactPage() {
           Call. We Answer.
         </h1>
         <p className="mt-6 max-w-3xl font-sans text-2xl leading-relaxed text-white/80 md:text-3xl">
-          A plumber picks up the phone. Not a call center, not a voicemail menu. We respond within 30 minutes during
-          business hours, and 24 hours a day for emergencies across the East Bay.
+          We call back within 30 minutes during business hours (Mon to Fri, 7am to 5pm). Emergency calls are answered
+          24/7 across the East Bay.
         </p>
 
         {/* Massive phone */}
         <a
           href={`tel:${siteSettings.phoneTel}`}
-          className="mt-10 inline-flex items-center gap-4 border-b-2 border-[#F96302] pb-3 font-display text-6xl md:text-7xl lg:text-8xl font-black uppercase leading-none tracking-tight text-white transition-colors duration-150 hover:text-[#F96302]"
+          className="mt-10 inline-flex items-center gap-3 whitespace-nowrap border-b-2 border-[#F96302] pb-3 font-display text-[2.5rem] font-black uppercase leading-none tracking-tight text-white transition-colors duration-150 hover:text-[#F96302] min-[420px]:text-5xl sm:gap-4 sm:text-6xl md:text-7xl lg:text-8xl"
           aria-label={`Call ${siteSettings.phone}`}
         >
-          <Phone className="h-10 w-10 text-[#F96302] md:h-12 md:w-12 lg:h-14 lg:w-14" strokeWidth={1.5} aria-hidden="true" />
+          <Phone className="h-8 w-8 flex-shrink-0 text-[#F96302] sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14" strokeWidth={1.5} aria-hidden="true" />
           {siteSettings.phone}
         </a>
 
@@ -116,7 +116,7 @@ export default function ContactPage() {
                 Burst pipe? Sewer backup? Call now.
               </p>
               <p className="mt-3 max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl">
-                Emergency calls go straight to the on-call plumber. We answer at 2am the same way we answer at 2pm.
+                Emergency calls are answered 24/7.
               </p>
             </div>
           </div>
@@ -144,8 +144,8 @@ export default function ContactPage() {
               Send Your Details.
             </h2>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-[#333333]">
-              Calling is fastest, especially for emergencies. For non-urgent work, this form creates a new lead in the
-              Z and Z dashboard so the team can call you back.
+              Calling is fastest, especially for emergencies. For non-urgent work, tell us who to call and what&apos;s
+              going on. We&apos;ll call you back within 30 minutes during business hours (Mon to Fri, 7am to 5pm).
             </p>
           </div>
           <QuickLeadForm
@@ -193,7 +193,7 @@ export default function ContactPage() {
                 <dd className="mt-2 font-display text-2xl font-black uppercase leading-tight tracking-tight text-black md:text-3xl">
                   {siteSettings.phone}
                 </dd>
-                <p className="mt-2 text-base text-[#666666]">Tap to call. A plumber picks up.</p>
+                <p className="mt-2 text-base text-[#666666]">Tap to call. Emergency calls are answered 24/7.</p>
               </div>
             </a>
 
@@ -276,7 +276,7 @@ export default function ContactPage() {
               Need a plumber now?
             </h2>
             <p className="mt-3 max-w-2xl font-sans text-lg text-white/80 md:text-xl">
-              A plumber answers the phone. {siteSettings.cslb}.
+              Emergency calls are answered 24/7. {siteSettings.cslb}.
             </p>
           </div>
           <Button

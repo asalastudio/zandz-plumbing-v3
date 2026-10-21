@@ -102,8 +102,8 @@ export function QuickLeadForm({
       return false;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setError("Please enter a valid email address.");
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError("That email doesn't look right. Fix it or leave it blank.");
       return false;
     }
 
@@ -138,7 +138,7 @@ export function QuickLeadForm({
       payload.set("firstName", form.firstName.trim());
       payload.set("lastName", form.lastName.trim());
       payload.set("phone", form.phone);
-      payload.set("email", form.email.trim());
+      if (form.email.trim()) payload.set("email", form.email.trim());
       payload.set("serviceInterest", serviceInterest);
       payload.set("serviceLabel", serviceLabel);
       // No SMS checkbox on this form, so send no consent answer at all: "false"
@@ -282,10 +282,9 @@ export function QuickLeadForm({
               placeholder="(510) 555-0123"
             />
             <QuickField
-              label="Email"
+              label="Email (optional)"
               value={form.email}
               onChange={(value) => update("email", value)}
-              required
               type="email"
               autoComplete="email"
               placeholder="you@example.com"

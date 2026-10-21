@@ -53,9 +53,12 @@ export function AdminLeadTickerClient({
   if (leads.count === 0) return null;
 
   const first = leads.rows[0];
+  // Contact-page and other catch-all forms store their source as the service
+  // ("contact-page-request"), which means nothing to whoever reads the ticker.
+  const genericService = first ? /(^|-)request$|^general$|^other$/.test(first.service_type ?? "") : false;
   const latestLabel = first
     ? `${first.customer?.name ?? "New lead"} · ${
-        first.service_label ?? first.service_type
+        genericService ? "Web request" : (first.service_label ?? first.service_type)
       }${first.job_zip ? ` · ${first.job_zip}` : ""}`
     : "New web lead waiting";
 
